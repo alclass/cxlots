@@ -16,8 +16,7 @@ def mappingHtmlColumnsToSqlColumns():
 
 htmlDataFile = 'D_MEGA.HTM'
 htmlDataFile = 'small.html'
-text = open(htmlDataFile).read()
-bsObj = bf.BeautifulSoup(text)
+
 
 fieldNamesStr='''Concurso
 Data Sorteio
@@ -40,26 +39,44 @@ Estimativa_Prêmio
 Acumulado_Natal'''
 megasenaFieldNames=fieldNamesStr.split('\n')
 
-def fetchHTMLTableIntoObjsList():
+class HtmlGrabberClass(object):
+  def __init__(self, *args, **kwargs):
+    object.__init__(self, *args, **kwargs)
+    self.bsObj = None
+    self.concursos = []
+  def setHtmlDateFile(self, htmlDataFile):
+    self.htmlDataFile = htmlDataFile
+    self.htmlData = open(htmlDataFile).read()
+    self.bsObj = bf.BeautifulSoup(text)
+  def parseToDataStru(self):
+    if self.bsObj <> None: 
+      self.concursos = processRowsAcrossTable(self.bsObj)
+
+
+def processColumnsAcrossRow(tr):
+  tds = tr.fetch('td')
+  COLUMN_TRACKER = 1; concurso = None
+  for td in tds:
+    value = td.string
+    if COLUMN_TRACKER == 1:
+      concurso = Concurso(value)
+    attrName = fieldNames[ COLUMN_TRACKER - 1 ]
+    print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
+    if concurso <> None:
+      concurso.addAttr(attrName, value)
+    COLUMN_TRACKER += 1
+  return concurso
+
+def processRowsAcrossTable(bsObj):
   # 1st level
-  trs = bsObj.fetch('tr')
+  trs = self.bsObj.fetch('tr')
   nOfTheLine=1; concursos = []
   for tr in trs:
     # 2nd level
-    tds = tr.fetch('td')
-    COLUMN_TRACKER = 1; concurso = None
-    for td in tds:
-      value = td.string
-      if COLUMN_TRACKER == 1:
-        concurso = Concurso(value)
-      attrName = fieldNames[ COLUMN_TRACKER - 1 ]
-      print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
-      if concurso <> None:
-        concurso.addAttr(attrName, value)
-      COLUMN_TRACKER += 1
-    nOfTheLine+=1
+    concurso = processColumnsAcrossRow(tr)
     concursos.append(concurso)
+    nOfTheLine+=1
   return concursos
 
 if __name__ == '__main__':
-  concursos = fetchHTMLTableIntoObjsList()
+  pass
