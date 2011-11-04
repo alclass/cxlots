@@ -19,7 +19,7 @@ class TestHtmlGrabber(unittest.TestCase):
     set up data
     setUp is called before each test function execution
     '''
-    grabber = HtmlGrabberClass()
+    self.grabber = HtmlGrabberClass()
     pass
   
   def testSquare(self):
