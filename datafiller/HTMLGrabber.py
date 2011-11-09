@@ -5,7 +5,7 @@ import BeautifulSoup as bf
 
 this_is_just_to_avoid_recursive_local_imports=1
 from classesConcursoAndAttr import *
-from constantsEtc import *
+import constantsEtc
 del this_is_just_to_avoid_recursive_local_imports
 
 htmlDataFilename = 'D_MEGA.HTM'
@@ -34,7 +34,7 @@ def processColumnsAcrossRow(tr):
     value = td.string
     if COLUMN_TRACKER == 1:
       concurso = Concurso(value)
-    attrName = getDBFieldLongNames()[ COLUMN_TRACKER - 1 ]
+    attrName = constantsEtc.getFieldName( COLUMN_TRACKER - 1 )
     # print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
     if concurso <> None:
       concurso.addAttr(attrName, value)

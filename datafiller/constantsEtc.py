@@ -4,6 +4,36 @@ Created on 03/11/2011
 @author: friend
 '''
 
+def returnMegasenaFieldNamesStr():
+  return '''nDoConcurso
+dataDoSorteio
+dezena1
+dezena2
+dezena3
+dezena4
+dezena5
+dezena6
+arrecadacaoTotal
+ganhadoresDaSena
+rateioDaSena
+ganhadoresDaQuina
+rateioDaQuina
+ganhadoresDaQuadra
+rateioDaQuadra
+acumuladoSimNao
+valorAcumulado
+estimativaDePremio
+acumuladoDeNatal'''
+
+fieldNames = []
+def getFieldName(pos):
+  if fieldNames == []:
+    fieldNames = returnMegasenaFieldNamesStr()
+  if pos < len(fieldNames):
+    return fieldNames[pos]
+  return None
+
+
 def returnMegasenaFieldLongNamesStr():
   return '''Concurso
 Data Sorteio
