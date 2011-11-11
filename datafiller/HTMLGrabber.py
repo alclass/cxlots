@@ -26,17 +26,21 @@ class HtmlGrabberClass(object):
     if self.bsObj <> None: 
       self.concursos = processRowsAcrossTable(self.bsObj)
 
-
+nOfTheLine = 0
 def processColumnsAcrossRow(tr):
+  global nOfTheLine
+  nOfTheLine += 1
   tds = tr.fetch('td')
   COLUMN_TRACKER = 1; concurso = None
   for td in tds:
     value = td.string
+    print 'td->', td, value, COLUMN_TRACKER
     if COLUMN_TRACKER == 1:
-      concurso = Concurso(value)
+      concurso = Concurso(int(value))
     attrName = constantsEtc.getFieldName( COLUMN_TRACKER - 1 )
-    # print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
+    print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
     if concurso <> None:
+      print concurso, attrName, value
       concurso.addAttr(attrName, value)
     COLUMN_TRACKER += 1
   return concurso

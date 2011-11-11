@@ -1,7 +1,9 @@
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import BeautifulSoup as bs
 
 htmlTextSampleWith4Records = '''
-
+<head><body><table>
 <tr>
 
 <td>1</td>
@@ -169,7 +171,7 @@ htmlTextSampleWith4Records = '''
 <td>0,00</td>
 
 </tr>
-
+</table></body></head>
 '''
 
 rows = []
@@ -266,3 +268,20 @@ row['acumuladoDeNatal']='0,00'
 
 rows.append(row)
 row = {}
+
+import HTMLGrabber as hg
+
+def prelimaryTest():
+  bsObj = bs.BeautifulSoup(htmlTextSampleWith4Records)
+  trs = hg.processRowsAcrossTable(bsObj)
+  concursos = hg.processRowsAcrossTable(bsObj)
+  for concurso in concursos:
+    print concurso
+    
+print 'hi'
+
+
+
+
+if __name__ == '__main__':
+  prelimaryTest()
