@@ -1,41 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
+'''
 
-this_var_is_just_to_avoid_recursive_local_imports=1
-import valueCheckers
-import HTMLGrabber
-del this_var_is_just_to_avoid_recursive_local_imports
+Functionality to be EXPORTED to other modules:
+==============================================
 
-typeDict = {'nDoConcurso':int, 'dataDoSorteio':datetime.date}
+This module keeps two data sets:
 
-for i in range(1, 7):
-  fieldname = 'dezena%d' %i
-  typeDict[fieldname]=int
+1) a list called allowedFieldNamesInOriginalOrder
 
-typeDict['arrecadacaoTotal']=float
+This list just stores the fields in a Sena HTML table but with different names, for names were standardized here
 
-for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
-  fieldname = 'ganhadores%s' %postfix
-  typeDict[fieldname]=int
 
-for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
-  fieldname = 'rateio%s' %postfix
-  typeDict[fieldname]=float
+2) a dict (hash map) called typeDict
 
-for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
-  fieldname = 'ganhadores%s' %postfix
+This dict keeps the pair fieldname and its expected python-type. Example: {nDoConcuso:int},
+   this means the variable nDoConcuso must be of the int type.
 
-typeDict['acumuladoSimNao'] = int
-typeDict['valorAcumulado']  = float
-typeDict['estimativaDePremio'] = float
-typeDict['acumuladoDeNatal'] = float
 
-def getFieldType(fieldname):
-  return typeDict[fieldname]
+Functionality NOT to be EXPORTED to other modules:
+==============================================
 
-def returnMegasenaFieldNamesStr():
-  return '''nDoConcurso
+[1]
+At the end, there is a string with all standardized names just to be used for comparison with allowedFieldNamesInOriginalOrder
+If something differs, either order in which the fields must happpen, or fields quantity differs, execution will break.
+
+[2]
+A second comparison is to done again the HTML as it is updated when a new zip file is downloaded
+This test should only run when a new HTML is in place.
+
+It is a behind-the-scenes functionality with the purpose of revealing that an update to this script should happen.
+'''
+
+fieldNamesInOrderStr = '''nDoConcurso
 dataDoSorteio
 dezena1
 dezena2
@@ -55,61 +53,45 @@ valorAcumulado
 estimativaDePremio
 acumuladoDeNatal'''
 
-fieldNames = []
-def getFieldName(pos):
-  global fieldNames
-  if fieldNames == []:
-    fieldNames = returnMegasenaFieldNamesStr()
-  if pos < len(fieldNames):
-    return fieldNames[pos]
-  return None
+allowedFieldNamesInOriginalOrder = fieldNamesInOrderStr.split('\n')
 
-class Attribute(dict):
-  
-  def __init__(self, name, value=None):
-    self.__init__(name, value)
-  def __set__(self, name, value):
-    pass
-  def fillInIsCurrencyIsDateIsInteger(self):
-    if self.name.lower().startswith('data'):
-      self.isDate = True
-      return
-    for phrase in ['ganhadores', 'dezena']:
-      if self.name.lower().startswith('dezena'):
-        self.isInteger = True
-        return
-    for phrase in ['rateio', 'arrecadacao', 'estimativa', 'valor']:
-      if self.name.lower().startswith(phrase):
-        attrObj.isCurrency = True
-        return
-    # if program flow gets here, it didn't find the datum's type
-    print 'self', self.name
-    raise ValueError, "it could not determine whether it's currency, it's date or it's integer"
-  def setAttr(self, value):
-    if self.isInteger():
-      if not valueCheckers.checkIfValueIsInteger(value):
-        raise TypeError, 'type error having an integer'
-    if attrObj.isCurrency():
-      if valueCheckers.checkIfValueIsCurrency(value):
-        raise TypeError, 'type error having a currency'
-      value = valueCheckers.normalizeDate(value)
-    self.value = value
-  def putIntoParamListAttrValueInOrder(values):
-    index = HTMLGrabber.megasenaFieldNames.index(self.name)
-    if len(values) < index:
-      values[index] = self.value
-    else:
-      raise IndexError, 'index error in putIntoParamListAttrValueInOrder(values)'
-  def __str__(self):
-    outStr = '(attr: %s = %s)' %(self.name, self.value)
+typeDict = {'nDoConcurso':int, 'dataDoSorteio':datetime.date}
 
-def test():
-  c = Attribute(1)
-  c.addAttr('dezena1', 25)
-  
-if __name__ == '__main__':
-  test()
+for i in range(1, 7):
+  fieldname = 'dezena%d' %i
+  typeDict[fieldname] = int
 
+fieldname = 'arrecadacaoTotal'
+typeDict[fieldname] = float
+
+for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
+  fieldname = 'ganhadores%s' %postfix
+  typeDict[fieldname]=int
+
+for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
+  fieldname = 'rateio%s' %postfix
+  typeDict[fieldname]=float
+
+for postfix in ['DaSena', 'DaQuina', 'DaQuadra']:
+  fieldname = 'ganhadores%s' %postfix
+
+fieldname = 'acumuladoSimNao'
+typeDict[fieldname] = int
+
+fieldname = 'valorAcumulado'
+typeDict[fieldname] = float
+
+fieldname = 'estimativaDePremio'
+typeDict[fieldname] = float
+
+fieldname = 'acumuladoDeNatal'
+typeDict[fieldname] = float
+
+if len(typeDict) != len(allowedFieldNamesInOriginalOrder):
+  raise IndexError, "len(typeDict)=%d != len(allowedFieldNamesInOriginalOrder=%d)" %(len(typeDict), len(allowedFieldNamesInOriginalOrder))
+
+def getFieldType(fieldname):
+  return typeDict[fieldname]
 
 
 def returnMegasenaFieldLongNamesStr():
@@ -143,3 +125,8 @@ def mappingHtmlColumnsToSqlColumns():
   
   '''
   return htmlColumns
+
+if __name__ == '__main__':
+  pass
+  print allowedFieldNamesInOriginalOrder
+  print typeDict

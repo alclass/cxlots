@@ -2,175 +2,100 @@
 # -*- coding: utf-8 -*-
 import BeautifulSoup as bs
 
+a=1
+import ClassConcursoEtc as conc
+
 htmlTextSampleWith4Records = '''
 <head><body><table>
+
 <tr>
-
 <td>1</td>
-
 <td>11/03/1996</td>
-
 <td>41</td>
-
 <td>05</td>
-
 <td>04</td>
-
 <td>52</td>
-
 <td>30</td>
-
 <td>33</td>
-
 <td>0,00</td>
-
 <td>0</td>
-
 <td>0,00</td>
-
 <td>17</td>
-
 <td>39.158,92</td>
-
 <td>2016</td>
-
 <td>330,21</td>
-
 <td>si</td>
-
 <td>1.714.650,23</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 </tr>
 
 <tr bgcolor=#D9E6F4>
-
 <td>2</td>
-
 <td>18/03/1996</td>
-
 <td>09</td>
-
 <td>39</td>
-
 <td>37</td>
-
 <td>49</td>
-
 <td>43</td>
-
 <td>41</td>
-
 <td>0,00</td>
-
 <td>1</td>
-
 <td>2.307.162,23</td>
-
 <td>65</td>
-
 <td>14.424,02</td>
-
 <td>4488</td>
-
 <td>208,91</td>
-
 <td>no</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 </tr>
 
 <tr>
-
 <td>3</td>
-
 <td>25/03/1996</td>
-
 <td>36</td>
-
 <td>30</td>
-
 <td>10</td>
-
 <td>11</td>
-
 <td>29</td>
-
 <td>47</td>
-
 <td>0,00</td>
-
 <td>2</td>
-
 <td>391.192,51</td>
-
 <td>62</td>
-
 <td>10.515,93</td>
-
 <td>4261</td>
-
 <td>153,01</td>
-
 <td>no</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 </tr>
 
 <tr bgcolor=#D9E6F4>
-
 <td>4</td>
-
 <td>01/04/1996</td>
-
 <td>06</td>
-
 <td>59</td>
-
 <td>42</td>
-
 <td>27</td>
-
 <td>01</td>
-
 <td>05</td>
-
 <td>0,00</td>
-
 <td>0</td>
-
 <td>0,00</td>
-
 <td>39</td>
-
 <td>15.322,24</td>
-
 <td>3311</td>
-
 <td>180,48</td>
-
 <td>si</td>
-
 <td>717.080,75</td>
-
 <td>0,00</td>
-
 <td>0,00</td>
-
 </tr>
+
 </table></body></head>
 '''
 
@@ -201,13 +126,13 @@ rows.append(row)
 row = {}
 
 row['nDoConcurso']='2'
-row['dataDoSorteio']='11/03/1996'
+row['dataDoSorteio']='18/03/1996'
 row['dezena1']='09'
 row['dezena2']='39'
 row['dezena3']='37'
-row['dezena1']='49'
-row['dezena1']='43'
-row['dezena1']='41'
+row['dezena4']='49'
+row['dezena5']='43'
+row['dezena6']='41'
 row['arrecadacaoTotal']='0,00'
 row['ganhadoresDaSena']='1'
 row['rateioDaSena']='2.307.162,23'
@@ -269,19 +194,32 @@ row['acumuladoDeNatal']='0,00'
 rows.append(row)
 row = {}
 
-import HTMLGrabber as hg
+# =================================================================
 
+concursos = []
+for row in rows:
+  concurso = conc.convertRowListToConcursoObj(row)
+  concursos.append(concurso)
+  
+def compareConcursos(htmlConcursos, concursos):
+  print "compareConcursos(htmlConcursos, concursos):",
+  for i in range(len(concursos)):
+    concurso1 = concursos[i]
+    concurso2 = htmlConcursos[i]
+    if not concurso1.isEqualTo(concurso2):
+      raise ValueError, 'concurso1 is not Equal To concurso2 \n They follow: \n concurso1 = %s \n concurso2 = %s ' %(concurso1, concurso2)  
+  print "OK"
+
+import HTMLGrabber as hg
 def prelimaryTest():
   bsObj = bs.BeautifulSoup(htmlTextSampleWith4Records)
-  trs = hg.processRowsAcrossTable(bsObj)
-  concursos = hg.processRowsAcrossTable(bsObj)
-  for concurso in concursos:
-    print concurso
-    
-print 'hi'
-
-
-
+  htmlConcursos = hg.processRowsAcrossTable(bsObj)
+  compareConcursos(htmlConcursos, concursos)
+#  for concurso in concursos:
+#    print concurso
 
 if __name__ == '__main__':
+  pass
   prelimaryTest()
+
+print 'no exceptions were raised till the end of module'

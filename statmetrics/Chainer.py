@@ -1,8 +1,12 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
+import numpy, scipy, sys
 
 a=1
+#import
+# from statmetrics import funcsForBinDecRepr # as binDec
+sys.path.insert(0, '..')
 import funcsForBinDecRepr as binDec
 '''
 #import Numeric as N

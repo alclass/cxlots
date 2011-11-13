@@ -2,47 +2,71 @@
 # -*- coding: utf-8 -*-
 import datetime #,  sys
 import BeautifulSoup as bf
+import sqlite3
 
 this_is_just_to_avoid_recursive_local_imports=1
-from classesConcursoAndAttr import *
-import constantsEtc
+import ClassConcursoEtc as conc
+import FieldsAndTypes as fat
 del this_is_just_to_avoid_recursive_local_imports
 
 htmlDataFilename = 'D_MEGA.HTM'
 htmlDataFilename = 'small.html'
 
-class HtmlGrabberClass(object):
-  def __init__(self, *args, **kwargs):
-    object.__init__(self, *args, **kwargs)
-    self.bsObj = None
-    self.concursos = []
-  def setHtmlDateFile(self, htmlDataFilename):
+class HtmlGrabberClass():
+  def __init__(self, htmlDataFilename='D_MEGA.HTM'):
     self.htmlDataFilename = htmlDataFilename
-    self.createSoupObj()
+    self.parseToDataStru()
   def createSoupObj(self):
     htmlText = open(self.htmlDataFilename).read()
     self.bsObj = bf.BeautifulSoup(htmlText)
   def parseToDataStru(self):
+    self.createSoupObj()    
     if self.bsObj <> None: 
       self.concursos = processRowsAcrossTable(self.bsObj)
+  def generateSqlInsert(self):
+    outStr = '\n' + '='*30 + '\n'
+    outStr += '============ Concursos ============'
+    outStr += '\n' + '='*30 + '\n'
+    for concurso in self.concursos:
+      outStr += str(concurso.sqlInsert())
+      outStr += '\n'
+      #outStr += '\n' + '='*30 + '\n'
+    outStr += 'Total: %d' %(len(self.concursos))
+    return outStr
+    
+  def testPrintNDoConc(self):      
+    outStr = '\n' + '='*30 + '\n'
+    outStr += '============ testPrintNDoConc() ============'
+    outStr += '\n' + '='*30 + '\n'
+    for concurso in self.concursos:
+      nDoConc = concurso['nDoConcurso']
+      if nDoConc == None:
+        nDoConc = -1
+      outStr += '%d,' %nDoConc
+    return outStr
+  def __str__(self):
+    outStr = '\n' + '='*30 + '\n'
+    outStr += '============ Concursos ============'
+    outStr += '\n' + '='*30 + '\n'
+    for concurso in self.concursos:
+      outStr += str(concurso)
+      outStr += '\n' + '='*30 + '\n'
+    outStr += 'Total: %d' %(len(self.concursos))
+    return outStr
 
 nOfTheLine = 0
 def processColumnsAcrossRow(tr):
   global nOfTheLine
   nOfTheLine += 1
   tds = tr.fetch('td')
-  COLUMN_TRACKER = 1; concurso = None
+  COLUMN_TRACKER = 1; row = {}
   for td in tds:
-    value = td.string
-    print 'td->', td, value, COLUMN_TRACKER
-    if COLUMN_TRACKER == 1:
-      concurso = Concurso(int(value))
-    attrName = constantsEtc.getFieldName( COLUMN_TRACKER - 1 )
-    print 'lin', nOfTheLine, 'col', COLUMN_TRACKER, attrName, value
-    if concurso <> None:
-      print concurso, attrName, value
-      concurso.addAttr(attrName, value)
+    value = str(td.string) # this typecast is to avoid propagation of type(value)=<class 'BeautifulSoup.NavigableString'>
+    fieldname = fat.allowedFieldNamesInOriginalOrder[COLUMN_TRACKER - 1]
+    row[fieldname] = value
     COLUMN_TRACKER += 1
+  # print 'row', row
+  concurso = conc.convertRowListToConcursoObj(row)
   return concurso
 
 def processRowsAcrossTable(bsObj):
@@ -52,9 +76,17 @@ def processRowsAcrossTable(bsObj):
   for tr in trs:
     # 2nd level
     concurso = processColumnsAcrossRow(tr)
-    concursos.append(concurso)
-    nOfTheLine+=1
+    if concurso != None:
+      concursos.append(concurso)
+      nOfTheLine+=1
   return concursos
+
+
+def testGrabber():
+  grabber = HtmlGrabberClass()
+  # print grabber.testPrintNDoConc()
+
 
 if __name__ == '__main__':
   pass
+  testGrabber()

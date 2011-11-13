@@ -4,7 +4,7 @@
   This module contains 'business' classes: Base, Jogo, Jogos and PartialJogos
 '''
 import sys
-
+sys.path.insert(0, '..')
 standardNames = ['LF','LM','MS']
 
 # import syncSorteios as sync  CAN NOT happen here, because it instantiate Base (and Base is not yet ready, because it's below), so it is imported down below close to where it is needed, in getJogosObj(s2LN)
@@ -84,7 +84,7 @@ class Base(object):
       return self.nDeDezenasSorteadas
     return self.nDeDezenasAMarcar
 
-  def getIntFromLowestJogo():
+  def getIntFromLowestJogo(self):
     '''
     Example for MS:
     1,2,3,4,5,6 will transform into:
@@ -106,7 +106,7 @@ class Base(object):
     de  = self.primeiraDezenaNoVolante
     ate = de + self.nDeDezenasSorteadas - 1
     dezenas = range(de, ate + 1)
-    s = jogoListToStr(dezenas)
+    s = self.jogoListToStr(dezenas)
     if s[0] == '0':
       s = s[1:]
     self.intFromLowestJogo = int(s)
