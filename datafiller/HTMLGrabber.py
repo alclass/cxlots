@@ -18,6 +18,15 @@ class HtmlGrabberClass():
     self.parseToDataStru()
   def createSoupObj(self):
     htmlText = open(self.htmlDataFilename).read()
+    '''
+    Because of Portuguese accents in headers and in SIM/NÃO row values
+      and the fact that the HTML is probably iso-8859-1 (Latin1) instead of UTF-8
+    the unicode function raises UnicodeDecodeError
+      if optional parameter errors is not set either to 'ignore' or 'replace'
+      we chose 'ignore' because we only read the first character of field acumuladoSimNao,
+      so it's either 'S' or 'N' coinciding with its ASCII/UTF-8 codes
+    '''
+    htmlText = unicode( htmlText , errors = 'ignore' ) 
     self.bsObj = bf.BeautifulSoup(htmlText)
   def parseToDataStru(self):
     self.createSoupObj()    
