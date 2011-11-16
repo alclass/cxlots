@@ -7,12 +7,10 @@ Created on 13/11/2011
 '''
 import sqlite3, sys
 a=1
-'''
-import ClassConcursoEtc as conc
-import converterForDateAndCurrency as conv
 import FieldsAndTypes as fat
 import HTMLGrabber as hb
-'''
+import ClassConcursoEtc as conc
+import converterForDateAndCurrency as conv
 
 megasenaMetricsSqliteCreate = '''
 CREATE TABLE IF NOT EXISTS `megasenametrics` (

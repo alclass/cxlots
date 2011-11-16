@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 '''
 
 Idea to what should be generated and pasted to the metricsgenerator module:
@@ -43,17 +44,42 @@ allpaths ::
 binDecReprSomaDe1s :: 
 lgiDist :: '''
 
-lines = metricsNamesStr.split('\n')
-pySourceCode = 'metricsDict = { \\\n' ; seqNumber = 0
-for line in lines:
-  name, description = line.split('::')
-  name = name.strip()
-  description = description.strip() 
-  seqNumber += 1
-  pySourceCode += "%(seqNumber)d:('%(name)s',%(name)s,'%(description)s'), \\\n" %{'seqNumber':seqNumber, 'name':name,'description':description}
+names = []; namesDescriptionsDict = {}
+def printDict():
+  lines = metricsNamesStr.split('\n')
+  pySourceCode = 'metricsDict = { \\\n' ; seqNumber = 0
+  for line in lines:
+    name, description = line.split('::')
+    name = name.strip()
+    names.append(name)
+    description = description.strip()
+    namesDescriptionsDict[name] = description 
+    seqNumber += 1
+    pySourceCode += "%(seqNumber)d:('%(name)s',metr.%(name)s,'%(description)s'), \\\n" %{'seqNumber':seqNumber, 'name':name,'description':description}
+  pySourceCode = pySourceCode[ : - len(', \\\n')]
+  pySourceCode += '  }'
+  return pySourceCode
 
-pySourceCode = pySourceCode[ : - len(', \\\n')]
+def generateNames():
+  justForTheSideEffectOfFillingNamesList = printDict()
+  del justForTheSideEffectOfFillingNamesList
+  sourcecode = ''
+  for name in names:
+    description = namesDescriptionsDict[name] 
+    sourcecode += '''def %(name)s(concurso, concursos):
+\t"%(description)s"    
+\tpass\n\n''' %{'name':name, 'description':description}
+  #sourcecode = sourcecode[:-1]
+  print sourcecode
 
-pySourceCode += '  }'
+def generatePrint(printStr='dict'):
+  if printStr == 'dict':
+    print printDict()
 
-print pySourceCode
+if __name__ == '__main__':
+  if len(sys.argv) > 1:
+    param = sys.argv[1]
+    if param == 'dict':
+      generatePrint()
+    elif param == 'names':
+      generateNames()

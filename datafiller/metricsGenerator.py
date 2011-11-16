@@ -143,6 +143,8 @@ idem to the previous two
   
 '''
 
+iguaisComOAnterior,coincsComOs3Anteriores,coincsComOs7Anteriores,parParImparImpar,rem2pattern,rem3pattern,rem5pattern,rem6pattern,colpattern,ocorrenciasDeCadaDezena,posAnteriorDeOcorrenciaDeCadaDezena,iguaisMediaComPassado,maxDeIguais,maxDeIguaisDistAo1oAnterior,maxDeIguaisOcorrencia,til4pattern,til5pattern,til6pattern,til10pattern,soma,soma3,soma7,soma15,avg,std,pathway,allpaths,binDecReprSomaDe1s,lgiDist=None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None
+
 metricsDict = { \
 1:('iguaisComOAnterior',iguaisComOAnterior,'Calcula quantidade de dezenas coincidentes com o jogo anterior'), \
 2:('coincsComOs3Anteriores',coincsComOs3Anteriores,'Calcula quantidade de dezenas coincidentes com os 3 jogos anteriores'), \
