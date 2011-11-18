@@ -68,9 +68,9 @@ def sqlSelect():
         value = str(value)
         value = conv.convertToDatetimeDate(value, 'YYYY-MM-DD')
       row2[fieldname] = value 
-      print fieldnameCount, fieldname, value, 'type', type(value)
+      #print fieldnameCount, fieldname, value, 'type', type(value)
       fieldnameCount += 1
-    print 'row2', row2
+    #print 'row2', row2
     concurso = conc.convertRowListToConcursoObj(row2)
     concursos.append(concurso)
   return concursos

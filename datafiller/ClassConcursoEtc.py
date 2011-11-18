@@ -39,6 +39,13 @@ class Concurso():
     if fieldname in self.concursoDict.keys():
       return self.concursoDict[fieldname]
     return None
+  def getDezenas(self):
+    dezenas = []
+    for i in range(1,7):
+      fieldname = 'dezena%d' %i
+      dezenas.append(self[fieldname])
+    return dezenas
+    
   def sqlInsert(self):
     sqlInsertStr = 'INSERT INTO `megasena` ('
     for fieldname in self.fieldnamesInOrder:
