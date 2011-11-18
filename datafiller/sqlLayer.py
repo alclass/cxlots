@@ -54,11 +54,12 @@ def createTable():
   conn = sqlite3.connect('megasena.sqlite')
   conn.execute(megasenaIndividualDzSqlCreateTable)
   conn.close()
-  
+
+concursos = []
 def sqlSelect():
   conn = sqlite3.connect('megasena.sqlite')
   sql = 'select * from `megasena`;'
-  rows = conn.execute(sql); concursos = []
+  rows = conn.execute(sql) #; concursos = []
   for row in rows:
     row2 = {}; fieldnameCount = 0
     for fieldname in fat.allowedFieldNamesInOriginalOrder:
@@ -74,6 +75,8 @@ def sqlSelect():
     concurso = conc.convertRowListToConcursoObj(row2)
     concursos.append(concurso)
   return concursos
+sqlSelect()
+
 
 def printConcursos(concursos):
   for concurso in concursos:

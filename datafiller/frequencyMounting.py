@@ -40,14 +40,50 @@ class FreqDictThruConcursos():
     return len(self.freqDictAtEachConcurso)
   def getLast(self):
     return self.freqDictAtEachConcurso[self.maxNDoConcurso]
+  def getDezenaFreqAtConcursoN(self, dezena, nDoConcurso):
+    concurso = sl.concursos[nDoConcurso-1]
+    dezenas = concurso.getDezenas()
+    if dezena not in dezenas:
+      return None
+    freqDict = self.getByNDoConcurso(nDoConcurso)
+    return freqDict[dezena]
   def getByNDoConcurso(self, nDoConcurso):
     if nDoConcurso in self.freqDictAtEachConcurso.keys():
       return self.freqDictAtEachConcurso[nDoConcurso]
     else:
       return None
-    
+  def getNTilForDezenasAt(self, tilN, nDoConcurso):
+    concurso = sl.concursos[nDoConcurso-1]
+    if concurso == None:
+      return None
+    listWithFrequencyFrontiers = calculateTilOfNForHistogram(tilN, self.freqDictAtEachConcurso[nDoConcurso])
+    tilDict = {}
+    for dezena in concurso.getDezenas():
+      dezenaWasSet = False
+      for quant in listWithFrequencyFrontiers:
+        dezenaFreq = self.getDezenaFreqAtConcursoN(dezena, nDoConcurso)
+        if dezenaFreq < quant:
+          tilDict[dezena]=listWithFrequencyFrontiers.index(quant)+1
+          dezenaWasSet = True
+          break
+      if not dezenaWasSet:
+        tilDict[dezena] = len(listWithFrequencyFrontiers)
+    return tilDict
 #freqAtEachConcurso = FreqDictThruConcursos()
 
+
+def calculateTilOfNForHistogram(tilNumber, freqDict):
+  minN = min(freqDict)
+  maxN = max(freqDict)
+  incrementSize = (maxN - minN) / tilNumber
+  remainder =  (maxN - minN) % tilNumber
+  listWithFrequencyFrontiers = [incrementSize]*tilNumber
+  for i in range(incrementSize):
+    if remainder > 0:
+      listWithFrequencyFrontiers[i] += 1
+      remainder -= 1
+  # logically list is in ascending order
+  return listWithFrequencyFrontiers
 
 def initializeFreqDict(nDeDezenas=60):
   freqDict = {}
@@ -93,7 +129,7 @@ class Test(unittest.TestCase):
     self.assertEqual(initializeFreqDict(60), dictCompare)
     dictCompare['blah']='blah'
     self.assertFalse(initializeFreqDict(3), dictCompare)
-  def mountDezenasFrequencies(self):
+  def test_mountDezenasFrequencies(self):
     concursos = sl.sqlSelect()
     concurso1 = concursos[0]
     dictForConc1 = {}
@@ -102,9 +138,14 @@ class Test(unittest.TestCase):
     self.assertEqual(mountDezenasFrequencies(ate_concurso_n=1), dictForConc1)
     # self.assertEqual(type(mountDezenasFrequencies()), dict)
     self.assertEqual(mountDezenasFrequencies(ate_concurso_n=0), mountDezenasFrequencies())
+  def test_calculateTilOfNForHistogram(self):
+    pass
+
     
+process()
 
 if __name__ == '__main__':
-  process()
+  pass
+  # process()
   #printFreqThru()
 
