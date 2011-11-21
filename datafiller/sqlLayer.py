@@ -55,8 +55,8 @@ def createTable():
   conn.execute(megasenaIndividualDzSqlCreateTable)
   conn.close()
 
-concursos = []
 def sqlSelect():
+  concursos = []
   conn = sqlite3.connect('megasena.sqlite')
   sql = 'select * from `megasena`;'
   rows = conn.execute(sql) #; concursos = []
@@ -75,9 +75,23 @@ def sqlSelect():
     concurso = conc.convertRowListToConcursoObj(row2)
     concursos.append(concurso)
   return concursos
-sqlSelect()
 
-
+concursos = sqlSelect()
+def getListAllConcursosObjs(reReadSqlTable=False):
+  global concursos
+  if reReadSqlTable:
+    concursos = sqlSelect()
+  return concursos
+  
+def getConcursoObjByN(nDoConcurso=None):
+  nTotalDeConcursos = len(getListAllConcursosObjs())
+  if nDoConcurso == None:
+    nDoConcurso = nTotalDeConcursos
+  elif nDoConcurso < 1 or nDoConcurso > nTotalDeConcursos:
+    return None  
+  concursos = getListAllConcursosObjs()
+  return concursos[nDoConcurso - 1]
+  
 def printConcursos(concursos):
   for concurso in concursos:
     print concurso 

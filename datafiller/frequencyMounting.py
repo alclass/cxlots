@@ -13,6 +13,7 @@ import sqlLayer as sl
 #import FieldsAndTypes as fat
 #import HTMLGrabber as hb
 
+'''
 class Stats():
   def __init__(self):
     self.statsDict = {}
@@ -22,128 +23,217 @@ class Stats():
     return self.statsDict[statsname]
   def __len__(self):
     return len(self.statsDict)
-
 #statsStore = Stats()
-statsStore = {}
+'''
 
-class FreqDictThruConcursos():
-  def __init__(self):
-    self.freqDictAtEachConcurso = {}
-    self.maxNDoConcurso = 0
-  def __setitem__(self, nDoConcurso, freqDict):
-    self.freqDictAtEachConcurso[nDoConcurso] = freqDict
-    if nDoConcurso > self.maxNDoConcurso:
-      self.maxNDoConcurso = nDoConcurso 
-  def __getitem__(self, nDoConcurso):
-    return self.freqDictAtEachConcurso[nDoConcurso]
+class FrequenciesThruConcursos():
+  '''
+  This class is supposed to be a singleton, but no enforcement for it is made
+  As it's need somewhere, the calling point just instantiate one object
+  As it's no longer necessary, the garbage collector will recover the memory it used
+  
+  The memory used here is an m by n array
+  The inner array is an n-position array (eg. 60 for megasena) with the accumulated frequency of all the n dezenas
+  The outer array has an inner array for each concurso
+  
+  
+  
+  '''
+  def __init__(self, nDeDezenasNoVolante=60):
+    self.accumulatedFrequencyUpToConcurso = []
+    self.nDeDezenasNoVolante = nDeDezenasNoVolante 
+    self.initializeaccumulatedFrequencyUpToConcurso()
+    
+  def initializeaccumulatedFrequencyUpToConcurso(self):
+    concursos = sl.getListAllConcursosObjs()
+    frequencyOfAllDezenas = [0] * self.nDeDezenasNoVolante
+    for concurso in concursos:
+      for dezena in concurso.getDezenas():
+        frequencyOfAllDezenas[dezena-1] += 1
+      snapShotForCurrentPosition = copy.copy(frequencyOfAllDezenas)
+      self.accumulatedFrequencyUpToConcurso.append(snapShotForCurrentPosition) 
+  
+#  def append(self, frequencyOfEveryDezena):
+#    self.accumulatedFrequencyUpToConcurso.append(frequencyOfEveryDezena)
+
+  def getFrequenciesOfAllDezenasByNDoConcurso(self, nDoConcurso):
+    if nDoConcurso < 1 or nDoConcurso > len(self.accumulatedFrequencyUpToConcurso):
+      return None
+    return self.accumulatedFrequencyUpToConcurso[nDoConcurso-1]
+
+  def getAllFrequenciesOfAllConcursos(self):
+    return self.accumulatedFrequencyUpToConcurso
+    
+  def __getitem__(self, nDoConcurso=0):
+    return self.getFrequenciesOfAllDezenasByNDoConcurso(nDoConcurso)
+  
   def __len__(self):
-    return len(self.freqDictAtEachConcurso)
+    return len(self.accumulatedFrequencyUpToConcurso)
+  
+  def sumUpTo(self, upToConcursoI):
+    if upToConcursoI < 1:
+      return 0
+    if upToConcursoI > len(self.accumulatedFrequencyUpToConcurso):
+      return None
+    freqOfAllDezenasUpToConcursoI = self.accumulatedFrequencyUpToConcurso[upToConcursoI-1]
+    sumOfFreqsOfAllDezenasUpToConcursoI = sum(freqOfAllDezenasUpToConcursoI)
+    return sumOfFreqsOfAllDezenasUpToConcursoI
+  
   def getLast(self):
-    return self.freqDictAtEachConcurso[self.maxNDoConcurso]
+    return self.accumulatedFrequencyUpToConcurso[-1]
+  
   def getDezenaFreqAtConcursoN(self, dezena, nDoConcurso):
-    concurso = sl.concursos[nDoConcurso-1]
+    concurso = sl.getConcursoObjByN(nDoConcurso)
+    if concurso == None:
+      return None
     dezenas = concurso.getDezenas()
     if dezena not in dezenas:
       return None
-    freqDict = self.getByNDoConcurso(nDoConcurso)
-    return freqDict[dezena]
-  def getByNDoConcurso(self, nDoConcurso):
-    if nDoConcurso in self.freqDictAtEachConcurso.keys():
-      return self.freqDictAtEachConcurso[nDoConcurso]
-    else:
-      return None
-  def getNTilForDezenasAt(self, tilN, nDoConcurso):
-    concurso = sl.concursos[nDoConcurso-1]
-    if concurso == None:
-      return None
-    listWithFrequencyFrontiers = calculateTilOfNForHistogram(tilN, self.freqDictAtEachConcurso[nDoConcurso])
-    tilDict = {}
-    for dezena in concurso.getDezenas():
-      dezenaWasSet = False
-      for quant in listWithFrequencyFrontiers:
-        dezenaFreq = self.getDezenaFreqAtConcursoN(dezena, nDoConcurso)
-        if dezenaFreq < quant:
-          tilDict[dezena]=listWithFrequencyFrontiers.index(quant)+1
-          dezenaWasSet = True
-          break
-      if not dezenaWasSet:
-        tilDict[dezena] = len(listWithFrequencyFrontiers)
-    return tilDict
-#freqAtEachConcurso = FreqDictThruConcursos()
+    return self.accumulatedFrequencyUpToConcurso[dezena-1]
 
+  def getAllDezenas(self):
+    '''
+    Since implementation of this class changed from dict to list, allDezenas are a rule starting from 1 to len(list)+1
+    '''
+    return range(1, len(self.accumulatedFrequencyUpToConcurso) + 1)
 
-def calculateTilOfNForHistogram(tilNumber, freqDict):
-  minN = min(freqDict)
-  maxN = max(freqDict)
-  incrementSize = (maxN - minN) / tilNumber
-  remainder =  (maxN - minN) % tilNumber
-  listWithFrequencyFrontiers = [incrementSize]*tilNumber
-  for i in range(incrementSize):
-    if remainder > 0:
-      listWithFrequencyFrontiers[i] += 1
-      remainder -= 1
-  # logically list is in ascending order
-  return listWithFrequencyFrontiers
+  def getNTotalDeDezenas(self):
+    return self.nDeDezenasNoVolante
 
-def initializeFreqDict(nDeDezenas=60):
-  freqDict = {}
-  for dezena in range(1, nDeDezenas+1):
-    freqDict[dezena] = 0
-  return freqDict
+  def returnFrequenciesAsADezenaFreqDict(self):
+    freqDict = {}
+    for i in range(len(self.accumulatedFrequencyUpToConcurso)):
+      dezena = i + 1  # this is a logical rule (dezenas must start at 1 and be consecutive)
+      frequency = self.accumulatedFrequencyUpToConcurso[i]
+      freqDict[dezena] = frequency
+    return freqDict 
 
-def mountDezenasFrequencies(ate_concurso_n=None):
-  global freqAtEachConcurso
-  concursos = sl.sqlSelect()
-  if ate_concurso_n != None:
-    if ate_concurso_n > 0 and ate_concurso_n < len(concursos):
-      concursos = concursos[ : ate_concurso_n]
-  freqDict = initializeFreqDict()
-  freqAtEachConcurso = FreqDictThruConcursos()
-  for concurso in concursos:
-    for dezena in concurso.getDezenas():
-      freqDict[dezena] += 1
-    nDoConcurso = concurso['nDoConcurso']
-    freqAtEachConcurso[nDoConcurso]=copy.copy(freqDict)
-    #print nDoConcurso, 'freqAtEachConcurso[nDoConcurso]', freqAtEachConcurso[nDoConcurso] 
-  #return freqAtEachConcurso
-  statsStore['freqAtEachConcurso'] = freqAtEachConcurso
+  def getDezenasWithFrequencyF(self, frequencyIn, nDoConcurso):
+    '''
+    This method is somewhat inefficient, so it'll be change in the future
+    This method is also meant to be private, though it's not enforced
+    '''
+    i = 0; dezenasOut = []
+    for frequency in self.accumulatedFrequencyUpToConcurso[nDoConcurso-1]:
+      if frequency == frequencyIn:
+        dezenasOut.append(i)
+      i+=1
+    return dezenasOut
 
-def process():
-  mountDezenasFrequencies()
-  freqAtEachConcurso = statsStore['freqAtEachConcurso']
-  freqDict = freqAtEachConcurso.getLast()  
-  print 'lastFreqDict', freqDict
-  freqDict = freqAtEachConcurso.getByNDoConcurso(100)  
-  print '100th freqDict', freqDict
-
-def printFreqThru():
-  print 'printFreqThru():', 'len(freqAtEachConcurso)', len(freqAtEachConcurso)
-  for nDoConcurso in range(1, len(freqAtEachConcurso)+1):
-    print nDoConcurso, freqAtEachConcurso[nDoConcurso]
-
-import unittest
-class Test(unittest.TestCase):
-  def test_initializeFreqDict(self):
-    dictCompare = {}
-    for i in range(61): dictCompare[i]=0
-    self.assertEqual(initializeFreqDict(60), dictCompare)
-    dictCompare['blah']='blah'
-    self.assertFalse(initializeFreqDict(3), dictCompare)
-  def test_mountDezenasFrequencies(self):
-    concursos = sl.sqlSelect()
-    concurso1 = concursos[0]
-    dictForConc1 = {}
-    for dezena in concurso1:
-      dictForConc1[dezena] = 1
-    self.assertEqual(mountDezenasFrequencies(ate_concurso_n=1), dictForConc1)
-    # self.assertEqual(type(mountDezenasFrequencies()), dict)
-    self.assertEqual(mountDezenasFrequencies(ate_concurso_n=0), mountDezenasFrequencies())
-  def test_calculateTilOfNForHistogram(self):
-    pass
-
+  def getAllDezenasInAscendingOrderOfFrequency(self, nDoConcurso=None):
+    totalDeConcursos = len(sl.getListAllConcursosObjs())
+    if nDoConcurso == None:
+      nDoConcurso = len(sl.getListAllConcursosObjs())      
+    elif nDoConcurso < 1 or nDoConcurso > totalDeConcursos:
+      return None 
+    toBeOrdered = copy.copy(self.accumulatedFrequencyUpToConcurso[nDoConcurso-1])
+    toBeOrdered.sort(); i=0
+    dezenasInAscendingOrderOfFrequency = []; frequencyAnterior = -1 # this guarantees the first only will not be equal when looking ahead to equal consecutives
+    while i < len(toBeOrdered):
+      frequency = toBeOrdered[i]
+      # look ahead and jump posterior equals
+      if frequency == frequencyAnterior:
+        i+=1
+        continue
+      dezenasWithF = self.getDezenasWithFrequencyF(frequency, nDoConcurso)
+      dezenasInAscendingOrderOfFrequency += dezenasWithF 
+      frequencyAnterior = frequency
+      i += 1 
+    return dezenasInAscendingOrderOfFrequency    
     
-process()
 
+'''
+freqAtEachConcurso = FrequenciesThruConcursos()  
+statsStore = {}
+statsStore['freqAtEachConcurso'] = freqAtEachConcurso
+'''
+
+class TilMaker():
+
+  def __init__(self, tilNumber=None, nDoConcurso=None):
+    if tilNumber == None or tilNumber not in [5,6,10,12,15]:
+      tilNumber = 5
+    self.tilNumber = tilNumber
+    totalDeConcursos = len(sl.getListAllConcursosObjs())      
+    if nDoConcurso == None:
+      nDoConcurso = totalDeConcursos
+    elif nDoConcurso < 1 or nDoConcurso > totalDeConcursos:
+      indexErrorMsg = 'passed in nDoConcurso=%d and range acceptable is 1 to %d' %(nDoConcurso, totalDeConcursos)
+      raise IndexError, indexErrorMsg 
+    self.nDoConcurso = nDoConcurso
+    self.listWithFrequencyFrontiers = None
+    self.tilSets = None
+    self.freqAtEachConcurso = FrequenciesThruConcursos() 
+
+  def calculateTilOfNUpToConcursoI(self):
+    frequenciesAtConcursoN = self.freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
+    minN = min(frequenciesAtConcursoN)
+    maxN = max(frequenciesAtConcursoN)
+    amplitude = maxN - minN + 1
+    incrementSize =  amplitude / self.tilNumber
+    # nTotalDeDezenas = self.freqAtEachConcurso.getNTotalDeDezenas() 
+    remainder = amplitude % self.tilNumber
+    #remainder =  (maxN - minN) % tilNumber
+    self.listWithFrequencyFrontiers = [incrementSize] * self.tilNumber
+    for i in range(incrementSize):
+      if remainder > 0:
+        self.listWithFrequencyFrontiers[i] += 1
+        remainder -= 1
+    # logically list is in ascending order
+    if sum(self.listWithFrequencyFrontiers) != amplitude:
+      valueErrorMsg = 'sum(listWithFrequencyFrontiers)=%d != amplitude=%d :: The two should be equal' %(sum(self.listWithFrequencyFrontiers), amplitude)
+      raise ValueError, valueErrorMsg
+    '''
+    if sum(self.listWithFrequencyFrontiers) != nTotalDeDezenas:
+      valueErrorMsg = 'sum(listWithFrequencyFrontiers)=%d != nTotalDeDezenas=%d :: The two should be equal' %(sum(self.listWithFrequencyFrontiers), nTotalDeDezenas)
+      valueErrorMsg += '\n self.listWithFrequencyFrontiers = %s' %(str(self.listWithFrequencyFrontiers))
+      valueErrorMsg += '\n tilN = %d  nTotalDeDezenas %d' %(self.tilNumber, nTotalDeDezenas)
+      valueErrorMsg += '\n self.nDoConcurso = %d  min %d max %d' %(self.nDoConcurso, minN, maxN)
+      raise ValueError, valueErrorMsg
+    ''' 
+    return self.listWithFrequencyFrontiers
+
+  def getTilSets(self):
+    self.separateTilSets()
+    self.checkTilSetsBorders()
+    return self.tilSets
+  
+  def separateTilSets(self):
+    if self.listWithFrequencyFrontiers == None:
+      self.calculateTilOfNUpToConcursoI()
+    dezenas = self.freqAtEachConcurso.getAllDezenasInAscendingOrderOfFrequency()
+    print 'dezenas', dezenas 
+    self.tilSets = [[]] * len(self.listWithFrequencyFrontiers); ini = 0
+    for i in range(len(self.listWithFrequencyFrontiers)):
+      frontier = self.listWithFrequencyFrontiers[i]
+      fim = ini + frontier
+      print 'i fim = ini + frontier', i, fim , ini , frontier
+      if fim > len(dezenas):
+        valueErrorMsg = 'An inconsistency happened, index fim (=%d) is greater than len(dezenas) = %d ' %(fim, len(dezenas)) 
+        raise ValueError, valueErrorMsg
+      self.tilSets[i] = dezenas[ ini : fim]
+      print i, 'tilSets[i]', self.tilSets[i]
+      ini = fim
+  
+  def checkTilSetsBorders(self):
+    '''
+    This method compares he last element of one tilSet
+      with the first element of the next tilSet and if equal, 
+      bring the next tilSet element to the previous set and recurse to look for more
+    '''
+    if self.tilSets == None:
+      self.separateTilSets()
+    for i in range(len(self.tilSets)-1):
+      passingTilSet = self.tilSets[i]
+      nextTilSet = self.tilSets[i+1]
+      try:
+        while passingTilSet[-1] == nextTilSet[0]:
+          passingTilSet.append(nextTilSet[0])
+          del nextTilSet[0]
+      except IndexError:
+        pass
+  
+  
 if __name__ == '__main__':
   pass
   # process()

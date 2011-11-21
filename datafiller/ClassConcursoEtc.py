@@ -3,8 +3,10 @@
 import datetime, sys
 
 sys.path.insert(0, '..')
+a=1
 import FieldsAndTypes as fat
 import converterForDateAndCurrency as conv
+import frequencyMounting as fm
 
 class Concurso():
   def __init__(self):
@@ -45,7 +47,29 @@ class Concurso():
       fieldname = 'dezena%d' %i
       dezenas.append(self[fieldname])
     return dezenas
-    
+
+  def getTilN(self, tilN=None):
+    nDoConcurso = self.concursoDict['nDoConcurso']
+    tilObj = fm.TilMaker(tilN, nDoConcurso)
+    tilSets = tilObj.getTilSets() 
+    dezenas = self.getDezenas()
+    tilPatternDict = {}
+    for i in range(len(tilSets)):
+      tilPatternDict[i+1]=0
+    tilSets = tilObj.getTilSets()
+    for dezena in dezenas:
+      for i in range(len(tilSets)):
+        tilSet = tilSets[i] 
+        if dezena in tilSet:
+          tilPatternDict[i+1] += 1
+          break
+    tilPatternStr = ''
+    patterns = tilPatternDict.keys()
+    patterns.sort()
+    for pattern in patterns:
+      tilPatternStr += str(tilPatternDict[pattern]) 
+    return tilPatternStr
+
   def sqlInsert(self):
     sqlInsertStr = 'INSERT INTO `megasena` ('
     for fieldname in self.fieldnamesInOrder:
