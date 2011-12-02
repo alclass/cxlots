@@ -448,7 +448,89 @@ class IndicesCombiner(object):
       if s:
         workSet = list(s)
     return array
-      
+
+class SetsCombiner():
+  '''
+  This class has a "bridge" method called combineSets(self)
+    that calls doRecursiveSetsCombination(self.listOfTuple2)
+  The latter function receives the listOfTuple2 that keeps the following information:
+    first tuple element is a set (list) with dezenas to be combined according to the 
+    second tuple element which is the quantity (or size) of each combination
+    Eg
+    ([12, 23, 33, 42, 57], 3) generates:
+    12 23 33, 12 23 42, 12 23 57 ... up to 33 42 57
+    
+    The final result is the combination of all sets
+    
+    With this functionality, one possible of this class's  
+  '''
+  def __init__(self):
+    self.workSetsWithQuantities = [] #  # workSetsWithQuantities was formerly listOfTuple2
+    self.allCombinations = None
+  def addSetWithQuantities(self, tupleIn):
+    self.workSetsWithQuantities.append(tupleIn)
+  def combineSets(self):
+    self.allCombinations = doRecursiveSetsCombination(self.workSetsWithQuantities)
+  def __len__(self):
+    if self.allCombinations == None:
+      return 0
+    return len(self.allCombinations)
+
+class SetsCombinerWithTils(SetsCombiner):
+  '''
+  This class inherits from SetsCombiner
+  The idea here is to automatically fill in self.workSetsWithQuantities from a tilObj
+  So at object instantiation every is run at once
+     and after instantiation the object has its combined sets available 
+  '''
+  def __init__(self, tilElement):
+    SetsCombiner.__init__(self)
+    self.tilElement = tilElement
+    self.unpackTilObj()
+    self.combineSets() # a parent class's method
+  def unpackTilObj(self):
+    self.workSetsWithQuantities = self.tilElement.getWorkSetsWithQuantities() 
+    
+    
+
+
+def createWorkSetsWithIndicesCombiner(workSet, icObj):
+  workSets = []
+  for indicesArray in icObj.allSets(): # implement an iterator with yield in the future
+    formingSet = []
+    for indiceArray in indicesArray:
+      formingSet.append(workSet[indiceArray])
+    workSets.append(formingSet)
+  return workSets
+    
+def generateAllCombinationsForWorkDict(workSetAndQuantity):
+  workSet = workSetAndQuantity[0]
+  quantity = workSetAndQuantity[1]
+  if quantity > len(workSet):
+    errorMsg = ' generateAllCombinationsForWorkDict(workSetAndQuantity) :: quantity=%d > len(workSet)=%d cannot happen ' %(quantity, len(workSet))
+    raise ValueError, errorMsg 
+  if quantity == 0:
+    return []
+  if quantity == 1 and len(workSet) == 1:
+    return workSet[:]
+  icObj = IndicesCombiner(len(workSet)-1, quantity, False)
+  workSets = createWorkSetsWithIndicesCombiner(workSet, icObj)
+  return workSets
+
+def doRecursiveSetsCombination(workSetsAndQuantities, allCombinations=[[]]):
+  if len(workSetsAndQuantities) == 0:
+    return allCombinations
+  workSetAndQuantity = workSetsAndQuantities.pop()
+  workSets = generateAllCombinationsForWorkDict(workSetAndQuantity)
+  newAllCombinations = []
+  for workSet in workSets:
+    for eachCombination in allCombinations:
+      #print 'summing', workSet, eachCombination
+      newFormingSet = workSet + eachCombination
+      newFormingSet.sort()
+      newAllCombinations.append(newFormingSet)
+  return doRecursiveSetsCombination(workSetsAndQuantities, newAllCombinations)
+
 def setCombine(workSet, piecesSize):
   indComb = IndicesCombiner(len(workSet)-1,piecesSize,False)
   print indComb
@@ -600,4 +682,5 @@ if __name__ == '__main__':
   #testShiftLeft(upLimit, size)
   testPrevious(upLimit, size)
   '''
-  testAllSets()
+  # testAllSets()
+  testPrevious(5, 7)

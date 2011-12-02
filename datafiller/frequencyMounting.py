@@ -116,7 +116,8 @@ class FrequenciesThruConcursos():
     i = 0; dezenasOut = []
     for frequency in self.accumulatedFrequencyUpToConcurso[nDoConcurso-1]:
       if frequency == frequencyIn:
-        dezenasOut.append(i)
+        # dezena is index i + 1, for indices are from 0 to 59 and dezenas from 1 to 60
+        dezenasOut.append(i+1)
       i+=1
     return dezenasOut
 
@@ -232,10 +233,61 @@ class TilMaker():
           del nextTilSet[0]
       except IndexError:
         pass
+
+def sumUpTilPattern(pattern):
+  soma=0
+  for c in pattern:
+    soma+=int(c)
+  return soma
+
+class TilElement():
+  '''
+  This class covers a Til Element
+  A Til Element is instantiated with a pattern (eg '03021')
+  From any pattern, length and sum can be derived.  Length is the pattern string size
+    ( in the example above len('03021')=5 )
+    and sum is the summing up of its digits (in the example above 0+3+0+2+1=6)
   
+  It implements a method called getWorkSetsWithQuantities() which does the following:
+    it gets the frequency-til-positioned dezenas and joins this set with the quantity expressed in the digit
+    
+    let's see this in the example above '03021'
+    0, the first digit, means 0 dezenas in the first quintil
+    3 means 3 dezenas in the second quintil which may have x dezenas altogether
+    the pair (tuple) to form is this set of x dezenas, together with the quantity 3
+    this tuple will be used elsewhere for combinations of this til(size=5, index=1) 3 by 3
+
+    index 1 is because pattern[1]=3
+    
+    So this method is applied in a calling routine that produces these combinations
+    
+  '''
+  def __init__(self, pattern):
+    self.pattern = pattern
+    self.setLengthAndSum()
+  def setLengthAndSum(self):
+    self.length  = len(self.pattern)
+    self.sum = sumUpTilPattern(self.pattern)
+  def getWorkSetsWithQuantities(self):
+    workSetsWithQuantities = []
+    tilObj = TilMaker(self.length)
+    workSets = []
+    for i in range(len(self.pattern)):
+      quantity = int(self.pattern[i])
+      if quantity > 0:
+        dezenas = tilObj.getTilSets()[i]
+        workSetWithQuantity = (dezenas, quantity)
+        workSetsWithQuantities.append(workSetWithQuantity)
+    return workSetsWithQuantities
+
+def testTilElement():
+  tilElement = TilElement('03021')
+  workSetsWithQuantities = tilElement.getWorkSetsWithQuantities()
+  print workSetsWithQuantities
   
 if __name__ == '__main__':
   pass
+  testTilElement()
   # process()
   #printFreqThru()
 
