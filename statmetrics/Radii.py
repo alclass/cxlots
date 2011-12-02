@@ -9,6 +9,112 @@ import lambdas
 import LgiCombiner as lc
 
 
+'''
+Created on 21/11/2011
+
+@author: up15
+
+
+This module has the calculatePathway() method, which is the main "business" method here
+The other methods are services so to say to calculatePathway()
+
+The calculatePathway() calculates the distance traversed from the dezena closest to
+  the left upper corner to each subsequent closest dezena
+ 
+  Eg.
+  1,2,3,4,5,6
+  The starting dezena is 1, for it's the closest to the left upper corner
+  2 is the closest to 1, so the 2-D distance between 2 and 1 is 1.
+ 
+  In this case it's easy to see that each one distances from the previous one from 1
+  So all distances summed up (ie, the pathway metric) are 5
+ 
+'''
+
+def dist2d(point, xy):
+  x1, y1 = point
+  x2, y2 = xy
+  return ((x1-x2)**2 + (y1-y2)**2)**(1/2.0)
+
+pathway = []
+totalDistance = 0
+def findClosestPointInSet(fromPoint, xyPairs):
+  global pathway, totalDistance
+  leastDistance = 100000000; closestPair = None
+  index = indexOfClosest = -1
+  for xy in xyPairs:
+    index += 1
+    distance = dist2d(fromPoint, xy)
+    if distance < leastDistance:
+      leastDistance = distance
+      closestPair = xy
+      indexOfClosest = index
+  del xyPairs[indexOfClosest]
+  print 'leastDistance', leastDistance, 'from', fromPoint, 'to', closestPair, 'pairs', xyPairs
+  pathway.append(closestPair)
+  totalDistance += leastDistance  
+  return closestPair, xyPairs
+
+def recurse(fromPoint, xyPairs):
+  if len(xyPairs) == 0:
+    return
+#    pathway.append(xyPairs[0])  
+#    return xyPairs[0], []
+  closestPair, xyPairs = findClosestPointInSet(fromPoint, xyPairs)
+  return recurse(closestPair, xyPairs)
+
+def calculatePathway(xyPairs):
+  if (0,0) not in xyPairs:
+    startPoint, xyPairs = findClosestPointInSet((0,0), xyPairs)
+  else:
+    startPoint = (0,0)
+    pathway.append(xyPairs[0])  
+    del xyPairs[0]
+  recurse(startPoint, xyPairs)
+
+def transformDezenaIntoXY(dezena):
+  rightDigit = dezena % 10
+  if rightDigit == 0:
+    rightDigit = 10  
+  x = rightDigit - 1
+  y = (dezena - 1) / 10
+  return x, y
+
+def convertDezenasToXY(dezenas = [11, 6, 7, 53, 44, 32]):
+  xyPairs = []
+  for dezena in dezenas:
+    x, y = transformDezenaIntoXY(dezena)
+    xyPairs.append((x,y))
+  return xyPairs
+  #print 'x, y', x, y
+
+def convertXYToDezenas(xyPair):
+  dezenas = []
+  for x, y in xyPair:
+    rightDigit = x + 1
+    leftDigit = y
+    dezena = leftDigit * 10 + rightDigit
+    dezenas.append(dezena)
+  return dezenas   
+
+def test1():
+  global pathway, totalDistance
+  #dezenas = [11, 6, 7, 53, 44, 32]
+  dezenasSet = [[1,2,3,4,5,6], [1,11,21,31,41,51], [39, 44, 57, 12, 15, 4], [1, 12, 23, 34, 45, 56]]
+  for dezenas in dezenasSet:
+    pathway = []
+    totalDistance = 0
+    xyPairs = convertDezenasToXY(dezenas)
+    print xyPairs
+    calculatePathway(xyPairs)
+    print 'pathway', pathway
+    dezenasBack = convertXYToDezenas(pathway)
+    print 'dezenasBack', dezenasBack
+    print 'totalDistance', totalDistance
+
+test1()
+
+
 class Radii(CLClasses.Base):
   '''
   Radii class
