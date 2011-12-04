@@ -28,11 +28,12 @@ class Test(unittest.TestCase):
     '''
     concursos = sl.getListAllConcursosObjs()
     n_concs_total = len(concursos)
-    freqAtEachConcurso = fm.statsStore['freqAtEachConcurso']
+    #freqAtEachConcurso = fm.statsStore['freqAtEachConcurso']
+    freqAtEachConcurso = fm.FrequenciesThruConcursos()
     for i in range(1, n_concs_total+1):
       shouldBeSum = 6 * i
       self.assertEqual(freqAtEachConcurso.sumUpTo(i), shouldBeSum)
-  
+
   def test_initializeFreqDict(self):
     '''
     This test does the following

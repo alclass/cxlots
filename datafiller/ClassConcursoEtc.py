@@ -6,7 +6,9 @@ sys.path.insert(0, '..')
 a=1
 import FieldsAndTypes as fat
 import converterForDateAndCurrency as conv
-import frequencyMounting as fm
+#import frequencyMounting as fm
+# the next line produces a circular reference problem in Python, so a third module will be created to join functionalities that cannot be joint here
+#import statmetrics.TilModule as tilMod
 
 class Concurso():
   def __init__(self):
@@ -50,7 +52,7 @@ class Concurso():
 
   def getTilN(self, tilN=None):
     nDoConcurso = self.concursoDict['nDoConcurso']
-    tilObj = fm.TilMaker(tilN, nDoConcurso)
+    tilObj = tilMod.TilMaker(tilN, nDoConcurso)
     tilSets = tilObj.getTilSets() 
     dezenas = self.getDezenas()
     tilPatternDict = {}
