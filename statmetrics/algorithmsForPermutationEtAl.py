@@ -1,7 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-funcsForPermutationEtAl.py
+algorithmsForPermutationEtAl.py
+
+
+Main functions here:
+
+-- permute(arrayN)
+-- geraSumComponents(soma, parcel=-1, acc=[])
+   Generates Integer Partitions (look for further explanation on the comments at the beginning of the function below) 
+-- getTilPatternsFor(patternSize=10, patternSoma=6)
+   Uses geraSumComponents(patternSoma) then it stuffs zeroes and filters out larger strings than patternSize) 
+
 '''
 # import numpy, time, sys
 
@@ -230,7 +240,7 @@ def testAdHocGetTilPatternsFor(patternSize=2, patternSoma=3):
     count+=1
     print pattern,
 #testAdHocGetTilPatternsFor()
-testAdHocGetTilPatternsFor(patternSize=5, patternSoma=6)
+#testAdHocGetTilPatternsFor(patternSize=5, patternSoma=6)
 
 def testGeraSumComponents():
   '''
@@ -297,10 +307,6 @@ class RCombiner:
 def testAdHocRCombiner():
   rc=RCombiner(3)
   print rc  
-
-if __name__ == '__main__':
-  pass
-
 
 '''
 def testC1():

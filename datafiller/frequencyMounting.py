@@ -35,8 +35,8 @@ class FrequenciesThruConcursos():
       for dezena in concurso.getDezenas():
         dezenaAsIndexFrom0 = dezena-1
         frequencyOfAllDezenas[dezenaAsIndexFrom0] += 1
-      snapShotForCurrentPosition = copy.copy(frequencyOfAllDezenas)
-      self.accumulatedFrequencyUpToConcurso.append(snapShotForCurrentPosition) 
+      hardCopyDezenasFrequenciesAtConcurso = frequencyOfAllDezenas[:]
+      self.accumulatedFrequencyUpToConcurso.append(hardCopyDezenasFrequenciesAtConcurso) 
   
 #  def append(self, frequencyOfEveryDezena):
 #    self.accumulatedFrequencyUpToConcurso.append(frequencyOfEveryDezena)
@@ -106,7 +106,7 @@ class FrequenciesThruConcursos():
       i+=1
     return dezenasOut
 
-  def getAllDezenasInAscendingOrderOfFrequency(self, nDoConcurso=None):
+  def getAllDezenasInAscendingOrderOfFrequencyForConcursoN(self, nDoConcurso=None):
     totalDeConcursos = len(sl.getListAllConcursosObjs())
     if nDoConcurso == None:
       nDoConcurso = len(sl.getListAllConcursosObjs())      

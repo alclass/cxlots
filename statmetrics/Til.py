@@ -7,12 +7,14 @@ Til.py
 import sys
 
 a=1
+import funcsForFrequencies as ffFreq
 sys.path.insert(0, '..')
-import funcsForPermutationEtAl as fsPerm
+import algorithmsForPermutationEtAl as fsPerm
 import datafiller.sqlLayer as sl
 # sys.path.insert(0, '../datafiller')
 # import sqlLayer as sl
 import datafiller.frequencyMounting as fm
+
 
 
 class TilPatternVector():
@@ -51,7 +53,7 @@ class TilPatternVector():
       self.initVectorViaWordPattern(wordPattern)
 
   def initVector(self):
-    self.vector = getTilPatternsFor(self.patternSize, self.soma)
+    self.vector = fsPerm.getTilPatternsFor(self.patternSize, self.soma)
   
   def initVectorViaWordPattern(self, wordPattern):
     # second case, a initialPattern was entered
@@ -96,20 +98,10 @@ class TilPatternVector():
 
 def testAdHocTilPatternVector():
   patternSize = 5; soma = 6
-  tpvObj = TilPatternVector()
+  tpvObj = TilPatternVector(patternSize, soma)
   print 'tpvObj', tpvObj 
-testAdHocTilPatternVector()
+#testAdHocTilPatternVector()
 
-tilObjDict = {}
-def getTilObj(tilIn=5):
-  if tilIn in tilObjDict.keys():
-    return tilObjDict[tilIn]
-  tilObj = Til(tilIn)
-  tilObjDict[tilIn] = tilObj
-  return tilObj
-
-# test adhoc
-getTilObj()
 
 class TilMaker():
 
@@ -118,6 +110,10 @@ class TilMaker():
     or tilNumber not in [5,6,10,12,15,20]:
     '''
     self.tilNumber = tilNumber
+    self.treatNDoConcurso(nDoConcurso)
+    self.treatFrequencies()
+
+  def treatNDoConcurso(self, nDoConcurso):
     totalDeConcursos = len(sl.getListAllConcursosObjs())      
     if nDoConcurso == None:
       nDoConcurso = totalDeConcursos
@@ -125,77 +121,23 @@ class TilMaker():
       indexErrorMsg = 'passed in nDoConcurso=%d and range acceptable is 1 to %d' %(nDoConcurso, totalDeConcursos)
       raise IndexError, indexErrorMsg 
     self.nDoConcurso = nDoConcurso
-    self.listWithFrequencyFrontiers = None
-    self.tilSets = None
-    self.freqAtEachConcurso = fm.FrequenciesThruConcursos() 
 
-  def calculateTilOfNUpToConcursoI(self):
-    frequenciesAtConcursoN = self.freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
-    minN = min(frequenciesAtConcursoN)
-    maxN = max(frequenciesAtConcursoN)
-    amplitude = maxN - minN + 1
-    incrementSize =  amplitude / self.tilNumber
-    # nTotalDeDezenas = self.freqAtEachConcurso.getNTotalDeDezenas() 
-    remainder = amplitude % self.tilNumber
-    #remainder =  (maxN - minN) % tilNumber
-    self.listWithFrequencyFrontiers = [incrementSize] * self.tilNumber
-    for i in range(incrementSize):
-      if remainder > 0:
-        self.listWithFrequencyFrontiers[i] += 1
-        remainder -= 1
-    # logically list is in ascending order
-    if sum(self.listWithFrequencyFrontiers) != amplitude:
-      valueErrorMsg = 'sum(listWithFrequencyFrontiers)=%d != amplitude=%d :: The two should be equal' %(sum(self.listWithFrequencyFrontiers), amplitude)
-      raise ValueError, valueErrorMsg
-    '''
-    if sum(self.listWithFrequencyFrontiers) != nTotalDeDezenas:
-      valueErrorMsg = 'sum(listWithFrequencyFrontiers)=%d != nTotalDeDezenas=%d :: The two should be equal' %(sum(self.listWithFrequencyFrontiers), nTotalDeDezenas)
-      valueErrorMsg += '\n self.listWithFrequencyFrontiers = %s' %(str(self.listWithFrequencyFrontiers))
-      valueErrorMsg += '\n tilN = %d  nTotalDeDezenas %d' %(self.tilNumber, nTotalDeDezenas)
-      valueErrorMsg += '\n self.nDoConcurso = %d  min %d max %d' %(self.nDoConcurso, minN, maxN)
-      raise ValueError, valueErrorMsg
-    ''' 
-    return self.listWithFrequencyFrontiers
-
+  def treatFrequencies(self):
+    freqAtEachConcurso = fm.FrequenciesThruConcursos() 
+    self.frequenciesAtConcursoN = freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
+    #self.minFreqAtConcurso = min(self.frequenciesAtConcursoN)
+    #self.maxFreqAtConcurso = max(self.frequenciesAtConcursoN)
+  
   def getTilSets(self):
-    self.separateTilSets()
-    self.checkTilSetsBorders()
-    return self.tilSets
-  
-  def separateTilSets(self):
-    if self.listWithFrequencyFrontiers == None:
-      self.calculateTilOfNUpToConcursoI()
-    dezenas = self.freqAtEachConcurso.getAllDezenasInAscendingOrderOfFrequency()
-    print 'dezenas', dezenas 
-    self.tilSets = [[]] * len(self.listWithFrequencyFrontiers); ini = 0
-    for i in range(len(self.listWithFrequencyFrontiers)):
-      frontier = self.listWithFrequencyFrontiers[i]
-      fim = ini + frontier
-      print 'i fim = ini + frontier', i, fim , ini , frontier
-      if fim > len(dezenas):
-        valueErrorMsg = 'An inconsistency happened, index fim (=%d) is greater than len(dezenas) = %d ' %(fim, len(dezenas)) 
-        raise ValueError, valueErrorMsg
-      self.tilSets[i] = dezenas[ ini : fim]
-      print i, 'tilSets[i]', self.tilSets[i]
-      ini = fim
-  
-  def checkTilSetsBorders(self):
-    '''
-    This method compares he last element of one tilSet
-      with the first element of the next tilSet and if equal, 
-      bring the next tilSet element to the previous set and recurse to look for more
-    '''
-    if self.tilSets == None:
-      self.separateTilSets()
-    for i in range(len(self.tilSets)-1):
-      passingTilSet = self.tilSets[i]
-      nextTilSet = self.tilSets[i+1]
-      try:
-        while passingTilSet[-1] == nextTilSet[0]:
-          passingTilSet.append(nextTilSet[0])
-          del nextTilSet[0]
-      except IndexError:
-        pass
+    return ffFreq.getTilSets(self.frequenciesAtConcursoN, self.tilNumber)
+
+
+def spread2DListTo1DList(list2D):
+  newSet = []
+  for list1D in list2D:
+    for element in list1D:
+      newSet.append(element)
+  return newSet
 
 def sumUpTilPattern(pattern):
   soma=0
@@ -264,113 +206,7 @@ def testTilElement():
   print workSetsWithQuantities
 #testTilElement()
 
-
-
-def stuffStrWithZeros(subtokens, size=10):
-  newTokens = []
-  for token in subtokens:
-    tam = len(token)
-    toFill = size - tam
-    token = token + '0'*toFill
-    newTokefsPerm.append(token)
-    #print token
-  return newTokens
-
-def strToList(s):
-  lista = []
-  for c in s:
-    lista.append(c)
-  return lista
-
-def sumComponentsToListOfStrs(intLists):
-  outList = []
-  for elem in intLists:
-    strList = map(str, elem)
-    outList.append(''.join(strList))
-  return outList
-
-def testSumComponentsGerador():
-  subtokensHandMade=['6','51','42','411','33','321','3111',\
-    '222','2211','21111','111111']
-  subtokens = geraSumComponents(6)
-  subtokens = sumComponentsToListOfStrs(subtokens)
-  #print 'subtokensHandMade', subtokensHandMade
-  #print 'subtokens', subtokens
-  #print 'subtokensHandMade == subtokens', subtokensHandMade == subtokens
-
-def getTilPatternsFor(patternSize=10, patternSoma=6):
-  #array = range(1,4)
-  #wordForArray = 'xyyzzzzzzz'
-  subtokens = geraSumComponents(6)
-  subtokens = sumComponentsToListOfStrs(subtokens)
-  subtokens = stuffStrWithZeros(subtokens, patternSize)
-  #print subtokens
-  #wordForArray = '222000000'
-  #sys.exit(0)
-  return fsPerm.getPermutations(subtokens)
-
-passa=0
-def geraSumComponents(soma, parcel=-1, acc=[]):
-  global passa
-  passa += 1
-  if soma == 1:
-    acc += [[1]]
-    #dif=-1
-    #print 'passa', passa, 'RET parcel,soma,acc', parcel, soma, acc
-    return acc
-  if parcel == 1:
-    acc += [[1]*soma]
-    #dif=-1
-    #print 'passa', passa, 'RET parcel,soma,acc', parcel, soma, acc
-    return acc
-  # case where caller leaves 'parcel' to its initial supposed condition, ie, it's equal to 'soma'
-  if parcel == -1:
-    parcel = soma
-  if parcel == soma:
-    acc += [[parcel]]
-    #dif=-1
-    #print 'passa', passa, 'REC soma=%d parcel=%d dif=%d acc=%s' %(soma,parcel,dif,str(acc))
-    return geraSumComponents(soma, parcel-1, acc)
-  # dif NOW
-  dif = soma - parcel
-  if dif == 1:
-    acc += [[parcel, 1]]
-    #print 'passa', passa, 'REC soma=%d parcel=%d dif=%d acc=%s' %(soma,parcel,dif,str(acc))
-    return geraSumComponents(soma, parcel-1, acc)
-
-  keptAcc = list(acc)
-  newAcc = []
-  #print 'passa', passa, 'ATT soma=%d parcel=%d dif=%d acc=%s' %(soma,parcel,dif,str(acc))
-  subAcc = geraSumComponents(dif, dif, [])
-  for sub in subAcc:
-    # well, the 'if' below was a tough decision to correct a repeat
-    # eg. gera(5) was having [3,2] and [2,3]
-    if parcel < sub[0]:
-      continue
-    #print 'adding', parcel, 'to', sub,
-    sublista = [parcel] + sub
-    #print '=', sublista
-    newAcc.append(sublista)
-  keptAcc += newAcc
-  acc = keptAcc
-  if parcel > 1:
-    #print 'passa', passa, 'REC soma=%d parcel=%d dif=%d acc=%s' %(soma,parcel,dif,str(acc))
-    return geraSumComponents(soma, parcel-1, acc)
-    #print 'passa', passa, 'RF  soma=%d parcel=%d dif=%d acc=%s' %(soma,parcel,dif,str(acc))
-  return acc
-
-def testGeraSumComponents():
-  for soma in range(5,6):
-    acc = geraSumComponents(soma, soma, [])
-    # check it up
-    for elem in acc:
-      calcSoma = sum(elem)
-      if soma <> calcSoma:
-        print 'soma <> sum(elem):', soma, calcSoma
-    print soma, 'R:', acc
-
-
-   
+  
 if __name__ == '__main__':
   pass
 
@@ -445,6 +281,7 @@ class Til(object):
   missing = %(missing)d''' %{'til':self.til, 'values':values,
   'soma':soma, 'quantMin':quantMin, 'quantMax':quantMax,'dist':dist,
   'step':step, 'missing':missing}
+    aprint
 
     faixas = [(0,0)]*self.til
     quantFaixaLower = quantMin
@@ -536,42 +373,13 @@ class Til(object):
       printJogoWithTils(histG, lastJogo, len(jogos)-1)
       '''
 
+tilObjDict = {}
+def getTilObj(tilIn=5):
+  if tilIn in tilObjDict.keys():
+    return tilObjDict[tilIn]
+  tilObj = Til(tilIn)
+  tilObjDict[tilIn] = tilObj
+  return tilObj
 
-  
-'''
-
-  perms = getTilPatternsFor(10,3)
-  print perms, len(perms)
-
-  print 'def getPermutations(subtokens):'
-  vect = ['xyyzzzzzzz']
-  perms = getPermutations(vect)
-  print perms, len(perms)
-
-  tpVector = TillPatternVector(-1,-1,vect)
-  print tpVector
-
-
-  #intsToSum(soma=6)
-  #testGeraSumComponents()
-
-
-  perms = getTilPatternsFor()
-  print perms, len(perms)
-
-  testSumComponentsGerador()
-  print time.ctime()
-  prepForPermuteN()
-  print time.ctime()
-
-  #expand()
-  #testRemaindersComb()
-  #testC1()
-  #array = [1,2,3,4,5]
-  #array = ['a','b','c','d','e']
-
-  tpVector = TilPatternVector(10,6)
-  print 'tpVector', tpVector, tpVector.vector
-  tpVector = TilPatternVector(10,3)
-  print 'tpVector', tpVector
-'''
+# test adhoc
+# getTilObj()

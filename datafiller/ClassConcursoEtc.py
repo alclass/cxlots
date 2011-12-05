@@ -2,24 +2,32 @@
 # -*- coding: utf-8 -*-
 import datetime, sys
 
-sys.path.insert(0, '..')
 a=1
 import FieldsAndTypes as fat
 import converterForDateAndCurrency as conv
 #import frequencyMounting as fm
+sys.path.insert(0, '..')
+import statmetrics.funcsForStringPatternsEtAl as ffStr
 # the next line produces a circular reference problem in Python, so a third module will be created to join functionalities that cannot be joint here
 #import statmetrics.TilModule as tilMod
 
 class Concurso():
+  '''
+  This class, though it does not yet implement inheritance from dict, it has dict qualities with __setitem__() and __getitem__() 
+  '''
+
   def __init__(self):
     self.concursoDict = {}
     self.fieldnamesInOrder = [] # this extra attribute will not be necessary in Python 3, for in Py3 it's possible to maintain order in a dict
+    self._classId = 'Concurso'
+
   def __setitem__(self, fieldname, value):
     shouldBeType = fat.getFieldType(fieldname)
     if type(value) != shouldBeType:
       raise TypeError, 'type error in __setitem__ attrName=%s and attrValue=%s ' %(fieldname, str(value))
     self.concursoDict[fieldname] = value
     self.insertFieldnameInOrder(fieldname)
+
   def insertFieldnameInOrder(self, fieldname):
     # first case: if self.fieldnamesInOrder is empty, append it right away and return
     if len(self.fieldnamesInOrder) == 0:
@@ -39,38 +47,28 @@ class Concurso():
         return
     # well, if program flow got to here, a exception should be raised
     raise IndexError, "could not insertFieldnameInOrder :: fieldname = %s " %fieldname 
+
   def __getitem__(self, fieldname):
     if fieldname in self.concursoDict.keys():
       return self.concursoDict[fieldname]
     return None
+
   def getDezenas(self):
     dezenas = []
     for i in range(1,7):
       fieldname = 'dezena%d' %i
       dezenas.append(self[fieldname])
     return dezenas
-
-  def getTilN(self, tilN=None):
-    nDoConcurso = self.concursoDict['nDoConcurso']
-    tilObj = tilMod.TilMaker(tilN, nDoConcurso)
-    tilSets = tilObj.getTilSets() 
+  
+  def getDezenasPrintable(self):
     dezenas = self.getDezenas()
-    tilPatternDict = {}
-    for i in range(len(tilSets)):
-      tilPatternDict[i+1]=0
-    tilSets = tilObj.getTilSets()
-    for dezena in dezenas:
-      for i in range(len(tilSets)):
-        tilSet = tilSets[i] 
-        if dezena in tilSet:
-          tilPatternDict[i+1] += 1
-          break
-    tilPatternStr = ''
-    patterns = tilPatternDict.keys()
-    patterns.sort()
-    for pattern in patterns:
-      tilPatternStr += str(tilPatternDict[pattern]) 
-    return tilPatternStr
+    return ffStr.dezenasToPrintableStr(dezenas)
+
+  def getDezenasPrintableInOrder(self):
+    dezenas = self.getDezenas()
+    # no need to hard copy the list object, for dezenas is not "self.dezenas", it's made on the fly
+    dezenas.sort()
+    return ffStr.dezenasToPrintableStr(dezenas)
 
   def sqlInsert(self):
     sqlInsertStr = 'INSERT INTO `megasena` ('
