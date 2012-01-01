@@ -4,6 +4,13 @@
 Created on 13/11/2011
 
 @author: friend
+
+
+http://www1.caixa.gov.br/loterias/_arquivos/loterias/D_megase.zip
+http://www1.caixa.gov.br/loterias/_arquivos/loterias/D_mgsasc.zip
+
+http://www1.caixa.gov.br/loterias/loterias/megasena/download.asp
+
 '''
 import sqlite3, sys
 a=1
@@ -82,9 +89,33 @@ def getListAllConcursosObjs(reReadSqlTable=False):
   if reReadSqlTable:
     concursos = sqlSelect()
   return concursos
+
+def getListAllConcursosUpTo(nDoConc=None):
+  if nDoConc == None:
+    return getListAllConcursosObjs()
+  if nDoConc < 0 or nDoConc > getNTotalDeConcursos():
+    return None
+  concursos = getListAllConcursosObjs()
+  return concursos[ : nDoConc]
+
+def getNTotalDeConcursos():
+  nTotalDeConcursos = len(getListAllConcursosObjs())
+  return nTotalDeConcursos
+
+def getLastConcursosObjs(nOfConcursos):
+  lastConcObj = getConcursoObjByN()
+  lastNDoConc = lastConcObj['nDoConcurso'] 
+  if nOfConcursos == None or nOfConcursos > lastNDoConc or nOfConcursos < 1:
+    return []   
+  concursos = [lastConcObj]
+  upToNDoConc = lastNDoConc - nOfConcursos
+  for nDoConc in range(lastNDoConc, upToNDoConc - 1, -1):
+    concObj = getConcursoObjByN(nDoConc)
+    concursos.append(concObj)
+  return concursos 
   
 def getConcursoObjByN(nDoConcurso=None):
-  nTotalDeConcursos = len(getListAllConcursosObjs())
+  nTotalDeConcursos = getNTotalDeConcursos()
   if nDoConcurso == None:
     nDoConcurso = nTotalDeConcursos
   elif nDoConcurso < 1 or nDoConcurso > nTotalDeConcursos:

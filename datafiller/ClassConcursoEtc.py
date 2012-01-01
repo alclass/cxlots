@@ -20,6 +20,8 @@ class Concurso():
     self.concursoDict = {}
     self.fieldnamesInOrder = [] # this extra attribute will not be necessary in Python 3, for in Py3 it's possible to maintain order in a dict
     self._classId = 'Concurso'
+    self.dezenas  = None  # self.dezenas is set "lazily"
+    self.N_DE_SORTEADAS = 6 
 
   def __setitem__(self, fieldname, value):
     shouldBeType = fat.getFieldType(fieldname)
@@ -54,10 +56,20 @@ class Concurso():
     return None
 
   def getDezenas(self):
-    dezenas = []
+    if self.dezenas != None:
+      # a hard copy is sent out
+      return self.dezenas[:]
+    self.dezenas = []
     for i in range(1,7):
       fieldname = 'dezena%d' %i
-      dezenas.append(self[fieldname])
+      self.dezenas.append(self[fieldname])
+    # a hard copy is sent out
+    return self.dezenas[:]
+  
+  def getDezenasInOrder(self):
+    dezenas = self.getDezenas()
+    dezenas.sort()
+    # no need to hard copy it, for it's already been hard-copied at origin self.getDezenas() 
     return dezenas
   
   def getDezenasPrintable(self):
@@ -65,10 +77,39 @@ class Concurso():
     return ffStr.dezenasToPrintableStr(dezenas)
 
   def getDezenasPrintableInOrder(self):
-    dezenas = self.getDezenas()
-    # no need to hard copy the list object, for dezenas is not "self.dezenas", it's made on the fly
-    dezenas.sort()
+    dezenas = self.getDezenasInOrder()
     return ffStr.dezenasToPrintableStr(dezenas)
+
+  def isDezenaInConcurso(self, dezena):
+    if dezena in self.getDezenas():
+      return True
+    return False
+  
+  def isSameGame(self, compareDezenas):
+    compareDezenas.sort()
+    if compareDezenas == self.getDezenasInOrder():
+      return True
+    return False  
+
+  def calcNDeAcertos(self, compareDezenas):
+    dezenasHere = self.getDezenas()
+    nDeAcertos = 0
+    for compareDezena in compareDezenas:
+      if compareDezena in dezenasHere:
+        nDeAcertos += 1
+    return nDeAcertos 
+
+  def is2ndPrize(self, compareDezenas):
+    nDeAcertos = self.calcNDeAcertos(compareDezenas)
+    if nDeAcertos == self.N_DE_SORTEADAS - 1:
+      return True
+    return False  
+
+  def is3rdPrize(self, compareDezenas):
+    nDeAcertos = self.calcNDeAcertos(compareDezenas)
+    if nDeAcertos == self.N_DE_SORTEADAS - 2:
+      return True
+    return False  
 
   def sqlInsert(self):
     sqlInsertStr = 'INSERT INTO `megasena` ('
@@ -79,11 +120,13 @@ class Concurso():
       sqlInsertStr += "'%s', " %str(self.concursoDict[fieldname])
     sqlInsertStr = sqlInsertStr[:-2] + ');'
     return sqlInsertStr 
+
   def isEqualTo(self, concurso2):
     for fieldname in self.fieldnamesInOrder:
       if self.concursoDict[fieldname] != concurso2[fieldname]:
         return False
     return True
+
   def __str__(self):
     outStr = ''
     for fieldname in self.fieldnamesInOrder:

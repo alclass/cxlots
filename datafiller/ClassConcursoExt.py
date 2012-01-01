@@ -79,14 +79,23 @@ class ConcursoExt(conc.Concurso):
     tilPatternStr = ffStr.listToStr(tilPatternList)
     return tilPatternStr
 
-def testMethodToObj():
-  concursos = sl.getListAllConcursosObjs(); count=0; tilPatternDict = {}
-  for concurso in concursos[300:]:
+def showTilsForConcursos(concFrom=None, concTo=None, tilN=None):
+  concursos = sl.getListAllConcursosObjs()
+  if concTo == None:
+    concTo = len(concursos)
+  if concFrom == None:
+    concFrom = concTo - 100
+    if concFrom < 1:
+      concFrom = 1
+  if tilN == None:
+    tilN = 5
+  count=0; tilPatternDict = {}
+  for concurso in concursos[concFrom - 1 : concTo]:
     count+=1
     concursoExt = ConcursoExt(concurso) # an empty obj, just to clue its getTilN() method into concurso obj.
     #tilPatternStr = concursoExt.getTilN(5)
     # concurso.getTilN = concursoExt.getTilN
-    tilPatternStr = concursoExt.getTilN(5)
+    tilPatternStr = concursoExt.getTilN(tilN)
     if tilPatternStr == None:
       print 'tilPatternStr == None'
       continue
@@ -103,9 +112,34 @@ def testMethodToObj():
   for pattern in patterns:
     print pattern, 'happened', tilPatternDict[pattern], 'times'  
   
-# test adhoc  
-testMethodToObj()
-
+# test adhoc
+# test()
+  
+def fromShellToShowTilsForConcursos():
+  fromArg = None; toArg = None; tilArg = None  
+  for arg in sys.argv:
+    token = arg.find('from=')
+    if token > -1:
+      fromArg = int(arg[len(token):])
+      continue
+    token = arg.find('to=')
+    if token > -1:
+      toArg = int(arg[len(token):])
+      continue
+    token = arg.find('til=')
+    if token > -1:
+      tilArg = int(arg[len(token):])
+      continue
+    if fromArg != None and toArg != None and tilArg != None:
+      break
+  showTilsForConcursos(fromArg, toArg, tilArg)
 
 if __name__ == '__main__':
-  pass
+  if '-til' in sys.argv:
+    fromShellToShowTilsForConcursos()
+  else:
+    print '''
+    Usage: "<thispymodulename> -til from=<n1> to=<n2> til=<n>
+           arguments from, to and til are optional.
+'''
+    
