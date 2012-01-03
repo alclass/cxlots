@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import datetime #,  sys
+'''
+This module altogether (HistoricoUpdater.py) is outdated. New code has replaced it.
+  (As this comment is written, sqlLayer.py does the new code.)
+'''
+import datetime, sys
 
 a=1
 import CLClasses
 import funcsForDates as fDates
 import funcsForSql   as fSql
-import funcs
+#import funcs
 import proprieties   as props
 from   cardprint import pprint
 
@@ -49,6 +53,9 @@ class HistoricoUpdater(object):
     self.logFile = open(logFilename, 'w')
 
   def goForCol(self, line):
+    '''
+    This method is outdated. The new version does a BeautifulSoup scraping to get History table's cells
+    '''
     jogo = []; nDoConc = None; date = None; jogoReg = {}
     for i in range(self.dbFields.size()):
       pos = line.find('<td')

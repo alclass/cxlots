@@ -12,7 +12,8 @@ http://www1.caixa.gov.br/loterias/_arquivos/loterias/D_mgsasc.zip
 http://www1.caixa.gov.br/loterias/loterias/megasena/download.asp
 
 '''
-import sqlite3, sys
+import os, sqlite3, sys
+
 a=1
 import ClassConcursoEtc as conc
 import converterForDateAndCurrency as conv
@@ -135,8 +136,35 @@ def doShowConcursosData():
   concursos = sqlSelect()
   printConcursos(concursos)
   
-cliParameters = {'create':(doCreateTablePlusInsert, 'To create megasena sql table if it does not yet exist and fill it with HTML game result data.'), \
-                 'show':(doShowConcursosData, 'To show data in the megasena sql table.')} 
+def unzipAndRecreate(zipFilename):
+    print zipFilename 
+    comm = 'unzip -o %s' %zipFilename
+    retVal = os.system(comm)
+    if retVal == 0 and os.path.isfile(zipFilename):
+      print 'Ok. Unzipped %s' %zipFilename
+      os.remove(zipFilename)
+      print 'Ok. Deleted %s' %zipFilename
+      # doCreateTablePlusInsert()
+    else:
+      print 'could not unzip %s' %zipFilename 
+  
+def downloadNewResultsZipfile():
+    zipFileUrl  = 'http://www1.caixa.gov.br/loterias/_arquivos/loterias/D_megase.zip'
+    zipFilename = zipFileUrl.split('/')[-1] 
+    comm = 'wget %s' %zipFileUrl
+    #retVal = os.system(comm)
+    retVal = 0
+    if retVal == 0:
+      print 'Ok. Download.'
+      unzipAndRecreate(zipFilename)
+    else: # ie if retVal != 0:
+      print 'could not download %s' %zipFileUrl
+  
+cliParameters = {
+  'create':(doCreateTablePlusInsert, 'To create megasena sql table if it does not yet exist and fill it with HTML game result data.'), \
+  'show':(doShowConcursosData, 'To show data in the megasena sql table.'), \
+  'download':(downloadNewResultsZipfile, 'downloadNewResultsZipfile.')
+  }
 
 def showCliParameters():
   options = cliParameters.keys()

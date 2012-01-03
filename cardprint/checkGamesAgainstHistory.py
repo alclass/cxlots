@@ -9,8 +9,13 @@ import sys
 
 sys.path.insert(0,'..')
 import datafiller.sqlLayer as sl
+import statmetrics.algorithmsForCombinationsEtAl as algoComb
 
-def pickUpDezenas():
+def pickUpDezenas(acceptAnyArraySize=False):
+  '''
+  This function reads shell arguments from the command line
+  If acceptAnyArraySize it reads more the concurso size (number of dozens) for it's useful for betting more dozens
+  '''
   dezenas = []
   for arg in sys.argv[2:]:
     dezena = int(arg)
@@ -21,15 +26,19 @@ def pickUpDezenas():
       dezenas.append(dezena)
     else:
       continue
-    if len(dezenas) == 6:
+    if not acceptAnyArraySize and len(dezenas) == 6:
       break
-  if len(dezenas) != 6:
+  if not acceptAnyArraySize and len(dezenas) != 6:
     print 'len(dezenas=%s) != 6 ==>> program cannot continue.' %(str(dezenas))
     sys.exit(1)
   dezenas.sort()
   return dezenas
 
 class CheckWithHistory:
+  '''
+  This class does the back-comparing taking as arguments a dozens set
+    and the top number of concurso from where it is to be compared from top to bottom 
+  '''
 
   def __init__(self, dezenasToCompare, upToConcursoN=None):
     self.dezenasToCompare = dezenasToCompare
@@ -59,6 +68,9 @@ class CheckWithHistory:
         #print dezenasToCompare, 'is3rdPrize (quadra)', concurso['dezenas']
 
 def backComparator():
+  '''
+  Called from cli parameter 'backcomp'
+  '''
   concursos = sl.getListAllConcursosObjs()
   for nDoConc in range(len(concursos), 1, -1):
     nDoConcMinusOneForIndex = nDoConcAnterior = nDoConc - 1
@@ -66,16 +78,31 @@ def backComparator():
     checker = CheckWithHistory(concurso.getDezenasInOrder(), nDoConcAnterior)
     print 'for', nDoConc, concurso.getDezenasPrintableInOrder(), checker.sameAsNDoConcs, checker.prize2NDoConcs, checker.prize3NDoConcs, checker.histogramNDeAcertos
 
-def compareFromUserFreeInputArgs():  
-  dezenasToCompare = pickUpDezenas()
+def compareFromUserFreeInputArgs(acceptAnyArraySize=False):  
+  '''
+  Entrance from check (or check+, via compareFromUserFreeInputArgsMoreDezenas()) cli argument
+  The user enters a dozens set for comparison with History
+  '''
+  dezenasToCompare = pickUpDezenas(acceptAnyArraySize)
   checker = CheckWithHistory(dezenasToCompare)
+  if acceptAnyArraySize:
+    nDeDezenas = len(dezenasToCompare)
+    print 'Comparing with', nDeDezenas, 'dozens :: combinações', algoComb.combineNbyC(nDeDezenas, 6)
   print 'for [shell input]', dezenasToCompare, checker.sameAsNDoConcs, checker.prize2NDoConcs, checker.prize3NDoConcs, checker.histogramNDeAcertos
 
+def compareFromUserFreeInputArgsMoreDezenas():
+  '''
+  Entrance from check+ cli argument
+  It sets acceptAnyArraySize to True and calls compareFromUserFreeInputArgs()
+  The user enters a dozens set for comparison with History
+  '''
+  compareFromUserFreeInputArgs(acceptAnyArraySize=True)
 
 def doStatsComparison():
   print 'doStatsComparison() IS NOT IMPLEMENTED YET.'
   
 cliParameters = {'check':(compareFromUserFreeInputArgs, 'To check a combination-game against History'), \
+                 'check+':(compareFromUserFreeInputArgsMoreDezenas, 'To check a combination-game against History'), \
                  'stats':(doStatsComparison, 'To doStatsComparison.'),\
                  'backcomp':(backComparator, 'To backComparator.'),\
                  } 

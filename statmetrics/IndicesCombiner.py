@@ -651,26 +651,6 @@ def testPrevious(upLimit, size):
   #for i in range(32):
     #print 'ic.next()', ic.next()
 
-def comb(n, c):
-  if n < 0 or c < 0:
-    errorMsg = 'Can not calculate combination with negative numbers (n=%d, c=%d).' %(n,c)
-    raise ValueError, errorMsg
-  if n < c:
-    return 0
-  if n == 0 or c == 0:
-    return 0
-  if n == c:
-    return 1
-  mult = 1
-  nOrig = n
-  while n > nOrig - c:
-    mult *= n
-    n -= 1
-  while c > 1:
-    mult = mult / (0.0 + c)
-    c -= 1
-  return int(mult)
-
 if __name__ == '__main__':
   pass
   '''

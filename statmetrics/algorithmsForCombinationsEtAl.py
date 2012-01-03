@@ -9,6 +9,27 @@ Created on 03/08/2011
 import random
 ran = random.Random()
 
+def combineNbyC(n, c):
+  if n < 0 or c < 0:
+    errorMsg = 'Can not calculate combination with negative numbers (n=%d, c=%d).' %(n,c)
+    raise ValueError, errorMsg
+  if n < c:
+    return 0
+  if n == 0 or c == 0:
+    return 0
+  if n == c:
+    return 1
+  mult = 1
+  nOrig = n
+  while n > nOrig - c:
+    mult *= n
+    n -= 1
+  while c > 1:
+    mult = mult / (0.0 + c)
+    c -= 1
+  return int(mult)
+
+
 def randomPermutation(perm):
   n = len(perm)
   for i in range(1, n+1):
