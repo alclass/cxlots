@@ -9,7 +9,7 @@ import sys
 a=1
 import funcsForFrequencies as ffFreq
 sys.path.insert(0, '..')
-import algorithmsForPermutationEtAl as fsPerm
+import algorithmsForCombinatorics as fsPerm
 import datafiller.sqlLayer as sl
 # sys.path.insert(0, '../datafiller')
 # import sqlLayer as sl

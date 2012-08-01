@@ -307,5 +307,13 @@ def test_tilObjs2():
   print 'tilSets', tilSets   #print 'listWithFrequencyBordersTuple', self.listWithFrequencyBordersTuple, 'min max', self.minFreq, self.maxFreq
 #test_tilObjs2()
 
-if __name__ == '__main__':
+def adhoc_test():
   pass
+
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+
+if __name__ == '__main__':
+  look_for_adhoctest_arg()

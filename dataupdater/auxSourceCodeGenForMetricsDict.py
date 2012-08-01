@@ -76,10 +76,13 @@ def generatePrint(printStr='dict'):
   if printStr == 'dict':
     print printDict()
 
-if __name__ == '__main__':
+def process():
   if len(sys.argv) > 1:
     param = sys.argv[1]
     if param == 'dict':
       generatePrint()
     elif param == 'names':
       generateNames()
+
+if __name__ == '__main__':
+  process()

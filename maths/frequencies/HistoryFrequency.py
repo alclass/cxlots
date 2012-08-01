@@ -7,13 +7,54 @@ Created on 13/11/2011
 '''
 import copy #import sqlite3, sys
 a=1
-import sqlLayer as sl
+import sys
+sys.path.insert(0, '..')
+from models.JogoSlider import JogoSlider
+# import sqlLayer as sl
 #import converterForDateAndCurrency as conv
 #import FieldsAndTypes as fat
 #import HTMLGrabber as hb
 
-class FrequenciesThruConcursos():
+class HistFreq(object):
   '''
+  A histfreq composes (ie, its attributes):
+  --------------------
+  + bottomconc = the lower concurso number in the range composing the frequency histogram
+  + topconc = the upper concurso number in the range composing the frequency histogram
+  + (private) dezenasfreqs = sorted list of each dezena's total occurrence (ie, its frequency) in the related range (bottomconc, topconc)  
+  --------------------
+  A histfreq does (ie, its methods):
+  + mount_histfreq  
+  '''
+  def __init__(self, bottomconc, topconc):
+    self.bottomconc = bottomconc 
+    self.topconc    = topconc
+    self.jogoSlider = JogoSlider()
+    self.histfreq   = [0] * 60 # N_DE_DEZENAS_NO_VOLANTE
+    self.mount_histfreq()
+
+  def mount_histfreq(self):
+    for nDoConc in range(self.bottomconc, self.topconc + 1):
+      jogo = self.jogoSlider.get_jogo_by_nDoConc(nDoConc)
+      for dezena in jogo.get_dezenas():
+        index = dezena - 1 
+        self.histfreq[index] += 1 
+
+histfreq_dict = {}
+def get_histfreq(bottomconc=1, topconc=None):
+  if topconc == None:
+    jogoSlider = JogoSlider()
+    topconc = jogoSlider.get_total_jogos()
+  if histfreq_dict.has_key((bottomconc, topconc)):
+    return histfreq_dict[(bottomconc, topconc)]
+  histfreq = HistFreq(bottomconc, topconc)
+  histfreq_dict[(bottomconc, topconc)] = histfreq
+  return histfreq.histfreq
+
+class FrequenciesThruConcursos(object):
+  '''
+  This class is not used nowadays, though it's been left here
+
   This class is supposed to be a singleton, but no enforcement for it is made
   As it's need somewhere, the calling point just instantiate one object
   As it's no longer necessary, the garbage collector will recover the memory it used
@@ -21,14 +62,14 @@ class FrequenciesThruConcursos():
   The memory used here is an m by n array
   The inner array is an n-position array (eg. 60 for megasena) with the accumulated frequency of all the n dezenas
   The outer array has an inner array for each concurso
-  
+
   '''
   def __init__(self, nDeDezenasNoVolante=60):
     self.accumulatedFrequencyUpToConcurso = []
     self.nDeDezenasNoVolante = nDeDezenasNoVolante 
-    self.initializeaccumulatedFrequencyUpToConcurso()
+    self.initializeAccumulatedFrequencyUpToConcurso()
     
-  def initializeaccumulatedFrequencyUpToConcurso(self):
+  def initializeAccumulatedFrequencyUpToConcurso(self):
     concursos = sl.getListAllConcursosObjs()
     frequencyOfAllDezenas = [0] * self.nDeDezenasNoVolante
     for concurso in concursos:

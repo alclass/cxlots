@@ -14,6 +14,7 @@ Main functions here:
 
 '''
 # import numpy, time, sys
+import random
 
 def permute2D(array2D):
   '''
@@ -126,6 +127,42 @@ def getPermutations(subtokens):
     #print subtotal
   #print 'total', total
   return allPerms
+
+def combineNbyC(n, c):
+  if n < 0 or c < 0:
+    errorMsg = 'Can not calculate combination with negative numbers (n=%d, c=%d).' %(n,c)
+    raise ValueError, errorMsg
+  if n < c:
+    return 0
+  if n == 0 or c == 0:
+    return 0
+  if n == c:
+    return 1
+  mult = 1
+  nOrig = n
+  while n > nOrig - c:
+    mult *= n
+    n -= 1
+  while c > 1:
+    mult = mult / (0.0 + c)
+    c -= 1
+  return int(mult)
+
+def randomPermutation(perm):
+  n = len(perm)
+  for i in range(1, n+1):
+    perm[i]=i
+  for i in range(1, n+1):
+    j = i + random.randint(1, n+1) * (n + 1 - i)
+    k = perm[i]
+    perm[j] = k
+
+def testAdHocRandomPermutation():
+  n=9
+  perm = range(n+2)
+  randomPermutation(perm)
+  print perm
+# testAdHocRandomPerm
 
 passa=0
 def geraSumComponents(soma, parcel=-1, acc=[]):
@@ -256,8 +293,6 @@ def testGeraSumComponents():
     print soma, 'R:', acc
 # testGeraSumComponents()   
    
-if __name__ == '__main__':
-  pass
 
 
 '''
@@ -320,3 +355,8 @@ def expand(n):
   for i in range(2,sumUpTo):
     expandArray = expand(i)
 '''
+  
+  
+if __name__ == '__main__':
+  pass
+  

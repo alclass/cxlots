@@ -4,14 +4,14 @@ import datetime, sys
 
 a=1
 import FieldsAndTypes as fat
-import converterForDateAndCurrency as conv
+import cxlotslib.datetime.converterForDateAndCurrency as conv
 #import frequencyMounting as fm
 sys.path.insert(0, '..')
-import statmetrics.funcsForStringPatternsEtAl as ffStr
+import cxlotslib.funcsForStringPatternsEtAl as ffStr
 # the next line produces a circular reference problem in Python, so a third module will be created to join functionalities that cannot be joint here
 #import statmetrics.TilModule as tilMod
 
-class Concurso():
+class Concurso(object):
   '''
   This class, though it does not yet implement inheritance from dict, it has dict qualities with __setitem__() and __getitem__() 
   '''
