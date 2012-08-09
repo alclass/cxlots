@@ -8,7 +8,7 @@ Created on 05/12/2011
 #import scipy.stats
 import sys
 
-class TilSets():
+class TilSets(object):
   '''
   This class has only one public method (though public/private is not enforced in Python)
   And this is getTilSets()

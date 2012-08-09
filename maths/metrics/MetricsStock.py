@@ -3,218 +3,125 @@
 '''
   This module contains 'business' classes: Jogos and Til
 '''
-import datetime
-import numpy # just for the std() method
-import sys, time
+
+import localpythonpath
+localpythonpath.setlocalpythonpath()
+
+import funcsForMetrics as ffMetrics
 
 somaNList = [1, 3, 7, 15]
-import CLClasses
-import funcs
-import funcsForCoincs     as fCoincs
-import funcsForSql as fSql
-import lambdas
-import Radii
-import Til as tilc
-from cardprint import pprint
 
-class Repeat(object):
-  def __init__(self, tilIn):
-    self.til      = tilIn
-
-class Stat(object):
+def iguaisComOAnterior(jogo):
   '''
-  Statistics for jogos
-  JogosObj is absorbed (so to say) by Composition, instead of Inheritance
-  To get one of its attributes: self.jogosObj.attrX instead of just self.attrX
+  jogo must implement get_dezenas()
+  '''
+  jogo_anterior = jogo.get_previous()
+  if jogo_anterior == None:
+    return 0
+  return ffMetrics.getNOfCoincidences(jogo_anterior, jogo)
+  
+def coincsComNAnteriores(jogo, nDeAnteriores):
+  '''
+  jogo must implement get_dezenas()
+  coincsComNAnteriores() call nDeAnteriores times iguaisComOAnterior 
+  '''
+  nDeCoincsComAnteriores = 0
+  for backward_i in range(nDeAnteriores):
+    nDeCoincsComAnteriores += iguaisComOAnterior(jogo)
+    jogo = jogo.get_previous()
+    if jogo == None:
+      break
+  return nDeCoincsComAnteriores 
+
+def coincsComOs3Anteriores(jogo):
+  return coincsComNAnteriores(jogo, 3)
+
+def maxDeIguais(jogo):
+  maxDeIguais = 0
+  distAo1o = -1
+  for nDoConc_to_compare in range(jogo.nDoConc - 1, 0, -1):
+    jogo_to_compare = jogo.get_jogo_by_nDoConc(nDoConc_to_compare)
+    nDeCoincsComAnteriores = ffMetrics.getNOfCoincidences(jogo, jogo_to_compare)
+    if nDeCoincsComAnteriores > maxDeIguais:
+      maxDeIguais = nDeCoincsComAnteriores
+      distAo1o = jogo.nDoConc - nDoConc_to_compare
+      maxDeIguaisOcorrencia = 1      
+    elif nDeCoincsComAnteriores == maxDeIguais:
+      maxDeIguaisOcorrencia += 1      
+  return maxDeIguais, distAo1o, maxDeIguaisOcorrencia  
+
+    
+  #  self.iguaisMediaComPassado = totalForMedia / (i + 0.0)
+
+  #print nDoConc, 'self.iguaisComOAnterior', self.iguaisComOAnterior
+
+  '''
+  standard2LN = self.jogosObj.standard2LetterName
+  # Note: only LF has minDeIguais and related fields
+  if i > 0 and standard2LN == 'LF':
+    UP_LIMIT_FOR_minDeIguais = 255
+    self.minDeIguais = UP_LIMIT_FOR_minDeIguais
+    for j in range(i):
+      nOfBackConc = i-1-j + 1
+      iguais = fCoincs.getNOfCoincidences(jogo, jogos[i-1-j])
+      if iguais < self.minDeIguais:
+        self.minDeIguais = iguais
+        self.minDeIguaisDistAo1o = nDoConc - nOfBackConc
+        self.minDeIguaisOcorrencia = 1
+      elif iguais == self.minDeIguais and self.minDeIguaisOcorrencia > 0:
+        self.minDeIguaisOcorrencia += 1
+    #print 'self.minDeIguais', self.minDeIguais
   '''
 
-  # 'nDoConc','date','jogoCharOrig','jogoChar',
-  attrKeys = ['iguaisComOAnterior','coincsComOs3Anteriores','maxDeIguais','maxDeIguaisDistAo1o','maxDeIguaisOcorrencia','minDeIguais','minDeIguaisDistAo1o','minDeIguaisOcorrencia','iguaisMediaComPassado','rem2pattern','parParImparImpar','rem3pattern','rem5pattern','rem6pattern','colpattern','til4pattern','til5pattern','til6pattern','til10pattern','consecEnc','soma1','soma3','soma7','soma15','std','pathway','allpaths','binDecReprSomaDe1s','lgiDist'] 
-  # ,'sortOrderMetric'
-  
+  self.rem2pattern = ''
+  self.parParImparImpar = ''
+  self.rem3pattern = ''
+  self.rem5pattern = ''
+  self.rem6pattern = ''
+  self.colpattern = ''
+  for dezena in jogo:
+    d = dezena % 2
+    self.rem2pattern += str(d)
+    dzn   = dezena / 10
+    rDzn  = dzn % 2
+    rUnit = d
+    strDigit = '3'
+    if rDzn==0:
+      if rUnit==0:
+        strDigit = '0'
+      else:
+        strDigit = '1'
+    else: # ie, rDzn==1:
+      if rUnit==0:
+        strDigit = '2'
+    self.parParImparImpar += strDigit
+    d = dezena % 3
+    self.rem3pattern += str(d)
+    d = dezena % 5
+    self.rem5pattern += str(d)
+    d = dezena % 6
+    self.rem6pattern += str(d)
+    d = colFnct(dezena)
+    self.colpattern += str(d)
 
-  def __init__(self, eitherJogosObjOrS2):
-    self.jogosObj  = funcs.returnJogosObj(eitherJogosObjOrS2)
-    self.logIt = False
-    self.initAttributes()
-    # default indices to:
-    self.VARRE_DO_JOGO  = 1
-    self.VARRE_ATE_JOGO = len(self.jogosObj.getJogos())
-    self.updateAll = False # self.VARRE_DO_JOGO will be recalculated
-    self.deltaUpdateSqls = []
-    self.nOfUpdated = 0
-    self.logFile = funcs.mountLogFile(self, self.jogosObj)
+  partialJogos = CLClasses.PartialJogos(self.jogosObj.standard2LetterName)
+  partialJogos.setAteConcurso(nDoConc)
+    
+  til4obj = tilc.Til(partialJogos, 4)
+  self.til4pattern = til4obj.generateLgiForJogoVsTilFaixas(jogo)
+  # get later-on til4ocorrencia
 
+  til5obj = tilc.Til(partialJogos, 5)
+  self.til5pattern = til5obj.generateLgiForJogoVsTilFaixas(jogo)
+  # get later-on til5ocorrencia
 
-  def initAttributes(self):
-    '''
-    Yet to implement:
-      gauss = None
-      euclideandist = None
-      correlation = None
-      metricaZ = None
-    '''
-    for attr in self.attrKeys:
-      pyLine = 'self.%s=None' %(attr)
-      exec(pyLine)
+  til6obj = tilc.Til(partialJogos, 6)
+  self.til6pattern = til6obj.generateLgiForJogoVsTilFaixas(jogo)
+  # get later-on til6ocorrencia
 
-  def printAttributes(self):
-    '''
-    Yet to implement:
-      gauss = None
-      euclideandist = None
-      correlation = None
-      metricaZ = None
-    '''
-    c=0
-    for attr in self.attrKeys:
-      c+=1
-      print c, '%s=%s' %(attr, str(eval('self.' + attr)))
-
-  def gatherStats(self):
-    self.til5obj  = tilc.Til(self.jogosObj, 5)
-    self.til6obj  = tilc.Til(self.jogosObj, 6)
-    self.til10obj = tilc.Til(self.jogosObj, 10)
-    self.radii    = Radii.Radii(self.jogosObj.standard2LetterName)
-    jogos = self.jogosObj.getJogos()
-    if not self.updateAll:
-      didIt = self.moveNDoConcForStatUpdate()
-      if not didIt:
-        # this happens if there's nothing to update
-        return 0
-
-    self.conn = fSql.getConnection()
-    self.runAllIndividualStats()
-    return self.nOfUpdated
-    if self.logIt:
-      self.logFile.close()
-    self.conn.close()
-
-  def setVarreDe(self, VARRE_DO_JOGO):
-    self.VARRE_DO_JOGO = 1
-    if VARRE_DO_JOGO < 1:
-      return
-    if VARRE_DO_JOGO >= self.VARRE_ATE_JOGO:
-      self.VARRE_DO_JOGO = self.VARRE_ATE_JOGO - 1
-      return
-    self.VARRE_DO_JOGO = VARRE_DO_JOGO
-
-  def setVarreAte(self, VARRE_ATE_JOGO):
-    jogos = self.jogosObj.getJogos()
-    self.VARRE_ATE_JOGO = len(jogos)
-    if VARRE_ATE_JOGO <= self.VARRE_DO_JOGO:
-      self.VARRE_ATE_JOGO = self.VARRE_DO_JOGO + 1
-      return
-    if VARRE_ATE_JOGO > len(jogos):
-      return
-    self.VARRE_ATE_JOGO = VARRE_ATE_JOGO
-
-  def runAllIndividualStats(self):
-    #==============================================
-    # colFnct depends on whether it's MS, LF or LM
-    colFnct = lambda x : x/10 + 1
-    if self.jogosObj.standard2LetterName == 'MS':
-      colFnct = lambda x : (x-1)%10
-    elif self.jogosObj.standard2LetterName == 'LF':
-      colFnct = lambda x : (x-1) % 5 + 1
-    #==============================================
-    self.nOfUpdated = 0
-    jogos = self.jogosObj.getJogos()
-    for i in range(self.VARRE_DO_JOGO - 1, self.VARRE_ATE_JOGO):
-      jogo = jogos[i]
-      nDoConc = i + 1
-      self.iguaisComOAnterior = None
-      if i > 0:
-        self.iguaisComOAnterior = fCoincs.getNOfCoincidences(jogo, jogos[i-1])
-      self.coincsComOs3Anteriores = None
-      if i > 2:
-        iguais = 0
-        for j in range(3):
-          iguais += fCoincs.getNOfCoincidences(jogo, jogos[i-1-j])
-        self.coincsComOs3Anteriores = iguais
-      self.maxDeIguais = None; self.iguaisMediaComPassado = None
-      if i > 0:
-        self.maxDeIguais = 0
-        totalForMedia = 0
-        for j in range(i):
-          nOfBackConc = i-1-j + 1
-          iguais = fCoincs.getNOfCoincidences(jogo, jogos[i-1-j])
-          totalForMedia += iguais
-          if iguais > self.maxDeIguais:
-            self.maxDeIguais = iguais
-            self.maxDeIguaisDistAo1o =  nDoConc - nOfBackConc
-            self.maxDeIguaisOcorrencia = 1
-          elif iguais == self.maxDeIguais and self.maxDeIguais > 0:
-            self.maxDeIguaisOcorrencia += 1
-        self.iguaisMediaComPassado = totalForMedia / (i + 0.0)
-
-      #print nDoConc, 'self.iguaisComOAnterior', self.iguaisComOAnterior
-
-      standard2LN = self.jogosObj.standard2LetterName
-      # Note: only LF has minDeIguais and related fields
-      if i > 0 and standard2LN == 'LF':
-        UP_LIMIT_FOR_minDeIguais = 255
-        self.minDeIguais = UP_LIMIT_FOR_minDeIguais
-        for j in range(i):
-          nOfBackConc = i-1-j + 1
-          iguais = fCoincs.getNOfCoincidences(jogo, jogos[i-1-j])
-          if iguais < self.minDeIguais:
-            self.minDeIguais = iguais
-            self.minDeIguaisDistAo1o = nDoConc - nOfBackConc
-            self.minDeIguaisOcorrencia = 1
-          elif iguais == self.minDeIguais and self.minDeIguaisOcorrencia > 0:
-            self.minDeIguaisOcorrencia += 1
-        #print 'self.minDeIguais', self.minDeIguais
-
-      self.rem2pattern = ''
-      self.parParImparImpar = ''
-      self.rem3pattern = ''
-      self.rem5pattern = ''
-      self.rem6pattern = ''
-      self.colpattern = ''
-      for dezena in jogo:
-        d = dezena % 2
-        self.rem2pattern += str(d)
-        dzn   = dezena / 10
-        rDzn  = dzn % 2
-        rUnit = d
-        strDigit = '3'
-        if rDzn==0:
-          if rUnit==0:
-            strDigit = '0'
-          else:
-            strDigit = '1'
-        else: # ie, rDzn==1:
-          if rUnit==0:
-            strDigit = '2'
-        self.parParImparImpar += strDigit
-        d = dezena % 3
-        self.rem3pattern += str(d)
-        d = dezena % 5
-        self.rem5pattern += str(d)
-        d = dezena % 6
-        self.rem6pattern += str(d)
-        d = colFnct(dezena)
-        self.colpattern += str(d)
-  
-      partialJogos = CLClasses.PartialJogos(self.jogosObj.standard2LetterName)
-      partialJogos.setAteConcurso(nDoConc)
-        
-      til4obj = tilc.Til(partialJogos, 4)
-      self.til4pattern = til4obj.generateLgiForJogoVsTilFaixas(jogo)
-      # get later-on til4ocorrencia
-  
-      til5obj = tilc.Til(partialJogos, 5)
-      self.til5pattern = til5obj.generateLgiForJogoVsTilFaixas(jogo)
-      # get later-on til5ocorrencia
-  
-      til6obj = tilc.Til(partialJogos, 6)
-      self.til6pattern = til6obj.generateLgiForJogoVsTilFaixas(jogo)
-      # get later-on til6ocorrencia
-  
-      til10obj = tilc.Til(partialJogos, 10)
-      self.til10pattern =  til10obj.generateLgiForJogoVsTilFaixas(jogo)
-      # get later-on til10ocorrencia
+  til10obj = tilc.Til(partialJogos, 10)
+  self.til10pattern =  til10obj.generateLgiForJogoVsTilFaixas(jogo)
+  # get later-on til10ocorrencia
   
       '''
     # consecutivos

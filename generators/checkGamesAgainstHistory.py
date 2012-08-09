@@ -58,13 +58,13 @@ class CheckWithHistory:
       else:
         self.histogramNDeAcertos[nDeAcertos] = 1
       if concurso.isSameGame(self.dezenasToCompare):
-        self.sameAsNDoConcs.append(concurso['nDoConcurso'])
+        self.sameAsNDoConcs.append(concurso['nDoConc'])
         #print dezenasToCompare, 'IS SAME AS', concurso['dezenas']
       elif concurso.is2ndPrize(self.dezenasToCompare):
-        self.prize2NDoConcs.append(concurso['nDoConcurso'])
+        self.prize2NDoConcs.append(concurso['nDoConc'])
         #print dezenasToCompare, 'is2ndPrize (quina)', concurso['dezenas']
       elif concurso.is3rdPrize(self.dezenasToCompare):
-        self.prize3NDoConcs.append(concurso['nDoConcurso'])
+        self.prize3NDoConcs.append(concurso['nDoConc'])
         #print dezenasToCompare, 'is3rdPrize (quadra)', concurso['dezenas']
 
 def backComparator():

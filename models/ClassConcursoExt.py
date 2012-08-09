@@ -62,8 +62,8 @@ class ConcursoExt(conc.Concurso):
     self.fieldnamesInOrder = concurso.fieldnamesInOrder 
 
   def getTilN(self, tilN=5):
-    nDoConcurso = self.concursoDict['nDoConcurso']
-    tilObj = tilMod.TilMaker(tilN, nDoConcurso)
+    nDoConc = self.concursoDict['nDoConc']
+    tilObj = tilMod.TilMaker(tilN, nDoConc)
     tilSets = tilObj.getTilSets()
     if tilSets == None:
       return None 
@@ -103,9 +103,9 @@ def showTilsForConcursos(concFrom=None, concTo=None, tilN=None):
       tilPatternDict[tilPatternStr]+=1
     else:
       tilPatternDict[tilPatternStr]=1
-    nDoConcurso = concursoExt['nDoConcurso']
+    nDoConc = concursoExt['nDoConc']
     dezenasStr = concursoExt.getDezenasPrintableInOrder()
-    print nDoConcurso, dezenasStr, tilPatternStr, 'sum =', tilMod.sumUpTilPattern(tilPatternStr)  
+    print nDoConc, dezenasStr, tilPatternStr, 'sum =', tilMod.sumUpTilPattern(tilPatternStr)  
     #concursoExt.concurso.getTilN =
   patterns = tilPatternDict.keys()
   patterns.sort()

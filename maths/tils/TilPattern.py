@@ -3,11 +3,10 @@
 '''
 TilPattern.py
 '''
-# import numpy, time, sys
 import sys
-sys.path.insert(0, '..')
-#from models.JogoSlider import JogoSlider
-from JogoSlider import JogoSlider
+
+import localpythonpath
+localpythonpath.setlocalpythonpath()
 
 class TilDefiner(object):
   '''
@@ -93,37 +92,12 @@ class TilPattern(TilDefiner):
   def __str__(self):
     return "'<TilPattern(%d,%d,'%s')>" %(self.slots, self.soma, self.wpattern)
 
-
-class JogoTilPattern(TilPattern):
-  '''
-  This class inherits from TilPattern adding a tuple attribute, ie, concurso_range (composed of (bottomconc, topconc)) 
-  '''
-
-  def __init__(self, slots=None, soma=None, concurso_range=None):
-    super(TilPattern, self).__init__(slots, soma)
-    self.tilpattern = None
-    self.bottomconc = 1
-    self.topconc = JogoSlider().get_total_jogos()
-    if concurso_range != None and type(concurso_range) == type((1,2)):
-      self.bottomconc = concurso_range[0]
-      self.topconc    = concurso_range[1]
-    self.wpattern = None
-
-
 def adhoc_test():
   print 'adhoc_test()'
   tilpattern = TilPattern(5, 6)
   tilpattern.set_wpattern('02220')
   print 'tilpattern', tilpattern
-  '''tilpattern2 = TilPattern('a', 6)
-  tilpattern2.set_tilpattern('02320')
-  print 'tilpattern', tilpattern'''
-  jogotilpattern = JogoTilPattern(5, 6, (100, 200))
-  jogotilpattern.set_wpattern('02220')
-  print 'jogotilpattern', jogotilpattern
-  print 'jogotilpattern == tilpattern ==>>', jogotilpattern == tilpattern 
   
-
 def look_for_adhoctest_arg():
   for arg in sys.argv:
     if arg.startswith('-t'):

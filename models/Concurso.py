@@ -2,51 +2,39 @@
 # -*- coding: utf-8 -*-
 
 # import datetime,
-import copy, sys
+# import copy
+import sys
 
-from sqlalchemy import Column, Date, Integer, Sequence, String, create_engine
+from sqlalchemy import Column, Date, Integer, Sequence, String
 from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.orm import sessionmaker
 
-Column(Integer, Sequence('user_id_seq'), primary_key=True)
+import localpythonpath
+localpythonpath.setlocalpythonpath()
 
-Base = declarative_base()
-
-sys.path.insert(0, '..')
-import local_settings as ls
-
+from ConcursoSlider import ConcursoSlider
 
 Base = declarative_base()
-# abs paths require 4 bars (ie, ////)
-engine_uri = 'sqlite:///' + ls.SQLITE_DATA_FILE_PATH
-engine = create_engine(engine_uri) #, echo=True)
-#print 'engine_uri', engine_uri 
-
-str02lambda = lambda digit : str(digit).zfill(2)
-
-# sys.exit(0)
-
-class InconsistentTable(ValueError):
-  pass
-
-class Jogo(Base):
+class ConcursoBase(Base):
 
   __tablename__ = 'ms' # 'megasena'
   
-  # id = Column(Integer, Sequence('ms_id_seq'), primary_key=True)
   nDoConc = Column(Integer, Sequence('ms_id_seq'), primary_key=True)
   # id = nDoConc
   jogoCharOrig = Column(String(12))
-  #strdezenas = jogoCharOrig
-  date = Column(Date(8))
-  #dataDeSorteio = date
+  date = Column(Date(8))   #dataDeSorteio = date
   N_DE_DEZENAS = 6
   dezenas = None
   dezenas_in_orig_order = None
+  concursoSlider = None
 
   def __init__(self):
     self.dezenas = []
     self.dezenas_in_orig_order = []
+    self.set_concursoSlider()
+  
+  def set_concursoSlider(self):
+    if self.concursoSlider == None:
+      self.concursoSlider = ConcursoSlider(ConcursoBase)  
   
   def set_dezenas_in_orig_order(self):
     if len(self.jogoCharOrig) <> self.N_DE_DEZENAS * 2:
@@ -86,10 +74,27 @@ class Jogo(Base):
       dezenas = self.get_dezenas()
     dezenas_str  = ' '.join(map(str02lambda, dezenas))
     return dezenas_str
+  
+  def get_previous(self):
+    if self.nDoConc <= 2:
+      return None
+    self.set_concursoSlider()    
+    return self.concursoSlider.get_jogo_by_nDoConc(self.nDoConc - 1)
+  
+  def get_next(self):
+    self.set_concursoSlider()    
+    if self.nDoConc >= self.concursoSlider.get_total_jogos():
+      return None    
+    return self.concursoSlider.get_jogo_by_nDoConc(self.nDoConc + 1)
 
+  def get_concurso_by_nDoConc(self, nDoConc_to_compare=None):
+    self.set_concursoSlider()    
+    return self.concursoSlider.get_concurso_by_nDoConc(nDoConc_to_compare)
+  
   def __repr__(self):
-    return "Jogo %d [%s]" % (self.nDoConc, self.get_dezenas_str())
+    return "Concurso %d [%s]" % (self.nDoConc, self.get_dezenas_str())
 
+str02lambda = lambda digit : str(digit).zfill(2)
 
 def adhoc_test():
   pass

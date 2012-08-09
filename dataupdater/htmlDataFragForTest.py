@@ -102,7 +102,7 @@ htmlTextSampleWith4Records = '''
 rows = []
 row = {}
 
-row['nDoConcurso']='1'
+row['nDoConc']='1'
 row['dataDoSorteio']='11/03/1996'
 row['dezena1']='41'
 row['dezena2']='05'
@@ -125,7 +125,7 @@ row['acumuladoDeNatal']='0,00'
 rows.append(row)
 row = {}
 
-row['nDoConcurso']='2'
+row['nDoConc']='2'
 row['dataDoSorteio']='18/03/1996'
 row['dezena1']='09'
 row['dezena2']='39'
@@ -148,7 +148,7 @@ row['acumuladoDeNatal']='0,00'
 rows.append(row)
 row = {}
 
-row['nDoConcurso']='3'
+row['nDoConc']='3'
 row['dataDoSorteio']='25/03/1996'
 row['dezena1']='36'
 row['dezena2']='30'
@@ -171,7 +171,7 @@ row['acumuladoDeNatal']='0,00'
 rows.append(row)
 row = {}
 
-row['nDoConcurso']='4'
+row['nDoConc']='4'
 row['dataDoSorteio']='01/04/1996'
 row['dezena1']='06'
 row['dezena2']='59'

@@ -1,21 +1,38 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import datetime #,  sys
+'''
+'''
+
+#import datetime #,  
 import BeautifulSoup as bf
-import sqlite3
 
-this_is_just_to_avoid_recursive_local_imports=1
-import ClassConcursoEtc as conc
-import FieldsAndTypes as fat
-del this_is_just_to_avoid_recursive_local_imports
+import sys
+import localpythonpath
+localpythonpath.setlocalpythonpath()
 
-htmlDataFilename = 'D_MEGA.HTM'
-htmlDataFilename = 'small.html'
+import models.ConcursoHTML as conc
+import models.FieldsAndTypes as fat
+# import models.JogoSlider.JogoSlider
+from models.ConcursoSlider import ConcursoSlider
 
-class HtmlGrabberClass():
-  def __init__(self, htmlDataFilename='D_MEGA.HTM'):
+import local_settings as ls
+class ConcursoHTMLScraper(object):
+
+  def __init__(self, htmlDataFilename = ls.MS_DATAFILE_ABSPATH):
     self.htmlDataFilename = htmlDataFilename
+    self.concursoSlider = ConcursoSlider()
+    self.process_flow()
+    self.print_concursos()
+    self.save_concursos_in_db()
+    
+  def process_flow(self):    
     self.parseToDataStru()
+
+  def parseToDataStru(self):
+    self.createSoupObj()    
+    if self.bsObj <> None: 
+      self.concursos = processRowsAcrossTable(self.bsObj)
+
   def createSoupObj(self):
     htmlText = open(self.htmlDataFilename).read()
     '''
@@ -28,31 +45,39 @@ class HtmlGrabberClass():
     '''
     htmlText = unicode( htmlText , errors = 'ignore' ) 
     self.bsObj = bf.BeautifulSoup(htmlText)
-  def parseToDataStru(self):
-    self.createSoupObj()    
-    if self.bsObj <> None: 
-      self.concursos = processRowsAcrossTable(self.bsObj)
-  def generateSqlInsert(self):
+
+  def print_concursos(self):      
     outStr = '\n' + '='*30 + '\n'
-    outStr += '============ Concursos ============'
+    outStr += '============ print_concursos() ============'
     outStr += '\n' + '='*30 + '\n'
+    print outStr
     for concurso in self.concursos:
-      outStr += str(concurso.sqlInsert())
-      outStr += '\n'
-      #outStr += '\n' + '='*30 + '\n'
-    outStr += 'Total: %d' %(len(self.concursos))
-    return outStr
-    
-  def testPrintNDoConc(self):      
-    outStr = '\n' + '='*30 + '\n'
-    outStr += '============ testPrintNDoConc() ============'
-    outStr += '\n' + '='*30 + '\n'
-    for concurso in self.concursos:
-      nDoConc = concurso['nDoConcurso']
+      nDoConc = concurso['nDoConc']
       if nDoConc == None:
         nDoConc = -1
-      outStr += '%d,' %nDoConc
-    return outStr
+      print nDoConc, concurso
+
+  def save_concursos_in_db(self):
+    print '========== save_concursos_in_db() ============'
+    total_db_concursos = self.concursoSlider.get_total_concursos()
+    total_html_concursos = len(self.concursos)
+    print 'total_db_concursos', total_db_concursos
+    print 'total_html_concursos', total_html_concursos
+    if total_html_concursos <= total_db_concursos:
+      return
+    concursos_to_insert = []
+    for nDoConc in range(total_db_concursos + 1 , total_html_concursos):
+      index = nDoConc - 1 
+      concurso = self.concursos[index]
+      expectedNDoConc = concurso['nDoConc']
+      print 'expectedNDoConc', expectedNDoConc
+      if expectedNDoConc == None:
+        print 'Stopping expectedNDoConc == None.'
+        sys.exit(0)
+      concurso.transport_dict_into_attrs()
+      concursos_to_insert.append(concurso)
+    self.concursoSlider.bulk_insert(concursos_to_insert)
+
   def __str__(self):
     outStr = '\n' + '='*30 + '\n'
     outStr += '============ Concursos ============'
@@ -75,7 +100,7 @@ def processColumnsAcrossRow(tr):
     row[fieldname] = value
     COLUMN_TRACKER += 1
   # print 'row', row
-  concurso = conc.convertRowListToConcursoObj(row)
+  concurso = conc.convertRowListToHTMLConcursoObj(row)
   return concurso
 
 def processRowsAcrossTable(bsObj):
@@ -90,12 +115,16 @@ def processRowsAcrossTable(bsObj):
       nOfTheLine+=1
   return concursos
 
-
 def testGrabber():
-  grabber = HtmlGrabberClass()
-  # print grabber.testPrintNDoConc()
+  ConcursoHTMLScraper()
 
+def adhoc_test():
+  testGrabber()
+
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
 
 if __name__ == '__main__':
-  pass
-  testGrabber()
+  look_for_adhoctest_arg()

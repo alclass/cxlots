@@ -3,18 +3,26 @@
 import time
 
 a=1
-from cardprint import pprint
+# from cardprint import pprint
 
+
+def getNOfCoincidentDozens(dezenas1, dezenas2):
+  '''
+  Get how many coincidences there are between 2 sets of dozens
+  '''
+  nOfCoinc = 0
+  for dezena in dezenas1:
+    if dezena in dezenas2:
+      nOfCoinc += 1
+  return nOfCoinc
 
 def getNOfCoincidences(jogo1, jogo2):
   '''
-  Get how many coincidences there are between consecutive jogos
+  Get how many coincidences there are between 2 jogos
   '''
-  nOfCoinc = 0
-  for dezena in jogo1:
-    if dezena in jogo2:
-      nOfCoinc += 1
-  return nOfCoinc
+  dezenas1 = jogo1.get_dezenas()
+  dezenas2 = jogo2.get_dezenas()
+  return getNOfCoincidentDozens(dezenas1, dezenas2)
 
 #import math
 def minNOfBits(n):

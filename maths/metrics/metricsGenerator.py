@@ -84,7 +84,7 @@ and suppose also that:
 50 -> quartil (set) 2
 60 -> quartil (set) 1
 
-According to such configuration, the function til4(thisConcurso) should return '031021'
+According to such configuration, the function til4(thisConcurso) should return '031021' with til4pattern '2211'
 
   `til5pattern` 
 idem to previous one, but instead of quartils, quintils are used, ie, occurrences are divided into 5 sets

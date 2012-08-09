@@ -182,11 +182,11 @@ def minNOfBits(n):
     c += 1
   return c
 
-def packJogoToBinaryDecRepr(jogo, nOfBits):
+def packJogoToBinaryDecRepr(dezenas, nOfBits):
   n = len(jogo)
   #nOfBits = log2(
   stuff = 0
-  for dezena in jogo:
+  for dezena in dezenas:
     n -= 1
     nc = nOfBits * n
     # print 'nc', nc, 'dezn', dezena, 'n',n

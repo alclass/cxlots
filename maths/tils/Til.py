@@ -4,16 +4,25 @@
 Til.py
 '''
 # import numpy, time, sys
-import sys
-
-a=1
-import funcsForFrequencies as ffFreq
-sys.path.insert(0, '..')
-import algorithmsForCombinatorics as fsPerm
-import datafiller.sqlLayer as sl
-# sys.path.insert(0, '../datafiller')
-# import sqlLayer as sl
-import datafiller.frequencyMounting as fm
+import os, sys
+folder_relpath = os.path.dirname(__file__)
+folder_abspath = os.path.abspath(folder_relpath)
+app_root_abspath = folder_abspath [ : -len('maths/frequencies') ] 
+# print 'app_root_abspath', app_root_abspath
+sys.path.insert(0, app_root_abspath)
+from models.JogoSlider import JogoSlider
+# from models.JogoTil import JogoTil
+import maths.combinatorics.algorithmsForCombinatorics as fsPerm
+import TilSets as ts
+import HistoryFrequency as hf
+#===============================================================================
+# sys.path.insert(0, '..')
+# import funcsForFrequencies as ffFreq
+# import datafiller.sqlLayer as sl
+# # sys.path.insert(0, '../datafiller')
+# # import sqlLayer as sl
+# import datafiller.frequencyMounting as fm
+#===============================================================================
 
 
 
@@ -114,7 +123,7 @@ class TilMaker():
     self.treatFrequencies()
 
   def treatNDoConcurso(self, nDoConcurso):
-    totalDeConcursos = len(sl.getListAllConcursosObjs())      
+    totalDeConcursos = JogoSlider().get_total_jogos() # len(sl.getListAllConcursosObjs())      
     if nDoConcurso == None:
       nDoConcurso = totalDeConcursos
     elif nDoConcurso < 1 or nDoConcurso > totalDeConcursos:
@@ -123,14 +132,16 @@ class TilMaker():
     self.nDoConcurso = nDoConcurso
 
   def treatFrequencies(self):
-    freqAtEachConcurso = fm.FrequenciesThruConcursos() 
-    self.frequenciesAtConcursoN = freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
+    # freqAtEachConcurso = fm.FrequenciesThruConcursos() 
+    self.frequenciesAtConcursoN = hf.histfreqobj.get_histfreq_at(self.nDoConcurso) # freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
     #self.minFreqAtConcurso = min(self.frequenciesAtConcursoN)
     #self.maxFreqAtConcurso = max(self.frequenciesAtConcursoN)
   
   def getTilSets(self):
-    return ffFreq.getTilSets(self.frequenciesAtConcursoN, self.tilNumber)
-
+    #jogo = JogoSlider().get_jogo_by_nDoConc(self.nDoConcurso)
+    #jogotil = JogoTil(jogo, self.tilNumber, len(jogo.get_dezenas()), concurso_range=(1, self.nDoConcurso-1))
+    tilsetobj = ts.TilSets(self.frequenciesAtConcursoN, self.tilNumber)
+    return tilsetobj.getTilSets()
 
 def spread2DListTo1DList(list2D):
   newSet = []
@@ -203,20 +214,26 @@ class TilElement():
 def testTilElement():
   tilElement = TilElement('03021')
   workSetsWithQuantities = tilElement.getWorkSetsWithQuantities()
-  print workSetsWithQuantities
+  for ws in workSetsWithQuantities:
+    print ws[0], 'size', len(ws[0]), 'ncomb', ws[1] # workSetsWithQuantities
 #testTilElement()
-
   
-if __name__ == '__main__':
-  pass
+def adhoc_test():
+  testTilElement()
 
-'''
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+
+if __name__ == '__main__':
+  look_for_adhoctest_arg()
+
 # ================================================================================
 # ========= Below: Older Alternatives =========
 # ================================================================================
-'''
 
-class Til(object):
+class Til_old(object):
 
   def __init__(self, jogosObj, tilIn=5):
     self.til      = tilIn
@@ -367,11 +384,10 @@ class Til(object):
     for i in range(startAt, upToOneMore):
       i
       workJogos = self.jogosObj.continueJogosSequenceBy(workJogos)
-      '''
-      lastJogo = jogos[-1]
-      histG = sd.incrementalHistogram(histG, lastJogo)
-      printJogoWithTils(histG, lastJogo, len(jogos)-1)
-      '''
+
+#      lastJogo = jogos[-1]
+#      histG = sd.incrementalHistogram(histG, lastJogo)
+#      printJogoWithTils(histG, lastJogo, len(jogos)-1)
 
 tilObjDict = {}
 def getTilObj(tilIn=5):

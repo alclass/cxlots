@@ -33,7 +33,7 @@ This test should only run when a new HTML is in place.
 It is a behind-the-scenes functionality with the purpose of revealing that an update to this script should happen.
 '''
 
-fieldNamesInOrderStr = '''nDoConcurso
+fieldNamesInOrderStr = '''nDoConc
 dataDoSorteio
 dezena1
 dezena2
@@ -55,7 +55,7 @@ acumuladoDeNatal'''
 
 allowedFieldNamesInOriginalOrder = fieldNamesInOrderStr.split('\n')
 
-typeDict = {'nDoConcurso':int, 'dataDoSorteio':datetime.date}
+typeDict = {'nDoConc':int, 'dataDoSorteio':datetime.date}
 
 for i in range(1, 7):
   fieldname = 'dezena%d' %i

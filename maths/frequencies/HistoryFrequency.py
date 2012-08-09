@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-Created on 13/11/2011
 
-@author: friend
 '''
-import copy #import sqlite3, sys
-a=1
+# import copy #  numpy #, os
 import sys
-sys.path.insert(0, '..')
+
+import localpythonpath
+localpythonpath.setlocalpythonpath()
+
 from models.JogoSlider import JogoSlider
-# import sqlLayer as sl
-#import converterForDateAndCurrency as conv
-#import FieldsAndTypes as fat
-#import HTMLGrabber as hb
+from maths.frequencies.HistoryFrequencyDB import HistFreqDBSlider # HistFreqDB,
+from maths.frequencies.HistoryFrequencyDB import HistFreqUpdater
 
 class HistFreq(object):
   '''
@@ -26,166 +24,99 @@ class HistFreq(object):
   A histfreq does (ie, its methods):
   + mount_histfreq  
   '''
-  def __init__(self, bottomconc, topconc):
-    self.bottomconc = bottomconc 
-    self.topconc    = topconc
-    self.jogoSlider = JogoSlider()
-    self.histfreq   = [0] * 60 # N_DE_DEZENAS_NO_VOLANTE
-    self.mount_histfreq()
-
-  def mount_histfreq(self):
-    for nDoConc in range(self.bottomconc, self.topconc + 1):
-      jogo = self.jogoSlider.get_jogo_by_nDoConc(nDoConc)
-      for dezena in jogo.get_dezenas():
-        index = dezena - 1 
-        self.histfreq[index] += 1 
-
-histfreq_dict = {}
-def get_histfreq(bottomconc=1, topconc=None):
-  if topconc == None:
-    jogoSlider = JogoSlider()
-    topconc = jogoSlider.get_total_jogos()
-  if histfreq_dict.has_key((bottomconc, topconc)):
-    return histfreq_dict[(bottomconc, topconc)]
-  histfreq = HistFreq(bottomconc, topconc)
-  histfreq_dict[(bottomconc, topconc)] = histfreq
-  return histfreq.histfreq
-
-class FrequenciesThruConcursos(object):
-  '''
-  This class is not used nowadays, though it's been left here
-
-  This class is supposed to be a singleton, but no enforcement for it is made
-  As it's need somewhere, the calling point just instantiate one object
-  As it's no longer necessary, the garbage collector will recover the memory it used
-  
-  The memory used here is an m by n array
-  The inner array is an n-position array (eg. 60 for megasena) with the accumulated frequency of all the n dezenas
-  The outer array has an inner array for each concurso
-
-  '''
-  def __init__(self, nDeDezenasNoVolante=60):
-    self.accumulatedFrequencyUpToConcurso = []
-    self.nDeDezenasNoVolante = nDeDezenasNoVolante 
-    self.initializeAccumulatedFrequencyUpToConcurso()
+  def __init__(self): # concurso_range
+    self.histfreqdbslider = HistFreqDBSlider()
+    self.total_histfreqs = self.histfreqdbslider.get_total_histfreqs()
+    self.jogoSlider  = JogoSlider()
+    self.total_jogos = self.jogoSlider.get_total_jogos()
+    self.update_histfreq_if_needed()
     
-  def initializeAccumulatedFrequencyUpToConcurso(self):
-    concursos = sl.getListAllConcursosObjs()
-    frequencyOfAllDezenas = [0] * self.nDeDezenasNoVolante
-    for concurso in concursos:
-      for dezena in concurso.getDezenas():
-        dezenaAsIndexFrom0 = dezena-1
-        frequencyOfAllDezenas[dezenaAsIndexFrom0] += 1
-      hardCopyDezenasFrequenciesAtConcurso = frequencyOfAllDezenas[:]
-      self.accumulatedFrequencyUpToConcurso.append(hardCopyDezenasFrequenciesAtConcurso) 
-  
-#  def append(self, frequencyOfEveryDezena):
-#    self.accumulatedFrequencyUpToConcurso.append(frequencyOfEveryDezena)
+  def update_histfreq_if_needed(self, secondTry=False):
+    if self.total_histfreqs < self.total_jogos:
+      self.histfreqdbslider.update_histfreqdb()
+      if not secondTry:
+        return self.update_histfreq_if_needed(secondTry=True)
+      else:
+        error_msg = 'Failed to update histfreq array. It should have the same size (=%d) as "concursos (=%d)".' %(self.total_histfreqs, self.total_jogos)
+        raise ValueError, error_msg
 
-  def getFrequenciesOfAllDezenasByNDoConcurso(self, nDoConcurso):
-    if nDoConcurso < 1 or nDoConcurso > len(self.accumulatedFrequencyUpToConcurso):
-      return None
-    return self.accumulatedFrequencyUpToConcurso[nDoConcurso-1]
-
-  def getAllFrequenciesOfAllConcursos(self):
-    return self.accumulatedFrequencyUpToConcurso
-    
-  def __getitem__(self, nDoConcurso=0):
-    return self.getFrequenciesOfAllDezenasByNDoConcurso(nDoConcurso)
-  
-  def __len__(self):
-    return len(self.accumulatedFrequencyUpToConcurso)
-  
-  def sumUpTo(self, upToConcursoI):
-    if upToConcursoI < 1:
-      return 0
-    if upToConcursoI > len(self.accumulatedFrequencyUpToConcurso):
-      return None
-    freqOfAllDezenasUpToConcursoI = self.accumulatedFrequencyUpToConcurso[upToConcursoI-1]
-    sumOfFreqsOfAllDezenasUpToConcursoI = sum(freqOfAllDezenasUpToConcursoI)
-    return sumOfFreqsOfAllDezenasUpToConcursoI
-  
-  def getLast(self):
-    return self.accumulatedFrequencyUpToConcurso[-1]
-  
-  def getDezenaFreqAtConcursoN(self, dezena, nDoConcurso):
-    concurso = sl.getConcursoObjByN(nDoConcurso)
-    if concurso == None:
-      return None
-    dezenas = concurso.getDezenas()
-    if dezena not in dezenas:
-      return None
-    return self.accumulatedFrequencyUpToConcurso[dezena-1]
-
-  def getAllDezenas(self):
+  def get_jogo_by_nDoConc(self, nDoConc):
     '''
-    Since implementation of this class changed from dict to list, allDezenas are a rule starting from 1 to len(list)+1
+    Just a "convenience" public method (not used internally by the class)
     '''
-    return range(1, len(self.accumulatedFrequencyUpToConcurso) + 1)
+    return self.jogoSlider.get_jogo_by_nDoConc(nDoConc)
 
-  def getNTotalDeDezenas(self):
-    return self.nDeDezenasNoVolante
+  def get_histfreq_at(self, nDoConc=None, secondTry=False):
+    if nDoConc == None:
+      nDoConc = self.total_jogos # JogoSlider().get_total_jogos() # ie, number of last one
+    elif nDoConc < 1 or nDoConc > self.total_jogos:
+      error_msg = 'nº (=%d) do concurso fora da faixa válida (1, %d) ' %(nDoConc, self.total_jogos)
+      raise ValueError, error_msg
+    elif nDoConc > self.total_histfreqs:
+      if secondTry:
+        error_msg = 'There is a size different between total_jogo (=%d) and total_histfreqs (=%d) and nDoConc = %d. Program cannot continue until this is corrected.' %(self.total_jogos, self.total_histfreqs, nDoConc)
+        raise ValueError, error_msg
+      else:
+        # try to update histfreqs so that total_histfreqs equals total_jogos
+        HistFreqUpdater()
+        return self.get_jogo_by_nDoConc(nDoConc, secondTry=True)
+    # it return as a numpy array object
+    histfreq = self.histfreqdbslider.get_histfreq_at(nDoConc)
+    if histfreq == None:
+      error_msg = "histfreq for concurso %d was not found. It's missing in database." %nDoConc
+      raise IndexError, error_msg
+    return histfreq
+    # index = nDoConc - 1
+    # return self.allhistfreqs[index]
 
-  def returnFrequenciesAsADezenaFreqDict(self):
-    freqDict = {}
-    for i in range(len(self.accumulatedFrequencyUpToConcurso)):
-      dezena = i + 1  # this is a logical rule (dezenas must start at 1 and be consecutive)
-      frequency = self.accumulatedFrequencyUpToConcurso[i]
-      freqDict[dezena] = frequency
-    return freqDict 
+  def get_histfreq_within_range(self, concurso_range=None):
+    if concurso_range == None:
+      return self.get_histfreq_at()
+    bottomconc = concurso_range[0] 
+    topconc    = concurso_range[1]
+    if bottomconc == 1:
+      return self.get_histfreq_at(topconc)
+    return self.get_deltahistfreq(bottomconc, topconc)
 
-  def getDezenasWithFrequencyF(self, frequencyIn, nDoConcurso):
-    '''
-    This method is somewhat inefficient, so it'll be change in the future
-    This method is also meant to be private, though it's not enforced
-    '''
-    i = 0; dezenasOut = []
-    for frequency in self.accumulatedFrequencyUpToConcurso[nDoConcurso-1]:
-      if frequency == frequencyIn:
-        # dezena is index i + 1, for indices are from 0 to 59 and dezenas from 1 to 60
-        dezenasOut.append(i+1)
-      i+=1
-    return dezenasOut
+  def get_deltahistfreq(self, bottomconc, topconc):
+    if bottomconc == 1:
+      return self.get_histfreq_at(topconc)
+    bottomfreqhist = self.get_histfreq_at(bottomconc-1)
+    topfreqhist    = self.get_histfreq_at(topconc)
+    deltafreqhist  = topfreqhist - bottomfreqhist  # + self.numpy_ones
+    # it return as a numpy array object 
+    return deltafreqhist # no need to hardcopy this one, because it's computed here
 
-  def getAllDezenasInAscendingOrderOfFrequencyForConcursoN(self, nDoConcurso=None):
-    totalDeConcursos = len(sl.getListAllConcursosObjs())
-    if nDoConcurso == None:
-      nDoConcurso = len(sl.getListAllConcursosObjs())      
-    elif nDoConcurso < 1 or nDoConcurso > totalDeConcursos:
-      return None 
-    toBeOrdered = copy.copy(self.accumulatedFrequencyUpToConcurso[nDoConcurso-1])
-    toBeOrdered.sort(); i=0
-    dezenasInAscendingOrderOfFrequency = []; frequencyAnterior = -1 # this guarantees the first only will not be equal when looking ahead to equal consecutives
-    while i < len(toBeOrdered):
-      frequency = toBeOrdered[i]
-      # look ahead and jump posterior equals
-      if frequency == frequencyAnterior:
-        i+=1
-        continue
-      dezenasWithF = self.getDezenasWithFrequencyF(frequency, nDoConcurso)
-      dezenasInAscendingOrderOfFrequency += dezenasWithF 
-      frequencyAnterior = frequency
-      i += 1 
-    return dezenasInAscendingOrderOfFrequency    
-    
-'''
-freqAtEachConcurso = FrequenciesThruConcursos()  
-statsStore = {}
-statsStore['freqAtEachConcurso'] = freqAtEachConcurso
-'''
+  def get_histfreq_for_dezena_witin_range(self, dezena, concurso_range=None):
+    histfreq = self.get_histfreq_within_range(concurso_range)
+    if histfreq == None:
+      return None
+    if dezena < 1 or dezena > len(histfreq) + 1:
+      error_msg = 'Dezena (=%d) fora da faixa válida (%d, %d)' %(dezena, 1, len(histfreq) + 1)
+      raise ValueError, error_msg
+    index = dezena - 1
+    return histfreq[index]
+
+  def __str__(self):
+    return '<HistFreq self.total_histfreqs=%d>' %self.total_histfreqs
+     
+histfreqobj = HistFreq() # simulates Singleton
+def get_histfreq(concurso_range=None):
+  return histfreqobj.get_histfreq_within_range(concurso_range)
+
+
+def adhoc_test():
+  for nDoConc in [100, 300, 900, 1201]:
+    numpy_histfreq = histfreqobj.get_histfreq_at(nDoConc)
+    jogo = histfreqobj.get_jogo_by_nDoConc(nDoConc)
+    print jogo, numpy_histfreq, numpy_histfreq.sum()
+    numpy_histfreq = histfreqobj.get_histfreq_within_range((nDoConc-50, nDoConc)) 
+    print 'faixa', numpy_histfreq, numpy_histfreq.sum()
   
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+
 if __name__ == '__main__':
-  pass
-
-'''
-class Stats():
-  def __init__(self):
-    self.statsDict = {}
-  def __setitem__(self, statsname, statsobj):
-    self.statsDict[statsname] = statsobj 
-  def __getitem__(self, statsname):
-    return self.statsDict[statsname]
-  def __len__(self):
-    return len(self.statsDict)
-#statsStore = Stats()
-'''
+  look_for_adhoctest_arg()

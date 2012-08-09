@@ -7,7 +7,9 @@ import sys
 from sqlalchemy import Column, Date, Integer, Sequence, String
 from sqlalchemy.ext.declarative import declarative_base
 
-sys.path.insert('..')
+import localpythonpath
+localpythonpath.setlocalpythonpath()
+
 import local_settings as ls
 
 Column(Integer, Sequence('user_id_seq'), primary_key=True)
