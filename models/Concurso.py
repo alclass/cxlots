@@ -79,17 +79,24 @@ class ConcursoBase(Base):
     if self.nDoConc <= 2:
       return None
     self.set_concursoSlider()    
-    return self.concursoSlider.get_jogo_by_nDoConc(self.nDoConc - 1)
+    return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc - 1)
+
+  def get_last_concurso(self):
+    return self.concursoSlider.get_last_concurso()
   
   def get_next(self):
     self.set_concursoSlider()    
     if self.nDoConc >= self.concursoSlider.get_total_jogos():
       return None    
-    return self.concursoSlider.get_jogo_by_nDoConc(self.nDoConc + 1)
+    return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc + 1)
 
   def get_concurso_by_nDoConc(self, nDoConc_to_compare=None):
     self.set_concursoSlider()    
     return self.concursoSlider.get_concurso_by_nDoConc(nDoConc_to_compare)
+
+  def get_total_concursos(self):
+    self.set_concursoSlider()    
+    return self.concursoSlider.get_total_concursos()
   
   def __repr__(self):
     return "Concurso %d [%s]" % (self.nDoConc, self.get_dezenas_str())

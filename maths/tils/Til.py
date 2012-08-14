@@ -112,37 +112,6 @@ def testAdHocTilPatternVector():
 #testAdHocTilPatternVector()
 
 
-class TilMaker():
-
-  def __init__(self, tilNumber=5, nDoConcurso=None):
-    '''
-    or tilNumber not in [5,6,10,12,15,20]:
-    '''
-    self.tilNumber = tilNumber
-    self.treatNDoConcurso(nDoConcurso)
-    self.treatFrequencies()
-
-  def treatNDoConcurso(self, nDoConcurso):
-    totalDeConcursos = JogoSlider().get_total_jogos() # len(sl.getListAllConcursosObjs())      
-    if nDoConcurso == None:
-      nDoConcurso = totalDeConcursos
-    elif nDoConcurso < 1 or nDoConcurso > totalDeConcursos:
-      indexErrorMsg = 'passed in nDoConcurso=%d and range acceptable is 1 to %d' %(nDoConcurso, totalDeConcursos)
-      raise IndexError, indexErrorMsg 
-    self.nDoConcurso = nDoConcurso
-
-  def treatFrequencies(self):
-    # freqAtEachConcurso = fm.FrequenciesThruConcursos() 
-    self.frequenciesAtConcursoN = hf.histfreqobj.get_histfreq_at(self.nDoConcurso) # freqAtEachConcurso.getFrequenciesOfAllDezenasByNDoConcurso(self.nDoConcurso)
-    #self.minFreqAtConcurso = min(self.frequenciesAtConcursoN)
-    #self.maxFreqAtConcurso = max(self.frequenciesAtConcursoN)
-  
-  def getTilSets(self):
-    #jogo = JogoSlider().get_jogo_by_nDoConc(self.nDoConcurso)
-    #jogotil = JogoTil(jogo, self.tilNumber, len(jogo.get_dezenas()), concurso_range=(1, self.nDoConcurso-1))
-    tilsetobj = ts.TilSets(self.frequenciesAtConcursoN, self.tilNumber)
-    return tilsetobj.getTilSets()
-
 def spread2DListTo1DList(list2D):
   newSet = []
   for list1D in list2D:

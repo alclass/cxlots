@@ -86,6 +86,10 @@ def adhoc_test():
   tilpatterns = getTilPatternsFor(patternSize, patternSoma)
   print 'tilpatterns', tilpatterns
   print 'size', len(tilpatterns) 
+  patternSize=10; patternSoma=6
+  tilpatterns = getTilPatternsFor(patternSize, patternSoma)
+  # print 'tilpatterns', tilpatterns
+  print 'size', len(tilpatterns) 
 
 def look_for_adhoctest_arg():
   for arg in sys.argv:

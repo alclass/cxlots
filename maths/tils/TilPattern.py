@@ -7,6 +7,7 @@ import sys
 
 import localpythonpath
 localpythonpath.setlocalpythonpath()
+import funcsForTil as ffTil
 
 class TilDefiner(object):
   '''
@@ -20,14 +21,75 @@ class TilDefiner(object):
   TilDefiner is a base (or parent) class for TilPattern and TilPattern is parent for JogoTilPattern
   '''
 
-  def __init__(self, slots=None, soma=None):
-    if slots==None:
-      slots = 5 # default
+  def __init__(self, n_slots=None, soma=None):
+    if n_slots==None:
+      n_slots = 5 # default
     if soma==None:
       soma = 6 # default
-    self.slots = int(slots)
+    self.n_slots = int(n_slots)
     self.soma  = int(soma)
 
+  def __str__(self):
+    return '<Til(%d,%d)>' %(self.n_slots, self.soma)
+
+
+class TilProducer(TilDefiner):
+
+  def __init__(self, n_slots=None, soma=None):
+    super(TilProducer, self).__init__(n_slots, soma)
+    self.partition_index = None
+    self.alltilpatterns = get_tilallpatterns(self)
+
+    self.set_total_combinations()
+  def set_total_combinations(self):
+    self.total_combinations = len(self.alltilpatterns)
+    # calc_n_integer_partitions(self.n_slots, self.soma) 
+
+  def fetch_integer_partition(self):
+    if self.partition_index < 0 or self.partition_index > self.total_combinations - 1:
+      return None
+    return self.alltilpatterns[self.partition_index]
+    #fetch_integer_partition(self.n_slots, self.soma, self.partition_index)
+  
+  def park_partition_index_at_start(self):
+    self.partition_index = 0
+    
+  def park_partition_index_at_end(self):
+    self.partition_index = self.total_combinations - 1 
+
+  def next(self):
+    if self.partition_index == None:
+      self.park_partition_index_at_start()
+    else:
+      self.partition_index += 1
+    return self.fetch_integer_partition()
+
+  def previous(self):
+    if self.partition_index == None:
+      self.park_partition_index_at_end()
+    else:
+      self.partition_index -= 1
+    return self.fetch_integer_partition()
+
+  def first(self):
+    self.park_partition_index_at_start()
+    return self.fetch_integer_partition()
+    
+  def last(self):
+    self.park_partition_index_at_end()
+    return self.fetch_integer_partition()
+
+  def __str__(self):
+    return '<Til(%d,%d) %d tils>' %(self.n_slots, self.soma, self.total_combinations)
+    
+def fetch_integer_partition():
+  pass    
+      
+def calc_n_integer_partitions():
+  pass
+
+
+  
 
 class TilPattern(TilDefiner):
   '''
@@ -60,8 +122,8 @@ class TilPattern(TilDefiner):
       then lowercase a to z are used.
   '''
 
-  def __init__(self, slots=None, soma=None):
-    super(TilPattern, self).__init__(slots, soma)
+  def __init__(self, n_slots=None, soma=None):
+    super(TilPattern, self).__init__(n_slots, soma)
     self.wpattern = None
     #self.tilnumber = int(tilnumber)
     #self.freqsoma  = int(freqsoma)
@@ -71,8 +133,8 @@ class TilPattern(TilDefiner):
     self.is_self_consistent()
 
   def is_self_consistent(self):
-    if len(self.wpattern) != self.slots:
-      error_msg = 'len(self.wpattern)=%d != self.tilnumber=%d' %(len(self.wpattern), self.slots)
+    if len(self.wpattern) != self.n_slots:
+      error_msg = 'len(self.wpattern)=%d != self.tilnumber=%d' %(len(self.wpattern), self.n_slots)
       raise TypeError, error_msg 
     freqsoma_to_compare = 0
     for char in self.wpattern:
@@ -83,14 +145,39 @@ class TilPattern(TilDefiner):
     
   def __eq__(self, tilpattern):
     # DeMorgan to improve performance if case wpattern differs right away (believed to be most of the cases in filtering processing)
+    if tilpattern == None:
+      return False
     if (self.wpattern != tilpattern.wpattern or  
-          self.slots != tilpattern.slots or 
+          self.n_slots != tilpattern.n_slots or 
            self.soma != tilpattern.soma):
       return False
     return True
   
   def __str__(self):
-    return "'<TilPattern(%d,%d,'%s')>" %(self.slots, self.soma, self.wpattern)
+    return "'<TilPattern(%d,%d,'%s')>" %(self.n_slots, self.soma, self.wpattern)
+
+class TilAllPatternsBuffer(object):
+  
+  def __init__(self):
+    self.tilbuffer = {}
+    
+  def add_alltilpatterns_to_buffer(self, tildefiner, alltilpatterns):
+    self.tilbuffer[(tildefiner.n_slots, tildefiner.soma)] = alltilpatterns
+    
+  def get_alltilpatterns_from_buffer(self, tildefiner):
+    definertuple = (tildefiner.n_slots, tildefiner.soma)
+    if self.tilbuffer.has_key(definertuple):
+      return self.tilbuffer[definertuple]
+    alltilpatterns = ffTil.getTilPatternsFor(tildefiner.n_slots, tildefiner.soma)
+    self.add_alltilpatterns_to_buffer(tildefiner, alltilpatterns)
+    return alltilpatterns
+
+tilallpatterns = None
+def get_tilallpatterns(tildefiner):
+  if tilallpatterns == None:
+    tilallpatterns = TilAllPatternsBuffer()
+  return tilallpatterns(tildefiner) 
+
 
 def adhoc_test():
   print 'adhoc_test()'

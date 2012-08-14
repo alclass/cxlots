@@ -32,6 +32,12 @@ class ConcursoSlider(object):
   def get_total_concursos(self):
     return self.session.query(self.CLASSREF).count()
   
+  def get_n_last_concurso(self):
+    '''
+    to be CHANGED as soon as I can (it involves learning/knowing how to query max(nDoConc) -- must be simple!)
+    '''
+    return self.get_total_concursos()
+    
   def get_last_concurso(self):
     nDoConc = self.get_total_concursos()
     if nDoConc == None or nDoConc == 0:

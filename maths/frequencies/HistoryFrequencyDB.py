@@ -8,7 +8,8 @@ import numpy
 import sys
 import localpythonpath
 localpythonpath.setlocalpythonpath()
-from models.JogoSlider import JogoSlider
+from models.ConcursoSlider import ConcursoSlider
+from models.Concurso import ConcursoBase
 
 from sqlalchemy import Column, Integer, Sequence, String, create_engine # BoundMetaData, mapper 
 from sqlalchemy.ext.declarative import declarative_base
@@ -94,22 +95,22 @@ class HistFreqUpdater(object):
   '''
   '''
   def __init__(self): # concurso_range
-    self.jogoSlider = JogoSlider()
+    self.concursoSlider = ConcursoSlider(ConcursoBase)
     self.histfreqdbslider = HistFreqDBSlider()
     self.update_db_if_needed()
     self.verify_histfreqs_consistency()
 
   def update_db_if_needed(self):
-    self.total_jogos = self.jogoSlider.get_total_jogos()
+    self.total_concursos = self.concursoSlider.get_total_concursos()
     self.last_n_histfreq_updated = self.histfreqdbslider.get_total_histfreqs()
-    n_missing_histfreqs = self.total_jogos - self.last_n_histfreq_updated 
+    n_missing_histfreqs = self.total_concursos - self.last_n_histfreq_updated 
     if n_missing_histfreqs < 0:
       error_msg = 'Inconsistent histfreqs size. It is greater than concursos.  Program execution cannot continue.'
       raise IndexError, error_msg
     elif n_missing_histfreqs == 0:
       # nothing to do! Sizes match.
       return
-    print 'Need to update %d hist-freq concursos (from %d to %d)' %(n_missing_histfreqs, self.last_n_histfreq_updated, self.total_jogos)
+    print 'Need to update %d hist-freq concursos (from %d to %d)' %(n_missing_histfreqs, self.last_n_histfreq_updated, self.total_Concursos)
     self.update_histfreqs_from_last_updated()
        
   def update_histfreqs_from_last_updated(self):
@@ -129,15 +130,15 @@ class HistFreqUpdater(object):
     self.histfreqdbslider.update_histfreqs(histfreqdbs_to_update)
 
   def verify_histfreqs_consistency(self):
-    print 'About to verify histfreqs consistency of %d concursos : Please, wait. ' %(self.total_jogos)  
+    print 'About to verify histfreqs consistency of %d concursos : Please, wait. ' %(self.total_concursos)  
     numpy_histfreq = numpy.array([0]*60)
-    for nDoConc in range(1, self.total_jogos + 1):
-      jogo = self.jogoSlider.get_jogo_by_nDoConc(nDoConc)
+    for nDoConc in range(1, self.total_concursos + 1):
+      jogo = self.concursoSlider.get_concurso_by_nDoConc(nDoConc)
       for dezena in jogo.get_dezenas():
         index = dezena - 1 
         numpy_histfreq[index] += 1
       self.compare_calc_histfreq_with_db(nDoConc, numpy_histfreq)
-    print 'Verified histfreqs consistency of %d concursos : ok! ' %(self.total_jogos)  
+    print 'Verified histfreqs consistency of %d concursos : ok! ' %(self.total_concursos)  
     
   def compare_calc_histfreq_with_db(self, nDoConc, numpy_histfreq):
     histfreqdb = self.histfreqdbslider.get_histfreq_at(nDoConc)
