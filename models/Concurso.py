@@ -23,6 +23,7 @@ class ConcursoBase(Base):
   jogoCharOrig = Column(String(12))
   date = Column(Date(8))   #dataDeSorteio = date
   N_DE_DEZENAS = 6
+  N_DE_DEZENAS_NO_VOLANTE = 60
   dezenas = None
   dezenas_in_orig_order = None
   concursoSlider = None
@@ -34,7 +35,7 @@ class ConcursoBase(Base):
   
   def set_concursoSlider(self):
     if self.concursoSlider == None:
-      self.concursoSlider = ConcursoSlider(ConcursoBase)  
+      self.concursoSlider = ConcursoSlider(self.__class__)  
   
   def set_dezenas_in_orig_order(self):
     if len(self.jogoCharOrig) <> self.N_DE_DEZENAS * 2:
@@ -86,7 +87,7 @@ class ConcursoBase(Base):
   
   def get_next(self):
     self.set_concursoSlider()    
-    if self.nDoConc >= self.concursoSlider.get_total_jogos():
+    if self.nDoConc >= self.concursoSlider.get_total_concursos():
       return None    
     return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc + 1)
 

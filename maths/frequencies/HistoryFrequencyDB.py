@@ -110,7 +110,7 @@ class HistFreqUpdater(object):
     elif n_missing_histfreqs == 0:
       # nothing to do! Sizes match.
       return
-    print 'Need to update %d hist-freq concursos (from %d to %d)' %(n_missing_histfreqs, self.last_n_histfreq_updated, self.total_Concursos)
+    print 'Need to update %d hist-freq concursos (from %d to %d)' %(n_missing_histfreqs, self.last_n_histfreq_updated, self.total_concursos)
     self.update_histfreqs_from_last_updated()
        
   def update_histfreqs_from_last_updated(self):
@@ -119,8 +119,8 @@ class HistFreqUpdater(object):
       numpy_histfreq = numpy.zeros(60,int)
     else:
       numpy_histfreq = self.histfreqdbslider.get_histfreq_at(self.last_n_histfreq_updated)
-    for nDoConc in range(self.last_n_histfreq_updated + 1, self.total_jogos + 1):
-      jogo = self.jogoSlider.get_jogo_by_nDoConc(nDoConc)
+    for nDoConc in range(self.last_n_histfreq_updated + 1, self.total_concursos + 1):
+      jogo = self.concursoSlider.get_concurso_by_nDoConc(nDoConc)
       for dezena in jogo.get_dezenas():
         index = dezena - 1 
         numpy_histfreq[index] += 1 

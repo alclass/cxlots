@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
+calc_excludable_by_tils_01.py
 '''
 import sys
 
@@ -23,23 +24,37 @@ def filter_out(patterns_as_intlist, tilhistogram):
   for pattern in patterns_as_intlist:
     if True in map(indicate_greater_than, pattern, tilhistogram):
       patterns_filtered_out.append(pattern)
-      continue
-    filtered_patterns_as_intlist.append(pattern)
+    else:
+      filtered_patterns_as_intlist.append(pattern)
   return filtered_patterns_as_intlist, patterns_filtered_out 
 
 
 def adhoc_test():
   concursoBase = ConcursoBase()
   last_concurso = concursoBase.get_last_concurso()
+  for nDoConc in range(1201, last_concurso.nDoConc + 1):
+    concurso = concursoBase.get_concurso_by_nDoConc(nDoConc)
+    line = '%d ' %nDoConc
+    concursotil = ConcursoTil(concurso)
+    for n_slots in [2, 3, 4, 5, 6, 10, 12]: 
+      concursotil.reset_n_slots(n_slots)
+      line += 'tslot%d%s ' %(n_slots, concursotil.get_tilpattern_interlaced_with_n_dozens_per_til()) #wpattern
+    print line  
+
+def adhoc_test1():
+  concursoBase = ConcursoBase()
+  last_concurso = concursoBase.get_last_concurso()
   for nDoConc in range(1001, last_concurso.nDoConc + 1):
     concurso = concursoBase.get_concurso_by_nDoConc(nDoConc)
     concursotil = ConcursoTil(concurso)
-    print concursotil.get_histfreq_obj().get_histfreq_tuplelike_at(nDoConc)
+    anterior = nDoConc - 1
+    print 'histfreq for conc', anterior, concursotil.get_histfreq_obj().get_histfreq_tuplelike_at(anterior)
     #print concursotil.get_dezenas_and_their_frequencies_for_concurso()
-    print 'dezenas, frequencies, tils:', concursotil.get_dezenas_their_frequencies_and_til_for_concurso()
     for n_slots in [5, 6, 10]: 
       concursotil.reset_n_slots(n_slots)
+      print 'dezenas, frequencies, tils:', concursotil.get_dezenas_their_frequencies_and_til_for_concurso()
       print 'concursotil', concursotil, 'wpatt', concursotil.wpattern 
+      print 'BorderTupleOfTilSets', concursotil.getBorderTupleOfTilSets()
       tilfreqslotter = TilFreqSlotSeparator(n_slots)
       print tilfreqslotter.show_tilhistogram_table()
       print '-'*50      

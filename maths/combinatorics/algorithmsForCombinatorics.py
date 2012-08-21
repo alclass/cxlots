@@ -129,13 +129,32 @@ def getPermutations(subtokens):
   return allPerms
 
 def combineNbyC(n, c):
+  '''
+  combineNbyC(n, c) is a function that computes the number R of combinations of an n-element set S, c by c elements.
+   
+  Ex. suppose S = [1,2,3]
+  Combinations 2 by 2 of S are [1,2],[1,3] and [2,3]
+  Hence, R, the resulting numbers of combinations, is 3.
+  
+  We can also see combineNbyC(n, c) by its factorial formula, which is n!/((n-c)!c!)
+  
+  In the simple example above, R = 3!/(2!1!) = 3 x 2 / 2 = 3
+  
+  In the more computing-intense Megasena example, we have R = combineNbyC(60, 6) = 60! / ((60-6)!6!) = ... =  50,063,860   
+  
+  The Python code implementation here does not use factorial in order to optimization/minimize computation efforts.
+  '''
   if n < 0 or c < 0:
     errorMsg = 'Can not calculate combination with negative numbers (n=%d, c=%d).' %(n,c)
     raise ValueError, errorMsg
+  # this condition below may be reformulation to an exception raising in the future (how can one combine more than one has?), for the time being, it's returning 0
   if n < c:
     return 0
-  if n == 0 or c == 0:
-    return 0
+  if c == 0:
+    if n == 0:
+      return 0
+    #if n > 0: # no need for an "if" here, n > 0 is logically the condition fell into, if program flow passes by this point 
+    return 1  # convention for "produtório", sequence-multiply
   if n == c:
     return 1
   mult = 1

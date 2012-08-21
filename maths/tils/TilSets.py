@@ -29,10 +29,12 @@ class TilSets(object):
     '''
     self.tilSets = None
     self.frequencies = frequencies[:] 
-    self.tilN = tilN
+    self.tilN = tilN # same as n_slots
     self.minFreq = min(self.frequencies)
     self.maxFreq = max(self.frequencies)
-    self.generateTilSets()
+    self.listWithDeltaFrequencies = None # None here means, not yet "initialized"
+    self.listWithFrequencyBordersTuple = None # same as above, ie not yet "initialized"
+    self.generateTilSets() # this is the process flow itself !
 
   def generateTilSets(self):
     '''
@@ -40,9 +42,9 @@ class TilSets(object):
     It invokes a 3-method tool-chain and then returns self.tilSets
     (Checkings will be implemented via unittests and other adhoc tests) 
     '''
-    self.getDeltaFrequencyListAtConcurso()
-    if self.listWithDeltaFrequencies == None:
-      return None
+    self.calcDeltaFrequencyListAtConcurso()
+    if self.listWithDeltaFrequencies == []:
+      return
     self.transformDeltaFrequenciesIntoFrequencyBorders()
     self.putDezenasInsideTilSets()
 
@@ -51,7 +53,7 @@ class TilSets(object):
       self.generateTilSets()
     return self.tilSets
 
-  def getDeltaFrequencyListAtConcurso(self):
+  def calcDeltaFrequencyListAtConcurso(self):
     '''
     Eg. min=10 max=20
     tilN = 5
@@ -68,7 +70,7 @@ class TilSets(object):
     deltaFrequency =  amplitude / self.tilN
     if deltaFrequency == 0:
       # cannot continue, data is not enough
-      self.listWithDeltaFrequencies = None
+      self.listWithDeltaFrequencies = []
       return
     remainder = amplitude % self.tilN
     #remainder =  (maxN - minN) % tilNumber
@@ -77,22 +79,29 @@ class TilSets(object):
       if remainder > 0:
         self.listWithDeltaFrequencies[i] += 1
         remainder -= 1
+      else:
+        break
     # logically list is in ascending order
+    # check/test the following equality
     if sum(self.listWithDeltaFrequencies) != amplitude:
       valueErrorMsg = 'sum(listWithDeltaFrequencies)=%d != amplitude=%d :: The two should be equal' %(sum(self.listWithDeltaFrequencies), amplitude)
       raise ValueError, valueErrorMsg
     #print 'minN, maxN, amplitude, listWithDeltaFrequencies', self.minFreq, self.maxFreq, amplitude, self.listWithDeltaFrequencies
+
+  def getDeltaFrequencyListAtConcurso(self):
+    if self.listWithDeltaFrequencies == None:
+      self.calcDeltaFrequencyListAtConcurso()
+    return self.listWithDeltaFrequencies
   
   def transformDeltaFrequenciesIntoFrequencyBorders(self):
     self.listWithFrequencyBordersTuple = [()]*len(self.listWithDeltaFrequencies)
-    ini = self.minFreq; i=0
-    for deltaFrequency in self.listWithDeltaFrequencies:
-      minFreqTil = ini
+    range_min = self.minFreq
+    for i, deltaFrequency in enumerate(self.listWithDeltaFrequencies):
+      minFreqTil = range_min
       maxFreqTil = minFreqTil + deltaFrequency - 1 
       borderTuple = (minFreqTil, maxFreqTil)
       self.listWithFrequencyBordersTuple[i] = borderTuple
-      i+=1
-      ini = maxFreqTil + 1
+      range_min = maxFreqTil + 1
     if maxFreqTil != self.maxFreq:
       errorMsg = 'maxFreqTil=%d != maxFreq=%d  The two should be equal' %(maxFreqTil, self.maxFreq)
       raise ValueError, errorMsg
@@ -103,49 +112,50 @@ class TilSets(object):
     '''
     self.tilSets = [[]] * self.tilN
     #print 'self.tilSets', self.tilSets
-    nOfDezenasProcessed = 0; currentDezena = 1
-    for frequency in self.frequencies:
-      for i in range(len(self.listWithFrequencyBordersTuple)):
-        borderTuple = self.listWithFrequencyBordersTuple[i]
+    for index, frequency in enumerate(self.frequencies):
+      dezena = index + 1
+      for i, borderTuple in enumerate(self.listWithFrequencyBordersTuple):
         minTil = borderTuple[0]  
         maxTil = borderTuple[1]
         if minTil <= frequency and frequency <= maxTil:
           # 1st hard copy to avoid referencing and mixing up sets
           tilSet = self.tilSets[i][:] 
-          tilSet.append(currentDezena)
+          tilSet.append(dezena)
           # 2nd hard copy to avoid referencing and mixing up sets
           self.tilSets[i] = tilSet[:]
           # 3rd delete list object to avoid another referencing and mixing up sets 
           del tilSet
-          #print 'entering dezena', currentDezena, 'minTil, frequency, maxTil', minTil, frequency, maxTil, 'tilN is', i, self.tilSets[i]  
-          nOfDezenasProcessed += 1
+          #print 'entering dezena', currentDezena, 'minTil, frequency, maxTil', minTil, frequency, maxTil, 'tilN is', i, self.tilSets[i]
+          # break for next dezena (the one here has already been placed!)  
           break
-      currentDezena += 1
-    # print 'nOfDezenasProcessed', nOfDezenasProcessed, self.tilSets
-  
-  def checkIfAllDezenasAreTaken(self):
+    self.checkTestIfAllDozensHaveBeenAllocatedInsideTilSets()
+
+  def checkTestIfAllDozensHaveBeenAllocatedInsideTilSets(self):
     '''
-    this method will be relocated to the unittests
+    checkTestIfAllDozensHaveBeenAllocatedInsideTilSets() (this check belongs to the Class's process flow, at the end)
+    # check/test the following, ie, all dozens must have been allocated inside some til-slot
     ''' 
-    nDeDezenasTotais = len(self.frequencies)
-    nDeElementos = 0
-    for tilSet in self.tilSets:
-      nDeElementos += len(tilSet)
-    if nDeDezenasTotais != nDeElementos:
-      errorMsg = 'checkIfAllDezenasAreTaken(self) failed ie some dezena is not inside tilSets :: nDeDezenasTotais=%d - nDeElementos=%d = %d' %(nDeDezenasTotais, nDeElementos, nDeDezenasTotais - nDeElementos)
+    if len(self.frequencies) != sum(map(len, self.tilSets)):
+      errorMsg = 'checkTestIfAllDozensHaveBeenAllocatedInsideTilSets() :: len(self.frequencies)=%d != map(sum, self.tilSets)=%d :: The two should be equal' %(len(self.frequencies), map(sum, self.tilSets))
       raise ValueError, errorMsg
     
-  def findTilIndexForFreq(self, unorderedKeys, keyValue):
-    if self.tilSets == None:
-      return None
-    unorderedKeys.sort()
-    counterindex = unorderedKeys.index(keyValue) + 1
-    for tilIndex in range(len(self.tilSets)):
-      tilSet = self.tilSets[tilIndex]
-      if counterindex in tilSet:
-        return tilIndex
-    return -1     
-
+  def getBorderTupleOfTilSets(self, retry=False):
+    if self.listWithFrequencyBordersTuple == None:
+      if retry:
+        errorMsg = 'Internal error: self.listWithFrequencyBordersTuple could not somehow be initialized (it continues None after retry). It is either a program error or database is empty.'
+        raise ValueError, errorMsg
+      else:
+        self.generateTilSets()  # this method re-does this Class's process flow
+        return self.getBorderTupleOfTilSets(retry=True)
+    return self.listWithFrequencyBordersTuple
+    
+  def findTilIndexForFreq(self, freq):
+    for i, bordersTuple in enumerate(self.listWithFrequencyBordersTuple):
+      til_freq_min = bordersTuple[0]
+      til_freq_max = bordersTuple[0]
+      if til_freq_min <= freq <= til_freq_max:
+        return i
+    return None # None here meaning "not found"  
 
 def getTilSets(frequencies, tilN):
   '''

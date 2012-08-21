@@ -6,8 +6,10 @@ Ref.: http://en.wikipedia.org/wiki/Combinadic
 '''
 import sys
 
-a=1
-import lambdas
+import localpythonpath
+localpythonpath.setlocalpythonpath()
+from lib import lambdas
+import algorithmsForCombinatorics as afc
 
 class IndicesCombiner(object):
   '''
@@ -18,7 +20,7 @@ class IndicesCombiner(object):
   indComb = IndicesCombiner(5, 3, False)
   indComb.first() results [0, 1, 2]
   indComb.firstGiven() in this case also results [0, 1, 2]
-  aplying indComb.next() each time:
+  applying indComb.next() each time:
   [0, 1, 2]   [0, 1, 3]   [0, 1, 4]   [0, 1, 5]   [0, 2, 3]
   [0, 2, 4]   [0, 2, 5]   [0, 3, 4]   [0, 3, 5]   [0, 4, 5]
   [1, 2, 3]   [1, 2, 4]  ... the last one is [3, 4, 5]
@@ -261,7 +263,7 @@ class IndicesCombiner(object):
     if pos == 0:
       # well, it's the last one, a left-shift can't happen,
       # so it goes to the last one
-      iArrayToDiscard = self.moveToLastOne()
+      self.moveToLastOne() #iArrayToDiscard = self.moveToLastOne()
       return None
     if self.overlap:
       if self.iArray[pos-1] == self.upLimit:
@@ -283,7 +285,7 @@ class IndicesCombiner(object):
     Case of vaiUm when overlap=True
     '''
     if pos == 0 and self.iArray[pos] == self.upLimit:
-      iArrayToDiscard = self.moveToLastOne()
+      self.moveToLastOne() # iArrayToDiscard = self.moveToLastOne()
       return None
     if self.iArray[pos] == self.upLimit:
       return self.vaiUmInPlaceOverlapCase(pos-1)
@@ -297,13 +299,14 @@ class IndicesCombiner(object):
     '''
     backPos = self.size - pos - 1
     if pos == 0 and self.iArray[pos] == self.upLimit - backPos:
-      iArrayToDiscard = self.moveToLastOne()
+      self.moveToLastOne() # iArrayToDiscard = self.moveToLastOne()
       return None
     if self.iArray[pos] == self.upLimit - backPos:
       return self.vaiUmInPlaceNonOverlapCase(pos-1)
     self.iArray[pos] += 1
     self.correctRemainingToTheRightNonOverlapCase(pos)
     return self.iArray
+
   def vaiUmInPlace(self, pos):
     '''
     Adds one in the i-th (pos) element
@@ -331,7 +334,7 @@ class IndicesCombiner(object):
         self.first()
         return None
     if self.iArray[pos-1] == self.iArray[pos]:
-      self.iArray[pos] = upLimit
+      self.iArray[pos] = self.upLimit
       return self.minusOneOverlap(pos-1)
     else:
       self.iArray[pos] -= 1
@@ -351,7 +354,7 @@ class IndicesCombiner(object):
       return None
     if self.iArray[pos-1]+1 == self.iArray[pos]:
       debitToUpLimit = self.size - pos - 1
-      self.iArray[pos] = upLimit - debitToUpLimit
+      self.iArray[pos] = self.upLimit - debitToUpLimit
       return self.minusOneNonOverlap(pos-1)
     else:
       self.iArray[pos] -= 1
@@ -439,9 +442,16 @@ class IndicesCombiner(object):
     return outStr
 
   def allSets(self):
+    '''
+    This method, though it's still here, should be used with caution in the sense the it's memory-hungry, so to say.
+    It while-loops all self.next()'s into an output array.
+    Because output may become very big, according to the size involved the process,
+      a better approach is to "yield" each "workSet", one at a time, without buffering them into the "output array"
+      This better approach is done by the following next method iterate_all_sets()
+    '''
     array = []
     s = self.first()
-    workSet = list(s)
+    workSet = list(s) # hard-copy
     while s:
       array.append(workSet)
       s = self.next()
@@ -449,115 +459,20 @@ class IndicesCombiner(object):
         workSet = list(s)
     return array
 
-class SetsCombiner():
-  '''
-  This class has a "bridge" method called combineSets(self)
-    that calls doRecursiveSetsCombination(self.listOfTuple2)
-  The latter function receives the listOfTuple2 that keeps the following information:
-    first tuple element is a set (list) with dezenas to be combined according to the 
-    second tuple element which is the quantity (or size) of each combination
-    Eg
-    ([12, 23, 33, 42, 57], 3) generates:
-    12 23 33, 12 23 42, 12 23 57 ... up to 33 42 57
-    
-    The final result is the combination of all sets
-    
-    With this functionality, one possible of this class's  
-  '''
-  def __init__(self):
-    self.workSetsWithQuantities = [] #  # workSetsWithQuantities was formerly listOfTuple2
-    self.allCombinations = None
-  def addSetWithQuantities(self, tupleIn):
-    self.workSetsWithQuantities.append(tupleIn)
-  def combineSets(self):
-    self.allCombinations = doRecursiveSetsCombination(self.workSetsWithQuantities)
-  def __len__(self):
-    if self.allCombinations == None:
-      return 0
-    return len(self.allCombinations)
-
-class SetsCombinerWithTils(SetsCombiner):
-  '''
-  This class inherits from SetsCombiner
-  The idea here is to automatically fill in self.workSetsWithQuantities from a tilObj
-  So at object instantiation every is run at once
-     and after instantiation the object has its combined sets available 
-  '''
-  def __init__(self, tilElement):
-    SetsCombiner.__init__(self)
-    self.tilElement = tilElement
-    self.unpackTilObj()
-    self.combineSets() # a parent class's method
-  def unpackTilObj(self):
-    self.workSetsWithQuantities = self.tilElement.getWorkSetsWithQuantities() 
-    
-    
+  def iterate_all_sets(self):
+    '''
+    This method, though it's still here, should be used with caution in the sense the it's memory-hungry, so to say.
+    It while-loops all self.next()'s into an output array.
+    Because output may become very big, according to the size involved the process,
+      a better approach is to "yield" each "workSet", one at a time, without buffering them into the "output array"
+      This better approach is done by the following next method iterate_all_sets()
+    '''
+    workSet = self.first()
+    while workSet:
+      yield list(workSet) #  # hard-copy
+      workSet = self.next()
 
 
-def createWorkSetsWithIndicesCombiner(workSet, icObj):
-  workSets = []
-  for indicesArray in icObj.allSets(): # implement an iterator with yield in the future
-    formingSet = []
-    for indiceArray in indicesArray:
-      formingSet.append(workSet[indiceArray])
-    workSets.append(formingSet)
-  return workSets
-    
-def generateAllCombinationsForWorkDict(workSetAndQuantity):
-  workSet = workSetAndQuantity[0]
-  quantity = workSetAndQuantity[1]
-  if quantity > len(workSet):
-    errorMsg = ' generateAllCombinationsForWorkDict(workSetAndQuantity) :: quantity=%d > len(workSet)=%d cannot happen ' %(quantity, len(workSet))
-    raise ValueError, errorMsg 
-  if quantity == 0:
-    return []
-  if quantity == 1 and len(workSet) == 1:
-    return workSet[:]
-  icObj = IndicesCombiner(len(workSet)-1, quantity, False)
-  workSets = createWorkSetsWithIndicesCombiner(workSet, icObj)
-  return workSets
-
-def doRecursiveSetsCombination(workSetsAndQuantities, allCombinations=[[]]):
-  if len(workSetsAndQuantities) == 0:
-    return allCombinations
-  workSetAndQuantity = workSetsAndQuantities.pop()
-  workSets = generateAllCombinationsForWorkDict(workSetAndQuantity)
-  newAllCombinations = []
-  for workSet in workSets:
-    for eachCombination in allCombinations:
-      #print 'summing', workSet, eachCombination
-      newFormingSet = workSet + eachCombination
-      newFormingSet.sort()
-      newAllCombinations.append(newFormingSet)
-  return doRecursiveSetsCombination(workSetsAndQuantities, newAllCombinations)
-
-def setCombine(workSet, piecesSize):
-  indComb = IndicesCombiner(len(workSet)-1,piecesSize,False)
-  print indComb
-  print indComb.next()
-  indexAllSets = indComb.allSets()
-  realSets = []
-  for indexSet in indexAllSets:
-    realSet = []
-    for index in indexSet:
-      realSet.append(workSet[index])
-    realSets.append(realSet)
-  print realSets
-  return realSets
-
-def setMultiply(combineArray, cadeia=[], collected=[]):
-  chunk = combineArray[0]
-  if type(chunk) == type([]):
-    listElem = list(chunk)
-  else:
-    listElem = [chunk]
-  for elem in listElem:
-    #print elem, cadeia, collected
-    if len(combineArray) == 1:
-      collected.append(list(cadeia)+[elem])
-    else:
-      nothing = setMultiply(combineArray[1:], list(cadeia)+[elem], collected)
-  return collected
   
 def testIndicesCombiner(upLimit, size):
   # signature IndsControl(upLimit=1, size=-1, overlap=True, iArrayIn=[])
@@ -650,17 +565,35 @@ def testPrevious(upLimit, size):
     print 'ic.previous()', ic.previous()
   #for i in range(32):
     #print 'ic.next()', ic.next()
+                          
+def adhoc_test():
+  ic = IndicesCombiner(4, 2, False); c=0
+  for ws in ic.iterate_all_sets():
+    c+=1
+    print c, ws
+  '''sc = SetsCombiner()
+  worksetWithQuantity = ([1,2,3], 2)
+  sc.addSetWithQuantities(worksetWithQuantity)
+  worksetWithQuantity = ([4,5,6], 2)
+  sc.addSetWithQuantities(worksetWithQuantity)
+  for ws in sc.getAllSetsCombinationNonRecursively():
+    print 'ws', ws'''
+
+def ynext():
+  for i in xrange(10):
+    yield i
+
+def test_yield():
+  for i in ynext():
+    print i
+
+def adhoc_test2():
+  test_yield()
+  
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
 
 if __name__ == '__main__':
-  pass
-  '''
-  upLimit, size = 12, 3 #pickUpParams()
-  print 'upLimit=%d :: size=%d ' %(upLimit, size)
-  #ans = raw_input('ok ? ')
-  #testIndicesCombiner(upLimit, size)
-  #testIndsControl()
-  #testShiftLeft(upLimit, size)
-  testPrevious(upLimit, size)
-  '''
-  # testAllSets()
-  testPrevious(5, 7)
+  look_for_adhoctest_arg()

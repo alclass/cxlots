@@ -20,18 +20,23 @@ class ConcursoHTMLScraper(object):
 
   def __init__(self, htmlDataFilename = ls.MS_DATAFILE_ABSPATH):
     self.htmlDataFilename = htmlDataFilename
-    self.concursoSlider = ConcursoSlider()
+    self.concursoSlider = ConcursoSlider(conc.ConcursoHTML)
     self.process_flow()
     self.print_concursos()
     self.save_concursos_in_db()
     
   def process_flow(self):    
     self.parseToDataStru()
+    self.convert_concursos_fieldtypes()
 
   def parseToDataStru(self):
     self.createSoupObj()    
     if self.bsObj <> None: 
       self.concursos = processRowsAcrossTable(self.bsObj)
+
+  def convert_concursos_fieldtypes(self):
+    for concurso in self.concursos:
+      concurso.transport_dict_into_attrs()
 
   def createSoupObj(self):
     htmlText = open(self.htmlDataFilename).read()
@@ -66,7 +71,7 @@ class ConcursoHTMLScraper(object):
     if total_html_concursos <= total_db_concursos:
       return
     concursos_to_insert = []
-    for nDoConc in range(total_db_concursos + 1 , total_html_concursos):
+    for nDoConc in range(total_db_concursos + 1 , total_html_concursos + 1):
       index = nDoConc - 1 
       concurso = self.concursos[index]
       expectedNDoConc = concurso['nDoConc']

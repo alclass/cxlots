@@ -32,13 +32,17 @@ class HistFreq(object):
     self.total_concursos  = self.concursoSlider.get_total_concursos()
     self.update_histfreq_if_needed()
     
+  def reissueHistFreqUpdater(self):
+    HistFreqUpdater()
+    self.total_histfreqs  = self.histfreqdbslider.get_total_histfreqs()
+        
   def update_histfreq_if_needed(self, secondTry=False):
     if self.total_histfreqs < self.total_concursos:
-      self.histfreqdbslider.update_histfreqdb()
+      self.reissueHistFreqUpdater()
       if not secondTry:
         return self.update_histfreq_if_needed(secondTry=True)
       else:
-        error_msg = 'Failed to update histfreq array. It should have the same size (=%d) as "concursos (=%d)".' %(self.total_histfreqs, self.total_jogos)
+        error_msg = 'Failed to update histfreq array. It should have the same size (=%d) as "concursos (=%d)".' %(self.total_histfreqs, self.total_concursos)
         raise ValueError, error_msg
 
   def get_concurso_by_nDoConc(self, nDoConc):
@@ -62,8 +66,8 @@ class HistFreq(object):
         error_msg = 'There is a size different between total_jogo (=%d) and total_histfreqs (=%d) and nDoConc = %d. Program cannot continue until this is corrected.' %(self.total_jogos, self.total_histfreqs, nDoConc)
         raise ValueError, error_msg
       else:
-        # try to update histfreqs so that total_histfreqs equals total_jogos
-        HistFreqUpdater()
+        # this should be a very rare use case, ie, database has changed while this class is still instantiated and running :: try to update histfreqs so that total_histfreqs equals total_concursos
+        self.reissueHistFreqUpdater()
         return self.get_concurso_by_nDoConc(nDoConc, secondTry=True)
     # it return as a numpy array object
     histfreq = self.histfreqdbslider.get_histfreq_at(nDoConc)

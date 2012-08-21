@@ -113,7 +113,7 @@ Rateio_Quadra
 Acumulado
 Valor_Acumulado
 Estimativa_Prêmio
-Acumulado_Natal'''
+Acumulado_Mega_da_Virada'''
 
 def getDBFieldLongNames():
   megasenaFieldNames = returnMegasenaFieldLongNamesStr().split('\n')

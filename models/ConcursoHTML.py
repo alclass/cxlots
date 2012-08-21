@@ -10,7 +10,6 @@ localpythonpath.setlocalpythonpath()
 import lib.datetime.converterForDateAndCurrency as conv
 
 from Concurso import ConcursoBase
-from ConcursoSlider import ConcursoSlider
 class ConcursoHTML(ConcursoBase):
   '''
   This class, though it does not yet implement inheritance from dict,
@@ -35,17 +34,7 @@ class ConcursoHTML(ConcursoBase):
     super(ConcursoHTML, self).__init__()
     self.concursoDict = {}
     self.fieldnamesInOrder = [] # this extra attribute will mnot be necessary in Python 3, for in Py3 it's possible to maintain order in a dict
-    self._classId = 'ConcursoHTML'
     self.dezenas  = None  # self.dezenas is set "lazily"
-    self.N_DE_SORTEADAS = 6
-    self.set_concursoSlider()
-  
-  def set_concursoSlider(self):
-    '''
-    This method must be override from its parent counterpart, because parameter to ConcursoSlider is this (child) "class" itself
-    '''
-    if self.concursoSlider == None:
-      self.concursoSlider = ConcursoSlider(ConcursoHTML)  
 
   def transport_dict_into_attrs(self):
     '''

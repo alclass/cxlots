@@ -24,6 +24,7 @@ class ConcursoTil(TilPattern): #(Jogo):
     self.concurso = concurso
     self.concurso_range = None
     self.histfreq = None
+    self.tilsetobj = None
     self.flow_concurso_concursorange_histfreq_wpattern()
 
   def reset_n_slots(self, n_slots):
@@ -60,7 +61,7 @@ class ConcursoTil(TilPattern): #(Jogo):
     '''
     self.process_concurso()
     self.process_concurso_range()
-    self.fetch_histfreq()
+    self.set_histfreq()
     self.calc_concursotil_wpattern()
     
   def process_concurso(self):
@@ -93,42 +94,61 @@ class ConcursoTil(TilPattern): #(Jogo):
       # bottomconc must be corrected to consistency :: notice that range will be very small
       self.concurso_range = (self.concurso_range[1]-1, self.concurso_range[1])
 
-  # should be private to class, triggered by flow_concursorange_histfreq_wpattern()
-  def fetch_histfreq(self):
-    self.histfreq = hf.get_histfreq(self.concurso_range)
-
   def get_histfreq_obj(self):
     return hf.histfreqobj
+
+  # should be private to class, triggered by flow_concursorange_histfreq_wpattern()
+  def set_histfreq(self):
+    '''
+    histfreqobj is a SingleTon. It doesn't keep "range", it either gets histfreq from db or calculates a (bottomconc, topconc) delta histfreq
+    '''
+    self.histfreq = self.get_histfreq_obj().get_histfreq_within_range(self.concurso_range)
+    self.histfreq_sum = sum(self.histfreq)
+
+  def get_freq_of_dozen(self, dezena):
+      index = dezena - 1
+      freq = self.histfreq[index]
+      return freq
 
   def get_dezenas_and_their_frequencies_for_concurso(self):
     dezenas = self.concurso.get_dezenas()
     freqs = []
     for dezena in dezenas:
-      index = dezena - 1
-      freq = self.histfreq[index]
+      freq = self.get_freq_of_dozen(dezena)
       freqs.append(freq)
     return zip(dezenas, freqs)
 
   def get_dezenas_their_frequencies_and_til_for_concurso(self):
-    tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
+    # tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
     zipped = self.get_dezenas_and_their_frequencies_for_concurso()
+    # unzip dezenas and freqs
     dezenas, freqs = zip(*zipped)
     tils = []
     for dezena in dezenas:
-      for i in range(len(tilsetobj.tilSets)):
-        if dezena in tilsetobj.tilSets[i]:
+      for i in range(len(self.tilsetobj.tilSets)):
+        if dezena in self.tilsetobj.tilSets[i]:
           tils.append(i)
           break
     return zip(dezenas, freqs, tils)
 
+  def getBorderTupleOfTilSets(self, retry=False):
+    if self.tilsetobj == None:
+      if retry:
+        error_msg = 'Error in getBorderTupleOfTilSets() :: self.tilsetobj continued to be None after a retry. It is either a program error or database is empty.'
+        raise ValueError, error_msg
+      else:
+        self.flow_concurso_concursorange_histfreq_wpattern()
+        return self.getBorderTupleOfTilSets(self, retry=True)
+    return self.tilsetobj.getBorderTupleOfTilSets()
+    
   # should be private to class, triggered by flow_concursorange_histfreq_wpattern()
   def calc_concursotil_wpattern(self):
-    tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
+    self.tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
     dezenas = self.concurso.get_dezenas()
-    tilpatternlist = [0] * tilsetobj.tilN # tilN is the same as slots
+    tilpatternlist = [0] * self.tilsetobj.tilN # tilN is the same as slots
     for dezena in dezenas:
-      for i in range(len(tilsetobj.tilSets)):
-        if dezena in tilsetobj.tilSets[i]:
+      for i, tilset in enumerate(self.tilsetobj.tilSets):
+        if dezena in tilset:
           # print 'found', dezena, 'inside i=',i, tilSets[i]   
           tilpatternlist[i] += 1
           break
@@ -136,6 +156,25 @@ class ConcursoTil(TilPattern): #(Jogo):
     self.set_wpattern(wpattern)
     # self.tilpatternlist = tilpatternlist 
   
+  def get_percentual_freqs_per_til(self):
+    percentual_freqs_per_til = []
+    for tilset in self.tilsetobj.tilSets:
+      tilset_total_freq = 0
+      for dezena in tilset:
+        freq = self.get_freq_of_dozen(dezena)
+        tilset_total_freq += freq
+      # percentual_per_til = 100 * tilset_total_freq / self.histfreq_sum # this version is supposedly quicker in computation time 
+      percentual_per_til = int( round ( 100.0 * tilset_total_freq / self.histfreq_sum , 0) ) 
+      percentual_freqs_per_til.append(percentual_per_til)
+    return percentual_freqs_per_til
+
+  def get_tilpattern_interlaced_with_n_dozens_per_til(self):
+    n_dozens_per_til = []
+    for tilset in self.tilsetobj.tilSets:
+      n_dozens_per_til.append(len(tilset))
+    tilpatternlist = [c for c in self.wpattern]      
+    return zip(tilpatternlist, n_dozens_per_til, self.get_percentual_freqs_per_til())
+
   def is_same_tilpattern(self, tilpattern):
     if self.concursotilpattern == tilpattern:
       return True
