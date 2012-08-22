@@ -34,7 +34,16 @@ class TilDefiner(object):
 
 
 class TilProducer(TilDefiner):
-
+  '''
+  This class buffers all tilpatterns that its tildefiner object produces. This buffer is kept in the variable self.alltilpatterns
+  
+  Eg. Suppose tildefiner is TilDefiner(n_slots=4, soma=6), thus, all wpatterns (word-patterns) will be:
+      '0006', '0015', '0024', ... , '6000'  :: altogether, there will be x patterns
+    
+    Notice that the order of these patterns differ depending on the originating algorithm.
+      The one indicated above comes from the "Number Base"-like algorithm, which increases patterns as if they were numbers of base 7 (soma[=6] + 1)
+      
+  '''
   def __init__(self, n_slots=None, soma=None):
     super(TilProducer, self).__init__(n_slots, soma)
     self.partition_index = None

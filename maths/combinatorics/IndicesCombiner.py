@@ -9,7 +9,7 @@ import sys
 import localpythonpath
 localpythonpath.setlocalpythonpath()
 from lib import lambdas
-import algorithmsForCombinatorics as afc
+# import algorithmsForCombinatorics as afc
 
 class IndicesCombiner(object):
   '''

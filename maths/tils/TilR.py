@@ -21,8 +21,34 @@ class Dict2(dict):
       self[k]=1
       
 class TilR(object):
+  '''
+  This class (TilR) slots 1/nth, where n is the number of slots, of dozens in their frequency ascending order.
   
-  def __init__(self, n_slots = 5, concurso = None, concurso_range = None):
+  As an illustration, suppose total elements is 60. Then, quintils (TilR n_slots=5) will order all dozens in their frequency order into 5 sets (slots).
+  
+  The difference between TilR and Til is following:
+  
+  Til cuts sets limits by equal distance frequencies, so the frequency is the determing factor in slicing dozens into slots
+  TilR cuts sets limits by equal (or so, depending on division remainders) number of dozens
+  
+  Eg. outlining this difference:
+   1) in TilR(n_slots=5) each slots (metric set) has exactly 12 dozens
+   2) in Til(n_slots=5) each slots (metric set) has a variable number of dozens, 
+      and it's not surprising to observe an empty set (or a set with very few dozens) and another one with much more than 12 in it
+  
+  '''
+  def __init__(self, n_slots = 5, concurso = None, inclusive=False, concurso_range = None):
+    '''
+    Parameter "inclusive" (attribute self.CONCURSO_PROPER_INCLUDED_IN_RANGE) does one important differenciation in the process
+    
+    This differenciation is the following
+    1) when one wants to observe/analyze a drawn sorteio, the sorteio itself should not be not counted, ie, should not contribute to the frequencies
+    2) when one wants to "bet" a coming (not happened) sorteio, the last concurso should contribute to the frequencies
+    
+    In other words, when analyzing, inclusive is False; when deriving for bets, inclusive is True 
+    
+    '''
+    self.CONCURSO_PROPER_INCLUDED_IN_RANGE = inclusive
     self.set_concurso(concurso)
     self.set_concurso_range(concurso_range)
     self.set_n_slots(n_slots)
@@ -52,7 +78,10 @@ class TilR(object):
   def set_concurso_range(self, concurso_range):
     if concurso_range == None:
       bottomconc = 1
-      topconc = self.concurso.nDoConc - 1
+      if self.CONCURSO_PROPER_INCLUDED_IN_RANGE:
+        topconc = self.concurso.nDoConc
+      else:
+        topconc = self.concurso.nDoConc - 1
       self.concurso_range = (bottomconc, topconc)
     else:
       self.concurso_range = concurso_range

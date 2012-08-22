@@ -12,7 +12,210 @@ from IndicesCombiner import IndicesCombiner
 import algorithmsForCombinatorics as afc
 
 
+class WorkSet(object):
+  '''
+  The purpose of this class is to generate all combinations n by c of an n-element "workSet" combined c by c, where 0 < c <= n
+  
+  Each combination is "yielded" from each call to method next(). After the last combination, None is returned.
+  
+  The combination is done, under the hoods, by the IndicesCombiner attribute.  This happens in the line:
+    combined_set = [self.workSet[i] for i in indices]
+    
+  Eg.
+
+  The code fragment
+  
+  s = ['a','b','c']; combsize = 2
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize, False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+  
+  Results in
+    ['a', 'b']
+    ['a', 'c']
+    ['b', 'c']
+
+  The IndicesCombiner generated the indices for s's subsets: 0,1; 0,2; and 1,2 
+  '''
+
+  def __init__(self, workSet, indicesCombiner):
+    self.workSet = workSet
+    self.total_combinations = None
+    self.indicesCombiner = indicesCombiner
+    self.restart()
+
+  def restart(self):
+    self.do_restart = True
+    
+  def get_total_combinations(self):
+    '''
+    total_combinations is a combination n by c, the same that is known by n!((n-c)!c!)
+    where n is workSet's size and c is IndicesCombiner's quantity 
+    '''
+    if self.total_combinations != None:
+      return self.total_combinations
+    n = len(self.workSet)
+    c = self.indicesCombiner.size
+    self.total_combinations = afc.combineNbyC(n, c)
+    return self.total_combinations
+
+  def next(self):
+    '''
+    next_combination
+    '''
+    if self.do_restart:
+      indices = self.indicesCombiner.first()
+      self.do_restart = False
+    else:
+      indices = self.indicesCombiner.next()
+    if indices == None:
+      return None
+    combined_set = [self.workSet[i] for i in indices]
+    return combined_set
+
 class SetsCombiner(object):
+  '''
+  This class works under a 2-way process:
+  1) First, one or more of workSetWithQuantity tuples should be added to the object
+  2) when all workSetWithQuantity tuples have been added to, calls to method next_combination() will "yield" one combination at a time, until None
+  
+  Eg.
+  # ===========================================
+  sc = SetsCombiner()
+  workSetWithQuantity = ([1,2,3],2)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  workSetWithQuantity = ([4,5],2)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  workSetWithQuantity = ([6,7,8,9],3)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  c=0
+  for each in sc.next_combination():
+    c+=1
+    print c,'combination', each
+  # ===========================================
+  (( This piece of code results in: ))
+
+  1 combination [1, 2, 4, 5, 6, 7, 8]
+  2 combination [1, 2, 4, 5, 6, 7, 9]
+  3 combination [1, 2, 4, 5, 6, 8, 9]
+  4 combination [1, 2, 4, 5, 7, 8, 9]
+  5 combination [1, 3, 4, 5, 6, 7, 8]
+  6 combination [1, 3, 4, 5, 6, 7, 9]
+  7 combination [1, 3, 4, 5, 6, 8, 9]
+  8 combination [1, 3, 4, 5, 7, 8, 9]
+  9 combination [2, 3, 4, 5, 6, 7, 8]
+  10 combination [2, 3, 4, 5, 6, 7, 9]
+  11 combination [2, 3, 4, 5, 6, 8, 9]
+  12 combination [2, 3, 4, 5, 7, 8, 9]
+  
+  (( Individually, each workSet yields the sets below: ))
+  
+  workSetWithQuantity = ([1,2,3],2) yields
+  [1, 2]
+  [1, 3]
+  [2, 3]
+  ------------------------------
+  workSetWithQuantity = ([4,5],2) yields
+  [4, 5]
+  ------------------------------
+  workSetWithQuantity = ([6,7,8,9],3) yields
+  [6, 7, 8]
+  [6, 7, 9]
+  [6, 8, 9]
+  [7, 8, 9]
+
+  The 3 cross-combined results in 12 sets (3*1*4=12)
+  '''
+  def __init__(self):
+    self.workSetObjs = []
+    # after the first call to method combine(), object must not add workSets anymore
+    self.lock_workSets_insertion = False
+    self.LAST_INDEX = None
+    self.total_combinations = None
+
+  def instantiateIndicesCombiner(self, workSet, quantity):
+    indicesCombiner_upLimit = len(workSet) - 1  # ie, index of last element
+    indicesCombiner_size = quantity  
+    indicesCombiner_mode = False
+    indicesCombiner = IndicesCombiner(indicesCombiner_upLimit, indicesCombiner_size, indicesCombiner_mode)
+    return indicesCombiner 
+
+  def addSetWithQuantities(self, workSetWithQuantity):
+    if self.lock_workSets_insertion:
+      error_msg = 'lock_workSets_insertion is True, ie, an inconsistent action (either static or dynamic) was issued. First all workSets are added, then the first call to combine() locks further additions.'
+      raise IndexError, error_msg
+    workSet = workSetWithQuantity[0]
+    quantity = workSetWithQuantity[1]
+    workSetObj = WorkSet(workSet, self.instantiateIndicesCombiner(workSet, quantity) )
+    self.workSetObjs.append(workSetObj)
+    
+  def get_total_combinations(self):
+    if self.total_combinations != None:
+      return self.total_combinations
+    self.total_combinations = 1
+    for workSet in self.workSetObjs:
+      self.total_combinations *= workSet.get_total_combinations() 
+    return self.total_combinations
+
+    return self.each_combiner_size_list
+
+  def initialize_sets_to_join(self):
+    self.sets_to_join = [[]] * len(self.workSetObjs)
+    # self.horizontal_combined_sets = [] # to be used when it's desired to exchange the yield option for a memory-hungry solution
+    # prepare first horizontal combined set!; run only once
+    for i, workSetObj in enumerate(self.workSetObjs[:-1]):
+      self.sets_to_join[i] = workSetObj.next()
+    
+  def join_sets(self):
+    joint = []
+    for s in self.sets_to_join:
+      joint += s
+    return joint
+
+  def go_leftsideways_to_combine(self, depth):
+    '''
+    This (somewhat light-weight) method is recursive (however notice that the "heavy-weight" combination generator is NOT recursive in this class, though it uses recursive in a child class)
+    '''
+    self.workSetObjs[depth].restart()
+    if depth < self.LAST_INDEX:
+      # adjust self.sets_to_join for all slots, except the last (which already rounds in the combine() method) 
+      self.sets_to_join[depth] = self.workSetObjs[depth].next()
+    depth -= 1
+    if depth < 0:
+      # "Game Over" - processing is finished
+      return False
+    next_set = self.workSetObjs[depth].next()
+    if next_set != None:
+      self.sets_to_join[depth] = next_set
+      return True
+    else:
+      return self.go_leftsideways_to_combine(depth)
+    
+  def next_combination(self):
+    '''
+    This method is not recursive. It has a while-loop with a "yield" (if right-most subset is formed not None) and go_leftsideways_to_combine() (when right-most subset is formed None)
+    The exit from the 1-while-loop happens when go_leftsideways_to_combine() returns False, which indicates that all combinations have already been produced
+    '''
+    self.lock_workSets_insertion = True # from here onwards, no further workSet can be added
+    self.LAST_INDEX = len(self.workSetObjs) - 1
+    self.initialize_sets_to_join()
+    while 1:
+      next_set = self.workSetObjs[self.LAST_INDEX].next()
+      if next_set != None:
+        self.sets_to_join[self.LAST_INDEX] = next_set
+        horizontal_combined_set = self.join_sets()
+        #self.horizontal_combined_sets.append(horizontal_combined_set) 
+        yield horizontal_combined_set
+      else:
+        if self.go_leftsideways_to_combine(self.LAST_INDEX):
+          continue
+        else:
+          break
+
+
+class SetsCombinerMemoryIntensive(object):
   '''
   This class has a "bridge" method called combineSets(self)
     that calls doRecursiveSetsCombination(self.listOfTuple2)
@@ -39,90 +242,77 @@ class SetsCombiner(object):
   The print-out result is the 9-element set:
   
       [[1, 2, 4, 5], [1, 2, 4, 6], [1, 2, 5, 6], [1, 3, 4, 5], [1, 3, 4, 6], [1, 3, 5, 6], [2, 3, 4, 5], [2, 3, 4, 6], [2, 3, 5, 6]]
-      
+    
+   Observations on performance:
+   1) With this class, SetsCombinerMemoryIntensive, (having recursion, plus buffering all combinations)    
+      gencounter 1634688 expected 1634688
+      real  0m10.812s
+      user  0m9.985s
+      sys  0m0.380s
+
+   2) With class SetsCombiner (above, having while (instead of recursion), plus having "yield", instead of buffering all combinations)    
+      gencounter 1634688 expected 1634688
+      real  0m6.866s
+      user  0m6.728s
+      sys  0m0.064s
+
+  Conclusion, use preferencially SetsCombiner instead of this class (SetsCombinerMemoryIntensive)  
   '''
 
   def __init__(self):
 
     self.workSetsWithQuantities = [] #  # workSetsWithQuantities was formerly listOfTuple2
-    self.allRecursiveCombinations = None  # this is set if the recursive computing method is called 
     self.total_combinations = None  # this is set when non-recursive computing is chosen
 
   def addSetWithQuantities(self, tupleIn):
     self.workSetsWithQuantities.append(tupleIn)
 
-  '''
-  def recursiveCombineSets(self):
-    self.allRecursiveCombinations = doRecursiveSetsCombination(self.workSetsWithQuantities)
-
-  def getAllCombinationsAfterRecursiveCombine(self):
-    return self.allRecursiveCombinations
-  '''
-
-  def createWorkSetsWithIndicesCombiner(self, workSet, icObj):
+  def getAllCombinationsRecursive(self, index, being_combined=[]):
     '''
-    This method uses "yield"
-    This method does not use "self"
+    Memory-hungry !
     '''
-    for indicesArray in icObj.iterate_all_sets(): # iterate_all_sets() yields its values 
-      formingSet = []
-      for indiceArray in indicesArray:
-        formingSet.append(workSet[indiceArray])
-      yield formingSet
-
-  def generateAllCombinationsForWorkDictNonRecursivelyEntrance(self, workSetAndQuantity):
-    workSet = workSetAndQuantity[0]
-    quantity = workSetAndQuantity[1]
-    if quantity > len(workSet):
-      errorMsg = ' generateAllCombinationsForWorkDict(workSetAndQuantity) :: quantity=%d > len(workSet)=%d cannot happen ' %(quantity, len(workSet))
-      raise ValueError, errorMsg 
-    if quantity == 0:
+    # the trick is here is to "imagine" a 2D assignment (the next loop goes vertically, the previous, horizontally)
+    # print 'allCombinations', allCombinations, 'index', index 
+    if index > len(self.workSetsWithQuantities) - 1 :
       return []
-    return None # None here means OK to continue processing input 
+    workSetWithQuantity = self.workSetsWithQuantities[index] 
+    for workSet in generateAllCombinationsForWorkDict(workSetWithQuantity):
+      being_combined_loop_added = being_combined + workSet 
+      received = self.getAllCombinationsRecursive(index + 1, being_combined_loop_added)
+      # the "final" return, at the end, means return None; if so, ie, if received is None, just loop onwards, if it's not None, it's a combined set to be added to all combined sets
+      if received != None: 
+        being_combined_loop_added += received 
+        self.allCombinations.append(being_combined_loop_added[:])
+    return
 
-  def generateAllCombinationsForWorkDictNonRecursively(self, workSetAndQuantity):
-    '''
-    This method uses "yield"
-    '''
-    workSet = workSetAndQuantity[0]
-    quantity = workSetAndQuantity[1]    
-    if quantity == 1 and len(workSet) == 1:
-      return  workSet[:]
-    else:
-      icObj = IndicesCombiner(len(workSet)-1, quantity, False)
-      return createWorkSetsWithIndicesCombiner(workSet, icObj)
-
-  def getAllSetsCombinationNonRecursively(self):
-    '''
-    This method uses "yield"
-    '''
-    if len(self.workSetsWithQuantities) == 0:
-      yield [[]]
-      return 
-    allCombinations = [[]]
-    workSetsWithQuantities = list(self.workSetsWithQuantities) # hard-copy for pop()'s would destroy it (pop out the copy's elements!)
-    while len(workSetsWithQuantities) > 0:
-      workSetAndQuantity = workSetsWithQuantities.pop()
-      '''direction_to_take = self.generateAllCombinationsForWorkDictNonRecursivelyEntrance(workSetAndQuantity)
-      if direction_to_take != None:
-        return allCombinations'''
-      # if direction_to_take == None
-      for workSet in self.generateAllCombinationsForWorkDictNonRecursively(workSetAndQuantity):
-        for eachCombination in allCombinations:
-          #print 'summing', workSet, eachCombination
-          newFormingSet = workSet + eachCombination
-          newFormingSet.sort()
-          yield newFormingSet 
-          allCombinations.append(newFormingSet)
+  def getAllCombinations(self): # Entrance to recursive method getAllCombinationsRecursive()
+    #return 
+    self.allCombinations = []
+    self.getAllCombinationsRecursive(index=0, being_combined=[])
+    '''c=0
+    for comb in self.allCombinations:
+      c+=1
+      print c, 'Combination', comb''' 
+    return self.allCombinations
 
   def calculate_total_combinations(self):
-    self.total_combinations = 0
+    self.total_combinations = 1
     for workSetWithQuantity in self.workSetsWithQuantities:
       workSet = workSetWithQuantity[0]
       quantity = workSetWithQuantity[1]
       n_combinations_for_workSet = afc.combineNbyC(len(workSet), quantity)
-      self.total_combinations += n_combinations_for_workSet
+      self.total_combinations *= n_combinations_for_workSet
     return self.total_combinations 
+
+  def get_total_combinations(self):
+    '''
+    total_combinations is a combination n by c, the same that is known by n!((n-c)!c!)
+    where n is workSet's size and c is IndicesCombiner's quantity 
+    '''
+    if self.total_combinations != None:
+      return self.total_combinations
+    self.calculate_total_combinations()
+    return self.total_combinations
 
   def __len__(self):
     if self.allRecursiveCombinations != None:
@@ -152,10 +342,8 @@ class SetsCombinerWithTils(SetsCombiner):
 def createWorkSetsWithIndicesCombiner(workSet, icObj):
   workSets = []
   for indicesArray in icObj.allSets(): # implement an iterator with yield in the future
-    formingSet = []
-    for indiceArray in indicesArray:
-      formingSet.append(workSet[indiceArray])
-    workSets.append(formingSet)
+    set_under_indices = [workSet[i] for i in indicesArray]
+    workSets.append(set_under_indices)
   return workSets
     
 def generateAllCombinationsForWorkDict(workSetAndQuantity):
@@ -214,9 +402,56 @@ def setMultiply(combineArray, cadeia=[], collected=[]):
       nothing = setMultiply(combineArray[1:], list(cadeia)+[elem], collected)
   return collected
 
-                          
+def simulate_set_multiply():
+  # ===========================================
+  # sc = SetsCombiner()
+  sc = SetsCombinerMemoryIntensive()
+  workSetWithQuantity = ([1,2,3],2)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  workSetWithQuantity = ([4,5],2)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  workSetWithQuantity = ([6,7,8,9],3)
+  sc.addSetWithQuantities(workSetWithQuantity)
+  c=0
+  for each in sc.getAllCombinations():#sc.next_combination():
+    c+=1
+    print c,'combination', each
+
+  print 'total comb',  sc.get_total_combinations()
+
+def adhoc_test3():
+  s = ['a','b','c']; combsize = 2
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+  print '-'*30
+
+  s = [4,5]; combsize = 2
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+  print '-'*30
+
+  s = [6,7,8,9]; combsize = 3
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+   
 def adhoc_test():
-  sc = SetsCombiner()
+  simulate_set_multiply()
+  
+def adhoc_test2():
+  # sc = SetsCombiner()
+  sc = SetsCombinerMemoryIntensive()
   worksetWithQuantity = ([1,2,3], 2)
   sc.addSetWithQuantities(worksetWithQuantity)
   worksetWithQuantity = ([4,5,6], 2)
@@ -232,7 +467,7 @@ def test_yield():
   for i in ynext():
     print i
 
-def adhoc_test2():
+def adhoc_test3():
   test_yield()
   
 def look_for_adhoctest_arg():
