@@ -31,12 +31,22 @@ FilterList = FilterNamesDict.keys()
 FilterList.sort()
 
 
-import funcs
-
 class Filtre(object):
-  def __init__(self, eitherJogosObjOrS2):
-    self.jogosObj = funcs.returnJogosObj(eitherJogosObjOrS2)
 
+  def __init__(self, jogoGenerator, filter_functions):
+    # self.jogosObj = funcs.returnJogosObj(eitherJogosObjOrS2)
+    self.jogoGenerator = jogoGenerator
+    self.filter_functions = filter_functions
+
+  def process(self):
+    jogo = self.jogoGenerator.next()
+    while jogo:
+      if jogo.does_it_pass_filter_functions(self.filter_functions):
+        self.save(jogo)
+      jogo = self.jogoGenerator.next()
+    
+  def save(self):
+    pass
 
 def getCheckerObjById(filtre, jogosObj):
   if filtre in FilterList:

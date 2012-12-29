@@ -42,11 +42,16 @@ class GeneratorTilR(object):
         if n_elems_in_the_slots == 0:
           continue
         sc.addSetWithQuantities(workSet)
-      for combined in sc.next_combination():
+      for self.combined in sc.next_combination():
         gencounter+=1
-        # print gencounter, combined
+        self.save(self.combined)
+        # print gencounter, self.combined
     print 'gencounter', gencounter, 'expected', expected 
       #self.tilproducernb.move_to_wpattern(wpattern)
+
+  def save(self):
+    pass
+
 
   def generateMemoryHungry(self):
     gencounter = 0; expected = 1634688
@@ -61,8 +66,9 @@ class GeneratorTilR(object):
           continue
         sc.addSetWithQuantities(workSet)
       allCombinations = sc.getAllCombinations()
-      for combined in allCombinations:
+      for self.combined in allCombinations:
         gencounter+=1
+        self.save(self.combined)
         #print gencounter, combined
     print 'gencounter', gencounter, 'expected', expected 
 
