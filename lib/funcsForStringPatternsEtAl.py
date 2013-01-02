@@ -10,6 +10,26 @@ letters52 = string.letters
 import lambdas
 
 
+zfill  = lambda s, zfill_n : str(s).zfill(zfill_n)
+zfill2 = lambda s : str(s).zfill(2)
+ 
+def convert_intlist_to_spaced_zfillstr(dezenas_in, zfill_n=2, do_sort=False):
+  '''
+  This function converts a dozens list to a string
+  Eg.:
+  f([1,2,3,4,5,6]) ==>> '01 02 03 04 05 06'
+  '''
+  if do_sort:
+    dezenas_in.sort()
+  if zfill_n < 2:
+    return dezenas_in
+  if zfill_n==2:
+    dezenas = map(zfill2, dezenas_in)
+  else:
+    dezenas = map(zfill, dezenas_in, [zfill_n]*len(dezenas_in))
+  dezenas = ' '.join(dezenas)
+  return dezenas
+
 def listToStr(listIn):
   outStr = ''
   for element in listIn:

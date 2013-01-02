@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import numpy, pickle, sys, time
+
+import localpythonpath
+localpythonpath.setlocalpythonpath()
+
+import local_settings as ls
+
+from lib import filter_functions # get_line_patterns, get_column_patterns etc. 
+from generators.GeradorIter import Gerador 
+
 
 FilterNamesDict = {}
 
@@ -31,22 +41,59 @@ FilterList = FilterNamesDict.keys()
 FilterList.sort()
 
 
+class FunctionModel(object):
+
+  def __init__(self, name):
+    self.name = name
+  
+  def set_function(self, func):
+    self.func = func
+    
+  def set_params(self, *params):
+    self.params = params
+    
+  def apply(self, jogo):
+    return self.func(jogo, *self.params)
+  
+
 class Filtre(object):
 
-  def __init__(self, jogoGenerator, filter_functions):
+  def __init__(self, jogoGenerator, filter_function_list, result_pickled_fileobj):
     # self.jogosObj = funcs.returnJogosObj(eitherJogosObjOrS2)
-    self.jogoGenerator = jogoGenerator
-    self.filter_functions = filter_functions
+    self.jogoGenerator          = jogoGenerator
+    self.filter_function_list   = filter_function_list
+    self.result_pickled_fileobj = result_pickled_fileobj
+    self.n_filter_passed_games  = 0
 
   def process(self):
-    jogo = self.jogoGenerator.next()
-    while jogo:
-      if jogo.does_it_pass_filter_functions(self.filter_functions):
-        self.save(jogo)
-      jogo = self.jogoGenerator.next()
-    
-  def save(self):
-    pass
+    counter = 0
+    try:
+      for jogo in self.jogoGenerator:
+        jogo = numpy.array(jogo)
+        counter += 1
+        print self.n_filter_passed_games, '/', counter, 'jogo', jogo
+        if self.does_it_pass_filter_functions(jogo):
+          self.save(jogo)
+    except KeyboardInterrupt:
+      print ' Closing pickled result_pickled_fileobj at' , jogo
+      # self.result_pickled_fileobj.close()
+
+  def save(self, jogo):
+    self.n_filter_passed_games += 1
+    print '-'*30
+    print self.n_filter_passed_games, ' Saving jogo', jogo
+    print '-'*30
+    self.result_pickled_fileobj.dump(jogo)
+
+  def does_it_pass_filter_functions(self, jogo):
+    for func in self.filter_function_list:
+      print ' [does_it_pass_filter_functions()]', func.name,
+      if not func.apply(jogo):
+        print 'False'
+        return False
+      print 'True'
+    return True
+
 
 def getCheckerObjById(filtre, jogosObj):
   if filtre in FilterList:
@@ -268,6 +315,53 @@ class RulerRepeat(object):
     self.minImposedRepeat     = 3 
 '''
 
+def adhoc_test():
+  # jogo = range(1, 7);
+  # jogo = [1,1,1,1,1,1]
+  jogo = [2,2,2,2,2,2]
+  in_between=(4,5)
+
+  # bool_result = filter_functions.filter_within_n_impares(jogo, in_between)
+  # print 'filter_within_n_impares(',jogo,',', in_between, ') ==>>', bool_result
+
+  filter_function_list = []
+  # instanciate
+  funct = FunctionModel('filter_within_n_impares')
+  funct.set_function(filter_functions.filter_within_n_impares)
+  in_between = 3,3
+  funct.set_params(in_between) 
+  filter_function_list.append(funct)
+  # instanciate
+  funct = FunctionModel('filter_sum_within')
+  funct.set_function(filter_functions.filter_sum_within)
+  in_between = 201,201
+  funct.set_params(in_between) 
+  filter_function_list.append(funct)
+  # instanciate
+  funct = FunctionModel('filter_in_within_line_patterns')
+  funct.set_function(filter_functions.filter_in_within_line_patterns)
+  line_patterns = ['102021']  
+  funct.set_params(line_patterns) 
+  filter_function_list.append(funct)
+  # instanciate
+  funct = FunctionModel('filter_in_within_column_patterns')
+  funct.set_function(filter_functions.filter_in_within_column_patterns)
+  column_patterns = ['1101001110']  
+  funct.set_params(column_patterns) 
+  filter_function_list.append(funct)
+
+  jogoGerador = Gerador()
+  outputFilename = ls.GENERATED_DATA_DIR + str(time.time()) + '.blob'
+  outputFileObj  = open(outputFilename, 'w')
+  pickled_fileobj = pickle.Pickler(outputFileObj, pickle.HIGHEST_PROTOCOL) 
+  filtro_obj = Filtre(jogoGerador, filter_function_list, pickled_fileobj)
+  filtro_obj.process()
+   
+  
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+
 if __name__ == '__main__':
-  # testRepeat()
-  pass
+  look_for_adhoctest_arg()

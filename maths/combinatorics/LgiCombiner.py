@@ -6,7 +6,7 @@ import sys
 SUBINDO  = 2
 DESCENDO = 1
 import IndicesCombiner as comb # for the comb(n, m) function
-import lambdas
+#import lambdas
 
 counter = 0 # global
 def checkUpAmountInArrayCarried(carriedArray, lgi):
