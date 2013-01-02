@@ -338,16 +338,22 @@ def adhoc_test():
   funct.set_params(in_between) 
   filter_function_list.append(funct)
   # instanciate
-  funct = FunctionModel('filter_in_within_line_patterns')
-  funct.set_function(filter_functions.filter_in_within_line_patterns)
-  line_patterns = ['102021']  
-  funct.set_params(line_patterns) 
+#  funct = FunctionModel('filter_in_within_line_patterns')
+#  funct.set_function(filter_functions.filter_in_within_line_patterns)
+#  line_patterns = ['102021']  
+  funct = FunctionModel('filter_in_within_line_drawing')
+  funct.set_function(filter_functions.filter_in_within_line_drawings)
+  line_drawings = ['2211']  
+  funct.set_params(line_drawings) 
   filter_function_list.append(funct)
   # instanciate
-  funct = FunctionModel('filter_in_within_column_patterns')
-  funct.set_function(filter_functions.filter_in_within_column_patterns)
-  column_patterns = ['1101001110']  
-  funct.set_params(column_patterns) 
+#  funct = FunctionModel('filter_in_within_column_patterns')
+#  funct.set_function(filter_functions.filter_in_within_column_patterns)
+#  column_patterns = ['1101001110']  
+  funct = FunctionModel('filter_in_within_column_drawing')
+  funct.set_function(filter_functions.filter_in_within_column_drawings)
+  column_drawings = ['111111']  
+  funct.set_params(column_drawings) 
   filter_function_list.append(funct)
 
   jogoGerador = Gerador()

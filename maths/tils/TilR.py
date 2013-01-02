@@ -100,16 +100,33 @@ class TilR(object):
       self.tilrsets.append(tilrset)
       index_ini = index_fim; index_fim += self.n_elems_per_slot 
 
-  def get_wpattern(self, reprocess=False):
-    if self.wpattern != None and not reprocess:
-      return self.wpattern
+  def get_tilrwpattern_of_game(self, dezenas):
+    '''
+    This method takes a tuple of dozens (a game) and calculates its TilR(n) pattern
+    Example:
+    game = 1,7,13,24,35,46
+    Suppose TilR(n=5):
+      freq(d1=1)=slot3 
+      freq(d2=7)=slot3 
+      freq(d3=13)=slot5
+      freq(d4=24)=slot1
+      freq(d5=35)=slot2
+      freq(d6=46)=slot1
+    Its TilR(5) pattern will be 21201 which means 2 dozens in slot 1, 1 dozen in slot 2 and so on
+    ''' 
     tilrpattern = [0]*len(self.tilrsets)
-    for dezena in self.concurso.get_dezenas():
+    for dezena in dezenas:
       for i, tilr in enumerate(self.tilrsets):
         if dezena in tilr:
           tilrpattern[i]+=1
           break
-    self.wpattern = ''.join(map(str, tilrpattern))
+    tilrwpattern = ''.join(map(str, tilrpattern))
+    return tilrwpattern
+  
+  def get_wpattern(self, reprocess=False):
+    if self.wpattern != None and not reprocess:
+      return self.wpattern
+    self.wpattern = self.get_tilrwpattern_of_game(self.concurso.get_dezenas())
     return self.wpattern
   
 def run_history():

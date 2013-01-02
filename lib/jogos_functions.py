@@ -28,25 +28,56 @@ lambda_par_impar = lambda x : x % 2  # when even, 0 (which is also False) return
 def get_n_impares(jogo):
   return len(filter(lambda_par_impar, jogo))
 
-def get_line_pattern(jogo):
-  line_pattern = ''; tens_digit_dict = {}
+def get_line_pattern_and_drawing(jogo):
+  tens_digit_dict = {}
   for line in range(6): tens_digit_dict[line] = 0 
   for dezena in jogo:
     tens_digit = (dezena - 1) / 10  # integer division!
     tens_digit_dict[tens_digit] += 1
+  return tens_digit_dict
+
+def get_line_pattern(jogo):
+  line_pattern = ''
+  tens_digit_dict = get_line_pattern_and_drawing(jogo)
   for line in range(6):
     line_pattern += str(tens_digit_dict[line])
   return line_pattern
 
-def get_column_pattern(jogo):
-  column_pattern = ''; unit_minus_one_digit_dict = {}
+f_not_zero = lambda x : x != 0
+def get_line_drawing(jogo):
+  tens_digit_dict = get_line_pattern_and_drawing(jogo)
+  quantities = tens_digit_dict.values()
+  quantities = filter(f_not_zero, quantities)
+  quantities.sort()
+  quantities.reverse()
+  quantities = map(str, quantities)
+  drawing = ''.join(quantities)
+  return drawing
+
+def get_column_pattern_and_drawing(jogo):
+  unit_minus_one_digit_dict = {}
   for column in range(10): unit_minus_one_digit_dict[column] = 0 
   for dezena in jogo:
     remainder = (dezena - 1) % 10
     unit_minus_one_digit_dict[remainder] += 1
+  return unit_minus_one_digit_dict
+
+def get_column_pattern(jogo):
+  unit_minus_one_digit_dict = get_column_pattern_and_drawing(jogo)
+  column_pattern = ''
   for column in range(10):
     column_pattern += str(unit_minus_one_digit_dict[column])
   return column_pattern
+
+def get_column_drawing(jogo):
+  unit_minus_one_digit_dict = get_column_pattern_and_drawing(jogo)
+  quantities = unit_minus_one_digit_dict.values()
+  quantities = filter(f_not_zero, quantities)
+  quantities.sort()
+  quantities.reverse()
+  quantities = map(str, quantities)
+  drawing = ''.join(quantities)
+  return drawing
 
 def get_consecutive_pattern(jogo, to_sort = False):
   if to_sort:
@@ -74,7 +105,9 @@ def get_n_repeats_against_contrajogo(jogo, contrajogo):
 
 def test_jogo_metrics(jogo):
   print jogo, get_line_pattern(jogo)
+  print jogo, get_line_drawing(jogo)
   print jogo, get_column_pattern(jogo)
+  print jogo, get_column_drawing(jogo)
   print jogo, get_consecutive_pattern(jogo)
 
 def adhoc_test():

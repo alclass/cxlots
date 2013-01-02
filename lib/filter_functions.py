@@ -24,9 +24,21 @@ def filter_in_within_line_patterns(jogo, line_patterns):
     return True
   return False
 
+def filter_in_within_line_drawings(jogo, line_drawings):
+  line_drawing = jogos_functions.get_line_drawing(jogo)
+  if line_drawing in line_drawings:
+    return True
+  return False
+
 def filter_in_within_column_patterns(jogo, column_patterns):
   column_pattern = jogos_functions.get_column_pattern(jogo)
   if column_pattern in column_patterns:
+    return True
+  return False
+
+def filter_in_within_column_drawings(jogo, column_drawings):
+  column_drawing = jogos_functions.get_column_drawing(jogo)
+  if column_drawing in column_drawings:
     return True
   return False
 
