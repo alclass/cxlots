@@ -350,12 +350,21 @@ def adhoc_test():
 #  funct = FunctionModel('filter_in_within_column_patterns')
 #  funct.set_function(filter_functions.filter_in_within_column_patterns)
 #  column_patterns = ['1101001110']  
+  # instanciate
   funct = FunctionModel('filter_in_within_column_drawing')
   funct.set_function(filter_functions.filter_in_within_column_drawings)
   column_drawings = ['111111']  
   funct.set_params(column_drawings) 
   filter_function_list.append(funct)
 
+  # instanciate
+  funct = FunctionModel('filter_in_within_column_drawing')
+  funct.set_function(filter_functions.filter_in_within_column_drawings)
+  column_drawings = ['111111']  
+  funct.set_params(column_drawings) 
+  filter_function_list.append(funct)
+
+  
   jogoGerador = Gerador()
   outputFilename = ls.GENERATED_DATA_DIR + str(time.time()) + '.blob'
   outputFileObj  = open(outputFilename, 'w')

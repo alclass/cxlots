@@ -5,6 +5,22 @@ import sys
 
 '''
 
+
+def get_n_acertos(jogo, contrajogo):
+  n_acertos = 0
+  for dezena in jogo:
+    if dezena in contrajogo:
+      n_acertos += 1
+  return n_acertos
+
+def get_coincides_histogram(jogo_dezenas, previous_games_as_dozens):
+  coincides_histogram = {}
+  for i in range(6): coincides_histogram[i]=0
+  for previous_game in previous_games_as_dozens:
+    n_acertos = get_n_acertos(jogo_dezenas, previous_game)
+    coincides_histogram[n_acertos]+=1
+  return coincides_histogram 
+
 def has_game_equal_or_more_than_n_acertos(compare_dezenas, all_jogos_as_dezenas, cant_have_n_acertos = 3):
   '''
   This function is a filter-like operator that runs compare_dezenas (a list of ints) against a history of games

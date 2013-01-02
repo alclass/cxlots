@@ -5,6 +5,7 @@ import sys
 
 '''
 from lib import jogos_functions # get_line_patterns, get_column_patterns etc.
+from maths.tils import TilR
 
 def filter_sum_within(jogo, in_between):
   s = sum(jogo)
@@ -58,6 +59,11 @@ def filter_in_having_consecutive_patterns(jogo, consecutive_patterns):
     return True
   return False
 
+def filter_in_with_in_tilr_list(jogo, tilr_list, n_slots=5, up_to_concurso=None):
+  tilrwpattern = TilR.get_tilrwpattern_of_game(jogo, n_slots, up_to_concurso)
+  if tilrwpattern in tilr_list:
+    return True
+  return False
 
 def adhoc_test():
   '''

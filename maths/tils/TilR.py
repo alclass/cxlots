@@ -7,6 +7,7 @@ TilR.py
 import sys
 
 import localpythonpath
+from models.ConcursoHTML import ConcursoHTML
 localpythonpath.setlocalpythonpath()
 
 from models.Concurso import ConcursoBase
@@ -145,6 +146,11 @@ def run_history():
     print wpatt6, wpatterndict[wpatt6]
   print len(wpatterndict)
       
+def get_tilrwpattern_of_game(dezenas, n_slots=5, up_to_concurso=None):
+  if up_to_concurso == None:
+    up_to_concurso = ConcursoHTML.get_last_concurso()
+  tilr_obj = TilR(n_slots, up_to_concurso) #, inclusive=False, concurso_range = None)
+  return tilr_obj.get_tilrwpattern_of_game(dezenas)
       
 def adhoc_test():
   '''
