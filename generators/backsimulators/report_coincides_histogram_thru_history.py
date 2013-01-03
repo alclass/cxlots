@@ -18,9 +18,13 @@ def report():
     print i, concurso.nDoConc, concurso.get_dezenas()
     pickled = ConcursosHistoryPickledStorage(upper_nDoConc=concurso.nDoConc-1) # read_as_id=None,
     previous_games_as_dezenas = pickled.read_or_create()
+    if len(previous_games_as_dezenas) < 1000:
+      break
+    previous_games_as_dezenas = previous_games_as_dezenas[:1000]
     coincides_histogram = get_coincides_histogram(concurso.get_dezenas(), previous_games_as_dezenas)
     print coincides_histogram.values(), sum(coincides_histogram.values())
     concurso = concurso.get_previous()
+  print 'End at i=', i
   
 
 def adhoc_test():
