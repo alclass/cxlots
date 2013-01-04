@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import math, time  # for timing purposes
+
+import math, time, sys  # for timing purposes
 #import math
 
-a=1
 from cardprint import pprint
 
 
@@ -477,8 +477,7 @@ def checkCoincsWithPrevious(jogos):
     except KeyError:
       coincWithPreviousDict[nOfCoincs]=1
 
-
-if __name__ == '__main__':
+def adhoc_test():
   pass
   '''
   testMinNOfBits()
@@ -489,3 +488,22 @@ if __name__ == '__main__':
   queueTasks()
   #generateSampleBet(100)
   '''
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_for_adhoctest_arg():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+
+
+if __name__ == '__main__':
+  look_for_adhoctest_arg()

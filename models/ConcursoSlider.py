@@ -23,33 +23,87 @@ class ConcursoSlider(object):
   
   def __init__(self, classref):
     self.CLASSREF = classref
+    self.all_concursos = None
+    self.create_session()
+    
+  def create_session(self):
     Session = sessionmaker(bind=engine)
     self.session = Session() 
 
-  def get_all_concursos(self):
-    return self.session.query(self.CLASSREF).all()
+  def set_all_concursos(self, refresh=False):
+    if self.all_concursos != None and not refresh:
+      return
+    if self.session == None:
+      self.create_session()
+    query = self.session.query(self.CLASSREF)
+    self.all_concursos = list(query.order_by('nDoConc'))
+    # self.check_sequentiality_of_concursos() # 
+    # the above method call has been given up as a strategy,
+    # this is because, if, in the future, this presumption changed, 
+    # code would have to be updated, so let's design it to, when getting concurso by nDoConc,
+    # in the case nDoConc is different than concurso.nDoConc, fall back to sql-querying
+    # the dict with nDoConc idea was also given up, ie,
+    # let the strategy be sql-querying for the right "concurso" 
+    if self.all_concursos == None or len(self.all_concursos) == 0:
+      self.last_concurso = None
+    else: 
+      self.last_concurso = self.all_concursos[-1] 
 
-  def get_total_concursos(self):
-    return self.session.query(self.CLASSREF).count()
+#  def check_sequentiality_of_concursos(self):
+#    '''
+#    
+#    '''
+#    self.set_all_concursos()
+#    for i, concurso in enumerate(self.all_concursos):
+#      sequential = i + 1
+#      # print sequential, concurso.nDoConc
+#      if sequential != concurso.nDoConc:
+#        pass
+#        # pass a message to the user?
+#        # raise ValueError, 'sequential=%d & concurso.nDoConc=%d are different' %(sequential, concurso.nDoConc)
+
+  def get_all_concursos(self, refresh=False):
+    self.set_all_concursos(refresh)
+    return self.all_concursos
+
+  def get_total_concursos(self, refresh=False):
+    self.set_all_concursos(refresh)
+    if self.all_concursos == None:
+      return 0
+    return len(self.all_concursos)
   
-  def get_n_last_concurso(self):
-    '''
-    to be CHANGED as soon as I can (it involves learning/knowing how to query max(nDoConc) -- must be simple!)
-    '''
-    return self.get_total_concursos()
+  def get_last_concurso(self, refresh=False):
+    self.set_all_concursos(refresh)
+    return self.last_concurso
+
+  def get_n_last_concurso(self, refresh=False):
+    self.set_all_concursos(refresh)
+    if self.last_concurso == None:
+      return 0
+    return self.last_concurso.nDoConc
     
-  def get_last_concurso(self):
-    nDoConc = self.get_total_concursos()
-    if nDoConc == None or nDoConc == 0:
-      return None
-    return self.get_concurso_by_nDoConc(nDoConc)
-  
-  def get_concurso_by_nDoConc(self, nDoConc=None):
+  def get_concurso_by_nDoConc(self, nDoConc=None, refresh=False):
     '''
     Convention: is nDoConc is None, last jogo is returned
     '''
+    self.set_all_concursos(refresh)
     if nDoConc == None:
       return self.get_last_concurso()
+    if self.all_concursos == None:
+      return None
+    try:
+      int(nDoConc)
+    except ValueError:
+      # parameter came in not being an int, so return None
+      return None
+    if nDoConc < 0 or nDoConc > self.get_n_last_concurso():
+      return None
+    index = nDoConc - 1
+    concurso = self.all_concursos[index] 
+    if nDoConc == concurso.nDoConc:
+      # raise ValueError, 'nDoConc=%d pedido é diferente do concurso.nDoConc=%d achado' %(nDoConc, concurso.nDoConc)
+      return concurso
+    # well, nDoConc != concurso.nDoConc, let's fall back the get it by sql-querying
     result_set = self.session.query(self.CLASSREF).filter( self.CLASSREF.nDoConc == nDoConc )
     if result_set.count() == 0:
       return None 
@@ -118,8 +172,8 @@ def adhoc_test():
   exec('from models.Concurso import ConcursoBase')
   exec('classref = ConcursoBase') #eval('ConcursoHTML')
   classref = eval('classref')
-  cs = ConcursoSlider(classref)
-  concurso = cs.get_concurso_by_nDoConc(100)  #[0]
+  slider = ConcursoSlider(classref)
+  concurso = slider.get_concurso_by_nDoConc(100)  #[0]
   print '100 ==>>', concurso
   #dezenas = concurso.get_dezenas_in_orig_order()
   # dezenas = copy.copy(concurso.get_dezenas())
@@ -127,17 +181,34 @@ def adhoc_test():
   # dezenas = [4, 15, 27]
   dezenas = [4, 17]
   # concursos = js.get_concursos_by_dezenas(dezenas)
-  concursos = cs.get_concursos_by_dezenas_subset(dezenas)   
+  concursos = slider.get_concursos_by_dezenas_subset(dezenas)   
   print 'cs.get_concursos_by_dezenas_subset(%s)' %str(dezenas)
   #print 'concursos', concursos
   for concurso in concursos:
     print 'found', concurso
   print 'len(concursos)', len(concursos)
+  # slider.check_sequentiality_of_concursos
+  print 'last concurso', slider.get_last_concurso()
+  print 'n last concurso', slider.get_n_last_concurso()
+  print 'total de concursos', slider.get_total_concursos()
+  
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
 
 def look_for_adhoctest_arg():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+
 
 if __name__ == '__main__':
   look_for_adhoctest_arg()
+      

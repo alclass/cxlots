@@ -21,23 +21,22 @@ READ_CONCHIST_LAST_ID                        = READ_CONCHIST_AS_TIMEONWARDS_NONO
 
 def find_last_nDoConc():
   slider = ConcursoHTML()
-  last_concurso = slider.get_last_concurso()
-  return last_concurso.nDoConc # last_nDoConc 
+  return slider.get_n_last_concurso()
 
 def read_concursos_history(do_ordered_dozens=False):
-  last_nDoConc = find_last_nDoConc() 
   all_histjogos_as_dezenas = []
   slider = ConcursoHTML()
-  print 'Please wait. Reading database :: read_all_past_concursos() '
-  for i in range(1, last_nDoConc+1):
-    concurso = slider.get_concurso_by_nDoConc(i)
+  # print 'Please wait. Reading database :: read_all_past_concursos() '
+  concursos = slider.get_all_concursos()
+  for concurso in concursos:
     if do_ordered_dozens:
       dezenas = concurso.get_dezenas()
     else:
       dezenas = concurso.get_dezenas_in_orig_order()
     # print i, # dezenas
-    if i%250 == 0:
-      print i, 'done'
+    if concurso.nDoConc % 250 == 0:
+      pass
+      # print concurso.nDoConc, 'done'
     all_histjogos_as_dezenas.append(dezenas)
   return all_histjogos_as_dezenas
 
@@ -127,7 +126,7 @@ class ConcursosHistoryPickledStorage(object):
     return self.numpy_histjogos
 
   def read_from_blob_file(self):
-    print 'Load Picking from self.blobfilepath =', self.blobfilepath
+    # print 'Load Picking from self.blobfilepath =', self.blobfilepath
     self.numpy_histjogos = [] # pickle.load(open(self.blobfilepath, 'rb'))
     unpickle_obj = pickle.Unpickler(open(self.blobfilepath, 'rb'))
     eof_of_unpickle = False; counter = 0
@@ -244,10 +243,32 @@ def adhoc_test():
   for i, jogo in enumerate(all_jogos):
     print i+1, jogo
 
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_equality_of_both_blob_and_db(self):
+    slider = ConcursoHTML()
+    concursos_db = slider.get_all_concursos()
+    pickled = ConcursosHistoryPickledStorage(read_as_id=READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
+    pickled.read_or_create_not_returning_list()
+    # repeat it, so that a blob will be read from
+    pickled = ConcursosHistoryPickledStorage(read_as_id=READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
+    concursos_blob = pickled.read_or_create()
+    for i, concurso in enumerate(concursos_db):
+      # get_dezenas() as a numpy array
+      dezenas_db = numpy.array(concurso.get_dezenas())
+      dezenas_blob = concursos_blob[i]
+      self.assertEqual(dezenas_blob.all(), dezenas_db.all())  
+
+
 def look_for_adhoctest_arg():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
 
 if __name__ == '__main__':
   look_for_adhoctest_arg()

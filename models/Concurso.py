@@ -37,6 +37,24 @@ class ConcursoBase(Base):
     if self.concursoSlider == None:
       self.concursoSlider = ConcursoSlider(self.__class__)  
   
+  def get_all_concursos(self):
+    self.set_concursoSlider()
+    if self.concursoSlider != None:
+      return self.concursoSlider.get_all_concursos()
+    return []
+
+  def get_last_concurso(self):
+    self.set_concursoSlider()
+    if self.concursoSlider != None:
+      return self.concursoSlider.get_last_concurso()
+    return None
+
+  def get_n_last_concurso(self):
+    last_concurso = self.get_last_concurso()
+    if last_concurso != None:
+      return last_concurso.nDoConc
+    return 0
+  
   def set_dezenas_in_orig_order(self):
     if len(self.jogoCharOrig) <> self.N_DE_DEZENAS * 2:
       error_msg = 'jogoCharOrig has not size %d [%s has size %d]' %(self.N_DE_DEZENAS * 2, self.jogoCharOrig, len(self.jogoCharOrig))
@@ -81,24 +99,32 @@ class ConcursoBase(Base):
       return None
     self.set_concursoSlider()    
     return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc - 1)
-
-  def get_last_concurso(self):
-    return self.concursoSlider.get_last_concurso()
   
   def get_next(self):
     self.set_concursoSlider()    
-    if self.nDoConc >= self.concursoSlider.get_total_concursos():
-      return None    
-    return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc + 1)
+    if self.concursoSlider != None:
+      if self.nDoConc >= self.get_n_last_concurso():
+        return None    
+      return self.concursoSlider.get_concurso_by_nDoConc(self.nDoConc + 1)
+    return None
 
   def get_concurso_by_nDoConc(self, nDoConc_to_compare=None):
     self.set_concursoSlider()    
-    return self.concursoSlider.get_concurso_by_nDoConc(nDoConc_to_compare)
+    if self.concursoSlider != None:
+      return self.concursoSlider.get_concurso_by_nDoConc(nDoConc_to_compare)
+    return None
 
   def get_total_concursos(self):
     self.set_concursoSlider()    
-    return self.concursoSlider.get_total_concursos()
-  
+    if self.concursoSlider != None:
+      return self.concursoSlider.get_total_concursos()
+    try:
+      int(self.nDoConc)
+      return 1
+    except ValueError:
+      pass
+    return 1
+
   def __repr__(self):
     return "Concurso %d [%s]" % (self.nDoConc, self.get_dezenas_str())
 
@@ -107,10 +133,21 @@ str02lambda = lambda digit : str(digit).zfill(2)
 def adhoc_test():
   pass
 
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_nDoConc_sequentiallity(self):
+    pass
+  
 def look_for_adhoctest_arg():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+
 
 if __name__ == '__main__':
   look_for_adhoctest_arg()
