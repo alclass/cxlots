@@ -2,9 +2,19 @@
 # -*- coding: utf-8 -*-
 import sys
 '''
-
+  This module should not, by design, depend on local system modules
+    "import sys" above is fine!
+  
+  For the functions that do depend on local system modules, they were organized in 
+    another module called jogos_function_dependent
+    
+  This was to help see and control any dynamic "import" (with exec()) that was found necessary
+    due to cross-dependency issues (example: x imports y that imports back x)
+    
+  One way we solve this is to import x, in y, dynamically. But, because this may generate confusion,
+    functions that had this issue of cross-dependency were moved to "smaller" modules where it's
+    easier to keep track of them 
 '''
-
 
 def get_n_acertos(jogo, contrajogo):
   n_acertos = 0
@@ -13,9 +23,12 @@ def get_n_acertos(jogo, contrajogo):
       n_acertos += 1
   return n_acertos
 
-def get_coincides_histogram(jogo_dezenas, previous_games_as_dozens):
+def get_coincides_histogram(jogo_dezenas, previous_games_as_dozens, N_SORTEADAS=6):
   coincides_histogram = {}
-  for i in range(6): coincides_histogram[i]=0
+  # How many coincides dict-keys are there?  There should be N_SORTEADAS_MAIS_NENHUMA_COINCIDENCIA 
+  N_SORTEADAS_MAIS_NENHUMA_COINCIDENCIA = N_SORTEADAS + 1
+  for n_coincides in range(N_SORTEADAS_MAIS_NENHUMA_COINCIDENCIA):
+    coincides_histogram[n_coincides]=0
   for previous_game in previous_games_as_dozens:
     n_acertos = get_n_acertos(jogo_dezenas, previous_game)
     coincides_histogram[n_acertos]+=1
@@ -116,8 +129,6 @@ def get_n_repeats_against_contrajogo(jogo, contrajogo):
     if dezena in contrajogo:
       n_repeats += 1
   return n_repeats 
-
-
 
 def test_jogo_metrics(jogo):
   print jogo, get_line_pattern(jogo)
