@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
+import copy, sys
 
 import localpythonpath
 localpythonpath.setlocalpythonpath()
@@ -34,9 +34,15 @@ class GeradorIterator(object):
       raise StopIteration, 'End of Iteration'
     if self.first_time:
       self.first_time = False
-      return self.current_dezenas_list[:]
+      if self.current_dezenas_list != None:
+        return copy.copy(self.current_dezenas_list) # self.current_dezenas_list[:]
+      else:
+        return None
     self.produce_next()
-    return self.current_dezenas_list[:]
+    if self.current_dezenas_list != None:
+        return copy.copy(self.current_dezenas_list) # self.current_dezenas_list[:]
+    else:
+      return None
 
   def produce_next(self):
     intlist = self.lgiCombiner.next()

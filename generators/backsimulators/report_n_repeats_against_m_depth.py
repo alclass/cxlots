@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import numpy, sys # , os, pickle, 
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+#import localpythonpath
+#localpythonpath.setlocalpythonpath()
 
 # import local_settings as ls
 
@@ -15,24 +15,24 @@ from lib import filter_functions
 #import lib.jogos_functions_dependent as jogos_fd
 #from lib.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
 
-class AnalyzerOfCoincides(object):
+class AnalyzerOfRepeats(object):
   
   def __init__(self, aggregated_histogram):
     self.aggregated_histogram = aggregated_histogram
   
   def analyze(self):
-    n_coincides_list = self.aggregated_histogram.keys()
-    for self.n_of_coincides in n_coincides_list:
+    n_repeats_array = self.aggregated_histogram.keys()
+    for self.n_repeats in n_repeats_array:
       self.analyze_coincidence()
 
-  def analyze_coincidence(self):
-    print 'n_of_coincides', self.n_of_coincides
-    array_coincides_history = numpy.array( self.aggregated_histogram[self.n_of_coincides] )
-    print array_coincides_history
-    print 'min', array_coincides_history.min()
-    print 'max', array_coincides_history.max()
-    print 'avg', (1.0 + array_coincides_history.sum())/len(array_coincides_history)
-    print 'std', array_coincides_history.std()
+  def analyze_repeats(self):
+    print 'n_repeats_', self.n_repeats
+    array_repeats_history = numpy.array( self.aggregated_histogram[self.n_of_coincides] )
+    print array_repeats_history
+    print 'min', array_repeats_history.min()
+    print 'max', array_repeats_history.max()
+    print 'avg', (1.0 + array_repeats_history.sum())/len(array_repeats_history)
+    print 'std', array_repeats_history.std()
   
 
 def generator_with_a_bet():
@@ -61,7 +61,7 @@ def generator_with_a_bet():
       if passed:
         n_passed += 1 
         n_passed_for_each_compare_repeat_list[compare_repeat_lists.index(compare_repeat_list)]+=1
-        # print n_passed, counter, 'Passed repeats_array', compare_repeat_list, str(jogo_as_dezenas) #, contrajogos, compare_repeat_list
+        print n_passed, counter, 'Passed repeats_array', compare_repeat_list, str(jogo_as_dezenas) #, contrajogos, compare_repeat_list
         break
   print n_passed, counter, n_passed_for_each_compare_repeat_list 
 

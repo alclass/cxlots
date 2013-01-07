@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 import sys # numpy, os, pickle, 
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+#import localpythonpath
+#localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
 # import local_settings as ls
 
