@@ -125,10 +125,10 @@ max 2
     print jogo_as_dezenas, bool_result
 
 
-def look_for_adhoctest_arg():
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

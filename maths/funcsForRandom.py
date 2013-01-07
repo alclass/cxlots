@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
-import random
-import shutil
 import sys
-import time
+#import os
+#import random
+#import shutil
+#import time
 
 PRIMES_TILL_60 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59] 
 
@@ -120,6 +119,29 @@ def testComb6():
 
 
 alphabet = map(chr, range(65, 65+28))
-if __name__ == '__main__':
+
+def adhoc_test():
   #runCombinationsWithD60Minus()
   testComb6()
+
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
+if __name__ == '__main__':
+  look_up_cli_params_for_tests_or_processing()

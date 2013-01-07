@@ -42,7 +42,11 @@ FilterList.sort()
 
 
 class FunctionModel(object):
-
+  '''
+  This class helps "encapsulate" a function to be executed later on in the filtering queued processes
+  A function is kept in the object as well as the parameters to it
+  The method apply() executes the function returning the function's return variable(s) 
+  '''
   def __init__(self, name):
     self.name = name
   
@@ -56,8 +60,19 @@ class FunctionModel(object):
     return self.func(jogo, *self.params)
   
 
-class Filtre(object):
-
+class FiltreQueueProcessor(object):
+  '''
+  This class stores:
+  - a jogoGenerator object
+  - a queue with filter functions
+  - a pickled object for saving the filtered-in games
+  
+  Each game provided by jogoGenerator goes thru the queue and at the first False it gets from the filters,
+  it abandons the function queue and loops onward to the next game from jogoGenerator.
+  
+  If game survives the entire filtering queue, it is saved via the pickled object.
+   
+  '''
   def __init__(self, jogoGenerator, filter_function_list, result_pickled_fileobj):
     # self.jogosObj = funcs.returnJogosObj(eitherJogosObjOrS2)
     self.jogoGenerator          = jogoGenerator
@@ -78,13 +93,6 @@ class Filtre(object):
       print ' Closing pickled result_pickled_fileobj at' , jogo
       # self.result_pickled_fileobj.close()
 
-  def save(self, jogo):
-    self.n_filter_passed_games += 1
-    print '-'*30
-    print self.n_filter_passed_games, ' Saving jogo', jogo
-    print '-'*30
-    self.result_pickled_fileobj.dump(jogo)
-
   def does_it_pass_filter_functions(self, jogo):
     for func in self.filter_function_list:
       print ' [does_it_pass_filter_functions()]', func.name,
@@ -94,14 +102,20 @@ class Filtre(object):
       print 'True'
     return True
 
+  def save(self, jogo):
+    self.n_filter_passed_games += 1
+    print '-'*30
+    print self.n_filter_passed_games, ' Saving jogo', jogo
+    print '-'*30
+    self.result_pickled_fileobj.dump(jogo)
 
-def getCheckerObjById(filtre, jogosObj):
+
+def instantiate_FiltreFILT_by_FilterName(filtre_name, jogosObj):
   if filtre in FilterList:
     handle = 'Filtre' + FilterNamesDict[filtre] + '(jogosObj)'
     checkerObj = eval(handle)
     return checkerObj
   return None
-
 
 
 class FiltreFILTSOMA(Filtre):
@@ -150,10 +164,12 @@ class FiltreFILTSOMA(Filtre):
     jogos = self.jogosObj.getJogos()
     soma = Stat.calcSomaN(jogo, jogos, n)
     exec('self.soma%d += soma' %(n))
+    self.somaDict[n] += soma 
 
   def compareWithExcluded(self, n):
-    somaN = eval('self.soma%d' %(n))
-    if somaN in self.getExcludedForSomaN(n):
+#    somaN = eval('self.soma%d' %(n))
+#    if somaN in self.getExcludedForSomaN(n):
+    if self.somaDict[n] in self.getExcludedForSomaN(n): 
       return False
     return True
 
@@ -372,11 +388,25 @@ def adhoc_test():
   filtro_obj = Filtre(jogoGerador, filter_function_list, pickled_fileobj)
   filtro_obj.process()
    
-  
-def look_for_adhoctest_arg():
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

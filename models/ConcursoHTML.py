@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import datetime, sys
-from sqlalchemy import Column, Float, Integer, Boolean # String,
+import sys
+import numpy #datetime
+from sqlalchemy import Column, Float, Integer, Boolean #, DateTime # String,
 
 import FieldsAndTypes as fat
 
 import localpythonpath
 localpythonpath.setlocalpythonpath()
-import lib.datetime.converterForDateAndCurrency as conv
+import lib.cxlotsdatetime.converterForDateAndCurrency as conv
 
 from Concurso import ConcursoBase
+
 class ConcursoHTML(ConcursoBase):
   '''
   This class, though it does not yet implement inheritance from dict,
@@ -108,7 +110,7 @@ class ConcursoHTML(ConcursoBase):
   def __setitem__(self, fieldname, value):
     shouldBeType = fat.getFieldType(fieldname)
     if type(value) != shouldBeType:
-      raise TypeError, 'type error in __setitem__ attrName=%s and attrValue=%s ' %(fieldname, str(value))
+      raise TypeError, 'type error in __setitem__ attrName=%s and attrValue=%s type is %s, should be %s ' %(fieldname, str(value), str(type(value)), str(shouldBeType))
     self.concursoDict[fieldname] = value
     self.insertFieldnameInOrder(fieldname)
 
@@ -173,6 +175,35 @@ class ConcursoHTML(ConcursoBase):
         return False
     return True
 
+  def get_contrajogos_as_dezenas_list_down_to_depth(self, depth=4, inclusive=True):
+    '''
+    This method is just a bypass to function get_contrajogos_as_dezenas_down_from(self, depth)
+      in module ReadConcursosHistory in this 'models' package
+    To avoid cross-importing, ReadConcursosHistory is imported dynamically here
+    
+    This bypassing is done in order to improve the class interface altogether
+      and allow these contrajogos to be gotten at one sole instruction  
+    '''
+    if 0==1: # just to "deceive" the IDE, so that it'll not complain about ReadConcursosHistory being defined (it's a module that will be dynamically imported) 
+      ReadConcursosHistory = None
+#    try:
+#      dir(ReadConcursosHistory)
+#    except NameError:
+#      
+#       dynamic import
+#      exec('import ReadConcursosHistory')
+    if not inclusive:
+      return ReadConcursosHistory.get_contrajogos_as_dezenas_down_from(self, depth)
+    depth -= 1
+    if depth < 0:
+      return []
+    numpy_dezenas = numpy.array(self.get_dezenas())
+    if depth == 0:
+      return numpy_dezenas
+    contrajogos_as_dezenas_list = ReadConcursosHistory.get_contrajogos_as_dezenas_down_from(self, depth)
+    contrajogos_as_dezenas_list.insert(0, numpy_dezenas)
+    return contrajogos_as_dezenas_list
+    
   def __str__(self):
     self.transport_attrs_into_dict()
     outStr = ''
@@ -199,6 +230,26 @@ def convertRowListToHTMLConcursoObj(row):
       concurso[fieldname]=value
       continue
     # special case of 
+    if fieldname == 'nDoConc':
+      value = int(row[fieldname])
+      concurso[fieldname]=value
+      continue
+    if fieldname.startswith('dezena'):
+      value = int(row[fieldname])
+      concurso[fieldname]=value
+      continue
+    if fieldname.startswith('ganhadoresDaQuadra'):
+      value = int(row[fieldname])
+      concurso[fieldname]=value
+      continue
+    if fieldname.startswith('ganhadoresDaQuina'):
+      value = int(row[fieldname])
+      concurso[fieldname]=value
+      continue
+    if fieldname.startswith('ganhadoresDaSena'):
+      value = int(row[fieldname])
+      concurso[fieldname]=value
+      continue
     if fieldname == 'acumuladoSimNao':
       if value.lower().startswith('s'): # s = sim
         value = 1
@@ -209,15 +260,12 @@ def convertRowListToHTMLConcursoObj(row):
         raise ValueError, "dirty value in fieldname %s = %s" %(fieldname, str(value))
       concurso[fieldname]=value
       continue
-    elif shouldBeType == int:
-      value = int(value)
+    elif fieldname == 'dataDoSorteio':
+      value = conv.convertToDatetimeDate(value)
       concurso[fieldname]=value
       continue
     elif shouldBeType == float:
       value = conv.convertToFloatAMoneyCurrencyNotInEnglishFormat(value)
-      concurso[fieldname]=value
-    elif shouldBeType == datetime.date:
-      value = conv.convertToDatetimeDate(value)
       concurso[fieldname]=value
     else:
       # last try: see if it will enter as a string
@@ -235,7 +283,7 @@ def testConcursoSample():
   c['dezena1']=25
   print c
 
-def testConcursoHtmlRetrieval():
+def processConcursoHtmlRetrieval():
   concurso = ConcursoHTML()
   concurso = concurso.get_concurso_by_nDoConc()
   print 'concurso nº (last)', concurso
@@ -243,17 +291,26 @@ def testConcursoHtmlRetrieval():
   concurso = concurso.get_concurso_by_nDoConc(nDoConc)
   print 'concurso nº', nDoConc, concurso
 
+
+def process():
+  processConcursoHtmlRetrieval()
+
 def adhoc_test():
   #testConcursoSample()
-  testConcursoHtmlRetrieval()
+  slider = ConcursoHTML()
+  concurso = slider.get_last_concurso()
+  print 'inclusive', concurso.get_contrajogos_as_dezenas_list_down_to_depth(depth=4)
+  print 'not inclusive', concurso.get_contrajogos_as_dezenas_list_down_to_depth(depth=4, inclusive=False)
+  pass
+
 
 import unittest
 class MyTest(unittest.TestCase):
 
   def test_1(self):
     pass
-  
-def look_for_adhoctest_arg():
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
@@ -261,7 +318,10 @@ def look_for_adhoctest_arg():
       # unittest complains if argument is available, so remove it from sys.argv
       del sys.argv[1]
       unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
 
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

@@ -1,41 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import matplotlib, numpy
+import matplotlib, numpy, sys
 
-a=1
-import CLClasses
-import Filtre
-import funcsForSql as fSql
-import LgiCombiner as lc
-import sqlAccessors as sa
-import Stat
+from Filtre import Filtre
+#import CLClasses
+#import funcsForSql as fSql
+#import LgiCombiner as lc
+#import sqlAccessors as sa
+#import Stat
 import cardprint.pprint as pprint
 
 
-class ChooserSoma(Filtre.Filtre):
+class ChooserSomaFiltre(Filtre):
   '''
   class SomaChoice
 
-  Rules for soma: (the rules are implemented in the method "choose()")
+  Observations for soma: (rules are implemented in the method "choose()")
 
-    1) depth should never be greater than 3, ie, it (soma) will hardly increase (or decrease) 5 times in a row (consider 4 times in a row, the most, this piece will be, at least for the moment, hardwired here)
+    1) depth should never be greater than 3, ie, it (soma)
+       will hardly increase (or decrease) 5 times in a row
+       (consider 4 times in a row, the most, this piece will be, at least for the moment, hardwired here)
 
-    2) calculate prob that depth will be 0, 1, 2 or 3
+    2) calculate probabilities that depth will be 0, 1, 2 or 3
       Of course, this should work like a tree node, ie,
-      if depth is 2, the next one is either 3 (continues in direction) or 0 (a change in increase/decrease direction occurring)
+      if depth is 2, the next one is either 3 (continues in direction (sobe or desce)
+      or 0 (a change in increase/decrease direction occurring)
 
-    3) this prob should be sensitive to the soma value itself
-      ie, if soma is too central, this prob should be very small and, perhaps, the system should advice not going for gambling on it
+    3) the probabilities should be sensitive to the sum metric value itself
+      ie, if sum is too central (ie, in the middle), these probabilities should be very
+      small and, perhaps, the system should advice not going for gambling on it
 
-    4) on the other hand, if soma is very acute (ie, close to upper and lower bounds), the system might give out higher probabilities, though limiting bounds represent too few jogos (at the end, not very helpful anyway, but, as composed with other filters, that's something)
+    4) on the other hand, if soma is very acute (ie, close to upper and lower bounds),
+       the system might give out higher probabilities, though limiting bounds represent
+       too few jogos (at the end, not very helpful anyway, but, as composed with other filters,
+       that's something)
   '''
 
   def __init__(self, standard2LetterName, qualSoma='soma'):
-    Filtre.Filtre.__init__(self, standard2LetterName)
+    # Filtre.Filtre.__init__(self, standard2LetterName)
+    super(Filtre, self).__init__()
     self.qualSoma = qualSoma
-    self.directionVector = [] # formerly called sobeDesceList
-    self.somas           = []
+    self.sobeDesceSequence = [] # formerly called sobeDesceList
+    self.somas         = []
     self.longestSobe   = 0
     self.longestDesce  = 0
     self.totalSobe     = 0
@@ -198,8 +205,6 @@ class ChooserSoma(Filtre.Filtre):
     elif sobeDesce == -1:
       if directionDepth < self.longestDesce:
         print 'directionDepth-DESCENDO maior que longestDesce, não apostar'
-
-    
 
   def __str__(self):
 
@@ -570,10 +575,8 @@ def seeHowManyPassFilterForSomaN(n=1, somaMin=0, somaMax=10000):
   dif = c - nOfPassed
   print 'nOfPassed =', nOfPassed, 'c =', c, 'excluded', dif
 
-  
-if __name__ == '__main__':
-  pass
-  #analyzeSomaN(7)
+
+def adhoc_test():
   seeHowManyPassFilterForSomaN()
   '''
   o = TilPatternsChoice('ms')
@@ -593,3 +596,25 @@ if __name__ == '__main__':
   tilDict = investigateTils()
   pprint.printDict(tilDict)
   '''
+   
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
+if __name__ == '__main__':
+  look_up_cli_params_for_tests_or_processing()

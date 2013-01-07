@@ -231,6 +231,16 @@ class ConcursosHistoryMetrics(ConcursosHistoryPickledStorage):
     return column_pattern_histogram
 
 
+def get_contrajogos_as_dezenas_down_from(concurso, depth):
+  if depth > concurso.nDoConc:
+    return None
+  pickled = ConcursosHistoryPickledStorage(read_as_id=None, upper_nDoConc=concurso.nDoConc)
+  jogos_dezenas_list = pickled.read_or_create()
+  if len(jogos_dezenas_list) > depth:
+    offset = len(jogos_dezenas_list) - depth
+    jogos_dezenas_list = jogos_dezenas_list[offset:]
+  return jogos_dezenas_list
+
 
 def adhoc_test():
   '''
@@ -260,8 +270,18 @@ class MyTest(unittest.TestCase):
       dezenas_blob = concursos_blob[i]
       self.assertEqual(dezenas_blob.all(), dezenas_db.all())  
 
+  def test_get_contrajogos_as_dezenas_down_from(self):
+    slider = ConcursoHTML()
+    last_concurso = slider.get_last_concurso()
+    jogos_dezenas_list = get_contrajogos_as_dezenas_down_from(last_concurso, last_concurso.nDoConc - 1)
+    for i, jogo_as_dezenas in enumerate(jogos_dezenas_list):
+      nDoConc = i+1
+      concurso = slider.get_concurso_by_nDoConc(nDoConc)
+      concurso_numpy_dezenas = numpy.array(concurso.get_dezenas())
+      self.assertEqual(jogo_as_dezenas.all(), concurso_numpy_dezenas.all(), ' jogo_as_dezenas & concurso_numpy_dezenas SHOULD BE EQUAL')
 
-def look_for_adhoctest_arg():
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
@@ -269,6 +289,10 @@ def look_for_adhoctest_arg():
       # unittest complains if argument is available, so remove it from sys.argv
       del sys.argv[1]
       unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

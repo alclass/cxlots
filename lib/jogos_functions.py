@@ -13,7 +13,7 @@ import sys
     
   One way we solve this is to import x, in y, dynamically. But, because this may generate confusion,
     functions that had this issue of cross-dependency were moved to "smaller" modules where it's
-    easier to keep track of them 
+    easier to "keep track" of them 
 '''
 
 def get_n_acertos(jogo, contrajogo):
@@ -38,7 +38,8 @@ def has_game_equal_or_more_than_n_acertos(compare_dezenas, all_jogos_as_dezenas,
   '''
   This function is a filter-like operator that runs compare_dezenas (a list of ints) against a history of games
     (each game is a compare_dezenas compatible)
-  If, as all games loop up to be compare, more than upToAcertos coincide, False is returned rightaway
+  If, as all games loop up to be compared, more than upToAcertos dozens coincide, False is returned
+    right away (no need to expend any extra time!)
   After all games have looped up -- ie, a False not happening before -- True will be returned at the end
   '''
   for jogo in all_jogos_as_dezenas:
@@ -130,6 +131,47 @@ def get_n_repeats_against_contrajogo(jogo, contrajogo):
       n_repeats += 1
   return n_repeats 
 
+
+def get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos):
+  '''
+  Suppose the following "small" game history:
+    ( 1, 2, 3, 4, 5, 6)
+    ( 1, 7, 8, 9,10,11)
+    ( 1,12,13,14,15,16)
+  Now we ask how many repeats there are for the game:
+    ( 1, 7,13,19,25,26)
+  The repeats are 1, 7 and 13. 1 repeats 3 times, 7 once, 13 once.
+  So, the result should be:
+    output_array_as_in_documentation = [3,1,1]
+  Why?
+  Because 3 dozens (1, 7 & 13) repeat at least once.  
+  The 1 in the second array position is because 1 repeats at least twice.
+  The 1 in the last array position is because 1 repeats 3 times.
+  Because there's no dozen repeating a 4th time, the array ends with its 3rd element.
+  '''
+  each_dozen_repeat_dict = {}
+  for dezena in jogo_as_dezenas:
+    each_dozen_repeat_dict[dezena]=0
+  for contrajogo_as_dezenas in contrajogos:
+    for dezena in contrajogo_as_dezenas:
+      if dezena in jogo_as_dezenas:
+        each_dozen_repeat_dict[dezena]+=1
+  # print 'each_dozen_repeat_dict', each_dozen_repeat_dict        
+  actual_repeats = each_dozen_repeat_dict.values()
+  tmp_lambda = lambda x : x > 0
+  actual_repeats = filter(tmp_lambda, actual_repeats) # ie, filter out zeros
+  if len(actual_repeats) == 0:
+    return []
+  max_repeating = max(actual_repeats)
+  output_array_as_in_documentation = []
+  for n_repeats in range(1, max_repeating + 1):
+    tmp_lambda = lambda x : x >= n_repeats
+    with_this_repeat = filter(tmp_lambda, actual_repeats)
+    total_with_this_repeat = len(with_this_repeat)
+    output_array_as_in_documentation.append(total_with_this_repeat)
+    # print 'with_this_repeat', with_this_repeat,  'max_repeat',  max_repeat 
+  return output_array_as_in_documentation
+
 def test_jogo_metrics(jogo):
   print jogo, get_line_pattern(jogo)
   print jogo, get_line_drawing(jogo)
@@ -155,11 +197,56 @@ def adhoc_test():
   jogo = 1,2,3,5,6,8; test_jogo_metrics(jogo)
   jogo = 1,2,4,5,7,8; test_jogo_metrics(jogo)
   
+  
+import unittest
+class MyTest(unittest.TestCase):
 
-def look_for_adhoctest_arg():
+  def test_1(self):
+    pass
+ 
+    contrajogos =[]
+    contrajogo = ( 1, 2, 3, 4, 5, 6)
+    contrajogos.append(contrajogo)
+    contrajogo = ( 1, 7, 8, 9,11,12)
+    contrajogos.append(contrajogo)
+    contrajogo = (1, 13,14,15,17,18)
+    contrajogos.append(contrajogo)
+    jogo_as_dezenas = ( 1, 7,13,19,25,26)
+    repeats_array = get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos)
+    expected_result = [3,1,1] # ie, 3 dozens repeating once (d=1,7 & 13), 1 dozen repeats (at least) twice (d=1), 1 dozen repeats 3 times (d=1)
+    # print 'repeats_array', repeats_array
+    self.assertEqual(repeats_array, expected_result, 'expected_result must equal repeats_array from get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos)')
+  
+    contrajogos =[]
+    contrajogo = ( 1, 2, 3, 4, 5, 6)
+    contrajogos.append(contrajogo)
+    contrajogo = ( 1, 7, 8, 9,11,12)
+    contrajogos.append(contrajogo)
+    contrajogo = (1, 13,14,15,17,18)
+    contrajogos.append(contrajogo)
+    contrajogo = ( 1, 2, 3, 4, 5, 6)
+    contrajogos.append(contrajogo)
+    jogo_as_dezenas = ( 1, 6,7,13,19,25)
+    repeats_array = get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos)
+    expected_result = [4, 2, 1, 1] # ie, 4 dozens repeating once (d=1,6,7 & 13), 2 dozen repeats twice (d=1&6), 1 dozen repeats 3 times (d=1), , 1 dozen repeats 3 times (d=1),
+    #print 'repeats_array', repeats_array
+    self.assertEqual(repeats_array, expected_result, 'expected_result must equal repeats_array from get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos)')
+
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()
+
+

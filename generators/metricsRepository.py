@@ -10,7 +10,7 @@ Created on 15/11/2011
 '''
 def cleanUpRepeatsAndPutInOrder(numbers):
   if type(numbers) not in [list, tuple]:
-    raise TypeError, 'numbers ust be a list or tuple as passed-in parameters to cleanUpRepeatsAndPutInOrder()'
+    raise TypeError, 'numbers must be a list or tuple as passed-in parameters to cleanUpRepeatsAndPutInOrder()'
   numbers = numbers.sort()
   index = 0
   while 1:
@@ -30,9 +30,9 @@ def iguais_com_o_anterior(concurso, concursoAnterior, DO_REPEAT_CLEAN_UP=False):
   Metric 1 iguais_com_os_n_anteriores
   
   Steps:
-  1st) check type conformity
-  2nd) do a DO_REPEAT_CLEAN_UP if "it's asked" via passed-in param DO_REPEAT_CLEAN_UP
-  3rd) count equals and return it 
+    1st) check type conformity
+    2nd) do a DO_REPEAT_CLEAN_UP if "it's asked" via passed-in param DO_REPEAT_CLEAN_UP
+    3rd) count equals and return it 
   '''
   if type(concurso) not in [list, tuple]:
     raise TypeError, 'concurso and must be a list or tuple as passed-in parameters to iguaisComOAnterior()'
@@ -54,9 +54,9 @@ def iguais_com_os_n_anteriores(concurso, concursosAnteriores, n_anteriores):
 
   n_anteriores > 1
   Steps:
-  1st) check type conformity
-  2nd) check size of concursosAnteriores that must be equal to nAnteriores
-  3rd) reduce problem to its elements, ie loop through concursosAnteriores and invoke iguaisComOAnterior  
+    1st) check type conformity
+    2nd) check size of concursosAnteriores that must be equal to nAnteriores
+    3rd) reduce problem to its elements, ie loop through concursosAnteriores and invoke iguaisComOAnterior  
   '''
   if type(concursosAnteriores) not in [list, tuple]:
     raise TypeError, 'concursosAnteriores and must be a list or tuple as passed-in parameters to iguaisComOsNAnteriores()'

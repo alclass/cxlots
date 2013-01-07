@@ -48,5 +48,29 @@ class Jogo(Base):
   def __repr__(self):
     return "<Jogo(%d,'%s')>" % (self.id, self.strdezenas)
 
-if __name__ == '__main__':
+
+def adhoc_test():
   pass
+
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
+
+if __name__ == '__main__':
+  look_up_cli_params_for_tests_or_processing()
