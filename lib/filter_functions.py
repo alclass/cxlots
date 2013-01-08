@@ -86,6 +86,7 @@ def filter_in_having_consecutive_patterns(jogo, consecutive_patterns):
     return True
   return False
 
+lambda_is_equal = lambda x, y : x == y
 def filter_in_those_within_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos, compare_repeat_list):
   '''
   Suppose the following "small" game history:
@@ -107,10 +108,13 @@ def filter_in_those_within_n_repeats_with_m_previous_games(jogo_as_dezenas, cont
   
   '''
   repeats_array = jogos_functions.get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos)
-  tmp_lambda = lambda x, y : x == y
-  bool_array_result = map(tmp_lambda, repeats_array, compare_repeat_list)
+  # repeats_array is not planned to return as None, but it can be returned empty
+  if len(repeats_array) == 0:
+    return False
+  bool_array_result = map(lambda_is_equal, repeats_array, compare_repeat_list)
   if False in bool_array_result:
     return False
+  # This means: all elements in bool_array_result are True, jogo_as_dezenas passed the filter
   return True
   '''
   for i, max_repeat in enumerate(compare_repeat_list):

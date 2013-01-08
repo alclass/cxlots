@@ -202,15 +202,51 @@ class IndicesCombiner(object):
     overlap=True,  size=3, upLimit=15 :: [15,15,15]
     overlap=False, size=4, upLimit=33 :: [30,31,32,33]
     '''
+    self.iArray = self.tell_last_iArray()
+    return self.iArray
+
+  def tell_last_iArray(self):
+    '''
+    @see self.moveToLastOne()
+    '''
+    last_iArray = [0]*self.size
     if self.overlap:
-      self.iArray = [self.upLimit] * self.size
-      return self.iArray
+      last_iArray = [self.upLimit] * self.size
+      return last_iArray
     else:
       for i in range(self.size):
         backPos = self.size - i - 1
-        self.iArray[i] =  self.upLimit - backPos
-      return self.iArray
+        last_iArray[i] =  self.upLimit - backPos
+      return last_iArray
 
+  def tell_first_iArray(self):
+    first_iArray = [0]*self.size
+    if self.overlap:
+      # first_iArray = [0] * self.size
+      return first_iArray
+    else:
+      first_iArray = range(self.size)
+      return first_iArray
+
+  def move_to_position_by_iArray(self, iArray_in):
+    if iArray_in == None or len(iArray_in) != self.size:
+      raise TypeError, "iArray is None or it's been given having an incorrect size (of iArray)"
+    if iArray_in != map(int, iArray_in):
+      raise ValueError, 'parameter iArray_in was passed in containing non-integers'
+    tmp_lambda_greater_than = lambda x, y : x > y
+    last_iArray = self.tell_last_iArray()
+    # if it's greater than last, move it to last
+    if True in map(tmp_lambda_greater_than, iArray_in, last_iArray):
+      self.moveToLastOne()
+      return
+    first_iArray = self.tell_first_iArray()
+    tmp_lambda_less_than = lambda x, y : x < y
+    # if it's less than first, move it to first
+    if True in map(tmp_lambda_less_than, iArray_in, first_iArray):
+      self.first()
+      return
+    self.iArray = iArray_in
+  
   def correctRemainingToTheRightOverlapCase(self, pos):
     '''
     Recursive method

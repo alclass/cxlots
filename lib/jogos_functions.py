@@ -149,6 +149,8 @@ def get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos):
   The 1 in the last array position is because 1 repeats 3 times.
   Because there's no dozen repeating a 4th time, the array ends with its 3rd element.
   '''
+  if jogo_as_dezenas == None or contrajogos == None:
+    return []
   each_dozen_repeat_dict = {}
   for dezena in jogo_as_dezenas:
     each_dozen_repeat_dict[dezena]=0
