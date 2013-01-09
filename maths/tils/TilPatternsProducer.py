@@ -5,8 +5,9 @@ TilPattern.py
 '''
 import sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
+
 import funcsForTil as ffTil
 from TilPattern import TilDefiner
 from TilPattern import TilPattern

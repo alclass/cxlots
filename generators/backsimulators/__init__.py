@@ -39,7 +39,7 @@ def add_path_if_not_already_added(relpath):
 
 def setlocalpythonpath():
   for relpath in ['.', '..', '../..', '../../..', '../../../..']:
-    filepath = relpath + '/' + 'local_settings.py'
+    filepath = relpath + '/' + 'appspythonpath.py'
     if os.path.isfile(filepath):
       # found local_settings.py, add, if it's not already there, its path to sys.path
       add_path_if_not_already_added(relpath)

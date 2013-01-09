@@ -6,12 +6,11 @@ TilPattern.py
 import sys
 from decimal import Decimal, getcontext
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
-from models.ConcursoSlider import ConcursoSlider
-from models.Concurso import ConcursoBase
-import maths.frequencies.HistoryFrequency as hf
+from models.Concursos.ConcursoExt import ConcursoExt
+import maths.statistics.HistoryFrequency as hf
 from TilSets import TilSets
 
 
@@ -28,7 +27,8 @@ class TilFreqSlotSeparator(object):
     self.fetch_histfreq()
 
   def set_nDoConc(self, nDoConc):
-    n_last_concurso = ConcursoSlider(ConcursoBase).get_n_last_concurso() # len(sl.getListAllConcursosObjs())      
+    slider = ConcursoExt()
+    n_last_concurso = slider.get_n_last_concurso() # len(sl.getListAllConcursosObjs())      
     if nDoConc == None:
       nDoConc = n_last_concurso
     elif nDoConc < 1 or nDoConc > n_last_concurso:

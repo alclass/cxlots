@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# import datetime,
 import sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
-from models.Concurso import ConcursoBase
+from models.Concursos.ConcursoExt import ConcursoExt
 from TilPattern import TilPattern
 
-import maths.frequencies.HistoryFrequency as hf
+import maths.statistics.HistoryFrequency as hf
 import TilSets as ts 
 
 class ConcursoTil(TilPattern): #(Jogo):
@@ -66,7 +64,7 @@ class ConcursoTil(TilPattern): #(Jogo):
     
   def process_concurso(self):
     if self.concurso == None:
-      self.concurso = ConcursoBase.get_last_concurso()
+      self.concurso = self.slider.get_last_concurso()
 
   # should be private to class, triggered by flow_concursorange_histfreq_wpattern()
   def process_concurso_range(self):
@@ -212,10 +210,10 @@ def freqs_per_tilslot(tilpatterndict, n_slots):
 from TilPatternsProducer import TilProducer
 def adhoc_test():
   tilpatterndict = {}
-  concurso = ConcursoBase() 
-  n_lastjogo = concurso.get_n_last_concurso()
+  slider = ConcursoExt()
+  n_lastjogo = slider.get_n_last_concurso()
   for nDoConc in range(101, n_lastjogo + 1):
-    concurso = concurso.get_concurso_by_nDoConc(nDoConc)
+    concurso = slider.get_concurso_by_nDoConc(nDoConc)
     concursotil = ConcursoTil(concurso, 5, 6) #, (nDoConc-200, nDoConc-1))
     concursotil.set_concursotil_wpattern()
     if tilpatterndict.has_key(concursotil.wpattern):
@@ -233,6 +231,28 @@ def adhoc_test():
     if wpattern not in tilpatterndict.keys():
       total_not_happen += 1
       print total_not_happen, wpattern, 'did not happen.'
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
+  for arg in sys.argv:
+    if arg.startswith('-t'):
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
+
+if __name__ == '__main__':
+  look_up_cli_params_for_tests_or_processing()
+
   
 def look_for_adhoctest_arg():
   for arg in sys.argv:

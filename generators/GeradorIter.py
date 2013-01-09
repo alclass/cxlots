@@ -2,12 +2,16 @@
 # -*- coding: utf-8 -*-
 import copy, sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+#import localpythonpath
+#localpythonpath.setlocalpythonpath()
+
+import __init__
+__init__.setlocalpythonpath()
+
  
 from maths.combinatorics.IndicesCombiner import IndicesCombiner
 from maths.combinatorics.algorithmsForCombinatorics import combineNbyC 
-from lib.funcsForStringPatternsEtAl import convert_intlist_to_spaced_zfillstr
+from libfunctions.pattern_string_et_al.stringpatterns_functions import convert_intlist_to_spaced_zfillstr
 
 addOneToEachElement = lambda x : x + 1
 ONE_MILLION = 10**6
@@ -19,34 +23,32 @@ class GeradorIterator(object):
     self.N_DEZENAS_NO_SORTEIO = N_DEZENAS_NO_SORTEIO 
     self.lgiCombiner = IndicesCombiner(self.N_DEZENAS_NO_VOLANTE-1, self.N_DEZENAS_NO_SORTEIO, False)
     self.session_index = 0
-    self.set_first_element()
+    self.current_dezenas_list = self.lgiCombiner.current()
 
-  def set_first_element(self):
-    intlist = self.lgiCombiner.first()
-    self.current_dezenas_list = map(addOneToEachElement, intlist)
-    self.first_time = True
+  def restart(self):
+    self.lgiCombiner.parkBeforeFirst()
+    indices = self.lgiCombiner.current()
+    self.current_dezenas_list = map(addOneToEachElement, indices) 
 
   def move_to_element_by_its_indices(self, indices_position_to_move_at):
     self.lgiCombiner.move_to_position_by_iArray(indices_position_to_move_at)
-    intlist = self.lgiCombiner.current()
-    print 'intlist', intlist 
-    self.current_dezenas_list = map(addOneToEachElement, intlist)
-    print 'current_dezenas_list', self.current_dezenas_list 
+    indices = self.lgiCombiner.current()
+    self.current_dezenas_list = map(addOneToEachElement, indices) 
+    # print 'current_dezenas_list', self.current_dezenas_list 
+
+  def move_to_last(self):
+    indices = self.lgiCombiner.moveToLastOne()
+    self.current_dezenas_list = map(addOneToEachElement, indices) 
+
+  def move_to_one_before_last(self):
+    self.lgiCombiner.move_to_one_before_last()
+    indices = self.lgiCombiner.current()
+    self.current_dezenas_list = map(addOneToEachElement, indices) 
 
   def __iter__(self):
     return self.get_current()
 
   def next(self):
-    if self.current_dezenas_list == None:
-      raise StopIteration, 'End of Iteration'
-      # return None
-    if self.first_time:
-      self.first_time = False
-      if self.current_dezenas_list != None:
-        return copy.copy(self.current_dezenas_list) # self.current_dezenas_list[:]
-      else:
-        raise StopIteration, 'End of Iteration'
-        # return None
     self.produce_next()
     if self.current_dezenas_list != None:
         return copy.copy(self.current_dezenas_list) # self.current_dezenas_list[:]
@@ -59,10 +61,10 @@ class GeradorIterator(object):
     pass
     
   def produce_next(self):
-    intlist = self.lgiCombiner.next()
-    if intlist != None: 
+    indices = self.lgiCombiner.next()
+    if indices != None: 
       self.session_index += 1
-      self.current_dezenas_list = map(addOneToEachElement, intlist)
+      self.current_dezenas_list = map(addOneToEachElement, indices)
     else:
       self.current_dezenas_list = None
 
@@ -98,12 +100,27 @@ def testGerador():
   gerador = Gerador()
   # gerador = GeradorIterator()
   print len(gerador)
-  indices_position_to_move_at = [53,54,55,56,57,58]
-  gerador.iterator.move_to_element_by_its_indices(indices_position_to_move_at)
+  #indices_position_to_move_at = [53,54,56,57,58,59]
+  #indices_position_to_move_at = [54,55,56,57,58,59]
+  #gerador.iterator.move_to_element_by_its_indices(indices_position_to_move_at)
+  print 'gerador.iterator.move_to_one_before_last()'
+  gerador.iterator.move_to_one_before_last()
+  print '_one_before_last', gerador.iterator.get_current()
+#  gerador.iterator.next()
+#  print 'next/last', gerador.iterator.get_current()
+  gerador.iterator.move_to_last()
+  print 'move_to_last', gerador.iterator.get_current()
+  #gerador.iterator.next() # exception will be raised
+  # print 'next after last', gerador.iterator.get_current()
+
+  gerador.iterator.restart()
+  print 'restart', gerador.iterator.get_current()
+  gerador.iterator.next()
+  print 'next after restart', gerador.iterator.get_current()
   for jogo_as_dezenas in gerador:
     i = gerador.iterator.session_index
-#    if i < 50000000:
-#      continue
+    if i > 10:
+      break
     print i, convert_intlist_to_spaced_zfillstr(jogo_as_dezenas)
     # print gerador.iterator.index(100)
     

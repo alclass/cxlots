@@ -3,8 +3,9 @@
 
 import sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
+
 import maths.combinatorics.algorithmsForCombinatorics as combinatorics
 
 

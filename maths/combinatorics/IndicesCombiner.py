@@ -4,7 +4,7 @@
 Ref.: http://en.wikipedia.org/wiki/Combinadic
   combinadics Module
 '''
-import sys
+import copy, sys
 
 import localpythonpath
 localpythonpath.setlocalpythonpath()
@@ -120,7 +120,12 @@ class IndicesCombiner(object):
       self.iArray      = list(iArrayIn)
     self.size        = len(self.iArray)
     self.checkArrayConsistency()
+    self.determined_from_constructor_whether_position_is_before_first()
+
+  def determined_from_constructor_whether_position_is_before_first(self):
     self.iArrayGiven = list(self.iArray)
+    if self.iArrayGiven == self.make_first():
+      self.parkBeforeFirst()
 
   def checkArrayConsistency(self):
     '''
@@ -154,8 +159,23 @@ class IndicesCombiner(object):
     Returns the current iArray
     Notice that iArray is modified by methods like next() and first()
     '''
-    return self.iArray
+    return copy.copy(self.iArray)
 
+  def make_before_first(self):
+    # No matter overlap kind, the "before first" is an array of minus one 
+    before_first_iArray = [-1] * self.size
+    return before_first_iArray
+
+  def restart_positioning_before_first(self):
+    self.iArray = self.make_before_first()
+
+  def make_first(self):
+    if self.overlap:
+      first_iArray = [0] * self.size
+    else:
+      first_iArray = range(self.size)
+    return first_iArray
+  
   def first(self):
     '''
     Moves the iArray to the top and returns it
@@ -163,12 +183,8 @@ class IndicesCombiner(object):
     overlap=True,  size=3 :: [0,0,0]
     overlap=False, size=4 :: [0,1,2,3]
     '''
-    size = self.size
-    if self.overlap:
-      self.iArray = [0] * size
-    else:
-      self.iArray = range(size)
-    return self.iArray
+    self.iArray = self.make_first()
+    return copy.copy(self.iArray)
 
   def top(self):
     '''
@@ -177,18 +193,17 @@ class IndicesCombiner(object):
     self.first()
 
   def firstZeroless(self):
-    iArray = self.first()
-    iArray = map(lambdas.plusOne, iArray)
-    return iArray
+    iArrayPlusOne = map(lambdas.plusOne, self.first())
+    return iArrayPlusOne
     
   def firstGiven(self):
     '''
     Returns the firstGiven or restartAt array but does not change current position
     To change it, use positionToFirstGiven()
     '''
-    return self.iArrayGiven
+    return copy.copy(self.iArrayGiven)
 
-  def positionToFirstGiven(self):
+  def repositionToFirstGiven(self):
     '''
     Returns the firstGiven/restartAt array changing current position to it
     @see also firstGiven()
@@ -204,6 +219,22 @@ class IndicesCombiner(object):
     '''
     self.iArray = self.tell_last_iArray()
     return self.iArray
+
+  def moveToFirst(self):
+    '''
+    Moves iArray position to the first one and returns it
+    Eg
+    overlap=True,  size=3, upLimit=15 :: [0,0,0]
+    overlap=False, size=4, upLimit=33 :: [0,1,2,3]
+    '''
+    self.iArray = self.tell_first_iArray()
+    return copy.copy(self.iArray)
+
+  def parkBeforeFirst(self):
+    '''
+    Move to first element and set flag self.parked_at_first_element to True 
+    '''
+    self.iArray = self.make_before_first()
 
   def tell_last_iArray(self):
     '''
@@ -228,11 +259,16 @@ class IndicesCombiner(object):
       first_iArray = range(self.size)
       return first_iArray
 
+  def move_to_one_before_last(self):
+    self.moveToLastOne()
+    self.previous()
+  
   def move_to_position_by_iArray(self, iArray_in):
     if iArray_in == None or len(iArray_in) != self.size:
       raise TypeError, "iArray is None or it's been given having an incorrect size (of iArray)"
     if iArray_in != map(int, iArray_in):
       raise ValueError, 'parameter iArray_in was passed in containing non-integers'
+    self.parked_at_first_element = False
     tmp_lambda_greater_than = lambda x, y : x > y
     last_iArray = self.tell_last_iArray()
     # if it's greater than last, move it to last
@@ -401,16 +437,31 @@ class IndicesCombiner(object):
     Moves iArray to the its previous consistent position and returns the array
     When the first one is current, None will be returned
     '''
+    if self.iArray == self.make_before_first():
+      return self.iArray 
+    if self.iArray == self.make_first():
+      self.iArray = self.make_before_first()
+      return self.iArray
+    if self.iArray == None:
+      return self.moveToLastOne()
     pos = self.size - 1
     if self.overlap:
-      return self.minusOneOverlap(pos)
+      return copy.copy(self.minusOneOverlap(pos))
     else:
-      return self.minusOneNonOverlap(pos)
+      return copy.copy(self.minusOneNonOverlap(pos))
+
   def next(self, pos=-1):
     '''
     Moves iArray position to the next consistent one and returns it
     When the last one is current, a None will be returned
     '''
+
+    # check before first element
+    if self.iArray != None and self.iArray == [-1]*self.size:
+      # switch it off independent of next if's result
+      self.iArray = self.make_first()
+      return copy.copy(self.iArray)
+    
     if pos == -1:
       pos = self.size - 1
     #if self.iArray[pos]+1 > self.upLimit:
@@ -461,7 +512,7 @@ class IndicesCombiner(object):
       self.iArray[pos] = value
     else:
       self.iArray[pos] += 1
-    return self.iArray
+    return copy.copy(self.iArray)
 
   def nextZeroless(self):
     '''
