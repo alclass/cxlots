@@ -6,9 +6,10 @@ Ref.: http://en.wikipedia.org/wiki/Combinadic
 '''
 import copy, sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
-from lib import lambdas
+import __init__
+__init__.setlocalpythonpath()
+
+from libfunctions import system_wide_lambdas as swlambda
 # import algorithmsForCombinatorics as afc
 
 class IndicesCombiner(object):
@@ -193,7 +194,7 @@ class IndicesCombiner(object):
     self.first()
 
   def firstZeroless(self):
-    iArrayPlusOne = map(lambdas.plusOne, self.first())
+    iArrayPlusOne = map(swlambda.plusOne, self.first())
     return iArrayPlusOne
     
   def firstGiven(self):
@@ -269,16 +270,14 @@ class IndicesCombiner(object):
     if iArray_in != map(int, iArray_in):
       raise ValueError, 'parameter iArray_in was passed in containing non-integers'
     self.parked_at_first_element = False
-    tmp_lambda_greater_than = lambda x, y : x > y
     last_iArray = self.tell_last_iArray()
     # if it's greater than last, move it to last
-    if True in map(tmp_lambda_greater_than, iArray_in, last_iArray):
+    if True in map(swlambda.greater_than, iArray_in, last_iArray):
       self.moveToLastOne()
       return
     first_iArray = self.tell_first_iArray()
-    tmp_lambda_less_than = lambda x, y : x < y
     # if it's less than first, move it to first
-    if True in map(tmp_lambda_less_than, iArray_in, first_iArray):
+    if True in map(swlambda.less_than, iArray_in, first_iArray):
       self.first()
       return
     self.iArray = iArray_in
@@ -518,7 +517,7 @@ class IndicesCombiner(object):
     '''
     '''
     iArray = self.next()
-    iArray = map(lambdas.plusOne, iArray)
+    iArray = map(swlambda.plusOne, iArray)
     return iArray
   
   def __str__(self):

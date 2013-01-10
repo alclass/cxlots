@@ -3,6 +3,37 @@
 '''
 cxlots/generators/chainers/
 intersection.py
+
+
+The class Intersect below receives (ie, is constructed with) two iteration-capable sets.
+
+IMPORTANT prerequisite: the two inputting sets MUST be sorted in ascending order.
+
+An iteration-capable set is one that follows Python's iteration protocol, it's capable of generating elements in a for-loop and implements next().
+
+Method intersect() does the processing.
+
+The processing is not search-optimized, but it's a good-around, for the time being, for getting equal elements in two set.
+The logic to find equals is the following:
+1) pick up two elements, one from each set
+2) if the two are equal, save the element (to a writing data blob file object) and continue, go back to 1 above
+3) not being equal, discard the lesser and pick up another element from the set that had the lesser element, go back to 2 above
+4) if, at any moment, a set expires (ie, has no further elements for comparison), terminate processing. 
+
+
+To the future!
+
+Once the two sets are a priori sorted in ascending order,
+  this equal-fetch functionality could be done with an optimized search algorithm, 
+  such as, for example, one implementing a binary search strategy.
+
+Just for an illustration, let's visualize an instance where a long looping may occur and no equals exist.  
+  Suppose a large set whose last element is lesser than the first element of the other set.
+  In that scenario, all elements of set 1 will be looped wastefully, 
+  because there are no equals once the first element "abroad" is greater than any element of set 1 that looped.
+
+An optimized algorithm would avoid such non-efficient scenarios.
+
 '''
 
 import numpy, pickle, sys # 

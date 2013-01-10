@@ -2,13 +2,9 @@
 # -*- coding: utf-8 -*-
 import copy, sys
 
-#import localpythonpath
-#localpythonpath.setlocalpythonpath()
-
 import __init__
 __init__.setlocalpythonpath()
 
- 
 from maths.combinatorics.IndicesCombiner import IndicesCombiner
 from maths.combinatorics.algorithmsForCombinatorics import combineNbyC 
 from libfunctions.pattern_string_et_al.stringpatterns_functions import convert_intlist_to_spaced_zfillstr
@@ -124,10 +120,8 @@ def testGerador():
     print i, convert_intlist_to_spaced_zfillstr(jogo_as_dezenas)
     # print gerador.iterator.index(100)
     
-
 def adhoc_test():
   testGerador()
-
 
 import unittest
 class MyTest(unittest.TestCase):
@@ -146,7 +140,6 @@ def look_up_cli_params_for_tests_or_processing():
     elif arg.startswith('-p'):
       pass
       # process()
-
 
 if __name__ == '__main__':
   look_up_cli_params_for_tests_or_processing()

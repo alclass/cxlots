@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-funcsForStringPatternsEtAl.py
+(...)
 '''
-
 import string, sys # datetime
-
 letters52 = string.letters
-import lambdas
+
+import __init__
+__init__.setlocalpythonpath()
+
+from libfunctions import system_wide_lambdas as swlambda
 
 
-zfill  = lambda s, zfill_n : str(s).zfill(zfill_n)
-zfill2 = lambda s : str(s).zfill(2)
- 
 def convert_intlist_to_spaced_zfillstr(dezenas_in, zfill_n=2, do_sort=False):
   '''
   This function converts a dozens list to a string
@@ -24,9 +23,9 @@ def convert_intlist_to_spaced_zfillstr(dezenas_in, zfill_n=2, do_sort=False):
   if zfill_n < 2:
     return dezenas_in
   if zfill_n==2:
-    dezenas = map(zfill2, dezenas_in)
+    dezenas = map(swlambda.zfill2, dezenas_in)
   else:
-    dezenas = map(zfill, dezenas_in, [zfill_n]*len(dezenas_in))
+    dezenas = map(swlambda.zfilln, dezenas_in, [zfill_n]*len(dezenas_in))
   dezenas = ' '.join(dezenas)
   return dezenas
 
@@ -59,7 +58,7 @@ def reverseString(line):
 def extractNumbersInANumberSpacedStrIntoANumberList(line):
   line = clearLineEnding(line)
   pp = line.split(' ')
-  jogo = map(lambdas.toInt, pp)
+  jogo = map(swlambda.toInt, pp)
   return jogo
 
 def numberListToStrCommaless(lista, nForZfill=2):

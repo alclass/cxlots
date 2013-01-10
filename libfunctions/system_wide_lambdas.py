@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-zfill2              = lambda digit : str(digit).zfill(2)
-extract_1st_element = lambda x : x[0]
-
 toInt  = lambda x : int(x)
 toStr  = lambda x : str(x)
 
@@ -21,6 +18,11 @@ is_nonzero        = lambda x : x != 0 # para filtro não-passa zero
 
 is_odd      = lambda x          : x % 2  # when even, 0 (which is also False) returns; when odd, 1 (which is True) returns :: they are used in a filter()
 remainder_n = lambda x, divisor : x % divisor
+
+zfill2 = lambda s : str(s).zfill(2)
+zfilln = lambda s, zfill_n : str(s).zfill(zfill_n)
+extract_1st_element = lambda x : x[0]
+
 
 if __name__ == '__main__':
   pass
