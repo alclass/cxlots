@@ -21,7 +21,7 @@ class TilProducer(TilDefiner):
     self.alltilwpatterns = get_only_instance_of_tilallpatternsSingleton().get_alltilwpatterns_from_buffer(self)
     self.set_total_combinations()
 
-  def get_alltilpatterns_as_intlist(self):
+  def get_alltilpatterns_as_intlists(self):
     patterns_as_intlist = []
     for wpattern in self.alltilwpatterns:
       pattern_intlist = map(int, [c for c in wpattern] )
@@ -32,6 +32,9 @@ class TilProducer(TilDefiner):
     self.total_combinations = len(self.alltilwpatterns)
     # calc_n_integer_partitions(self.n_slots, self.soma) 
 
+  def __len__(self):
+    return self.total_combinations
+      
   def get_tilwpattern_at_current_partition_index(self):
     if self.partition_index < 0 or self.partition_index > self.total_combinations - 1:
       return None
@@ -67,8 +70,8 @@ class TilProducer(TilDefiner):
     self.common_next()
     return self.get_tilwpattern_at_current_partition_index()
 
-  def __next__(self):
-    return self.next()
+#  def __next__(self):
+#    return self.next()
 
   def common_previous(self):
     if self.partition_index == None:

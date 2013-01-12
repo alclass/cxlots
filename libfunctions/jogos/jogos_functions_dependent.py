@@ -7,9 +7,13 @@ jogos_functions_dependent.py contains some function that were
   or cross-dependency issues
 '''
 
-from lib import jogos_functions
-from models.ConcursoHTML import ConcursoHTML
-from models.ReadConcursosHistory import ConcursosHistoryPickledStorage
+import jogos_functions
+
+import __init__
+__init__.setlocalpythonpath()
+
+from models.Concursos.ConcursoHTML import ConcursoHTML
+from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
 
 def get_coincides_histogram_against_a_lookup_depth(jogo, up_to_nDoConc=None, LOOKUP_DEPTH=1000):
   slider = ConcursoHTML()

@@ -12,6 +12,7 @@ from models.Concursos.ConcursoExt import ConcursoExt
 from maths.tils.TilFreqSlotSeparator import TilFreqSlotSeparator
 #from maths.tils.TilPatternsProducer import TilProducer
 from maths.tils.ConcursoTil import ConcursoTil
+from maths.tils.TilR import TilR
 
 
 def adhoc_test1():
@@ -30,7 +31,10 @@ def adhoc_test2():
   for nDoConc in range(1401, slider.get_n_last_concurso() + 1):
     concurso = slider.get_concurso_by_nDoConc(nDoConc)
     concursotil = ConcursoTil(concurso)
+    concursotilr = TilR(n_slots = 5, concurso=concurso)
+
     nDoConc_anterior = nDoConc - 1
+    print concurso.nDoConc, concurso.date, concurso.get_dezenas(), concurso.get_dezenas_in_orig_order() 
     print 'histfreq for conc', nDoConc_anterior, concursotil.get_histfreq_obj().get_histfreq_tuplelike_at(nDoConc_anterior)
     #print concursotil.get_dezenas_and_their_frequencies_for_concurso()
     for n_slots in [5, 6, 10]: 
@@ -41,7 +45,8 @@ def adhoc_test2():
       tilfreqslotter = TilFreqSlotSeparator(n_slots)
       print tilfreqslotter.show_tilhistogram_table()
       print '-'*50      
-   
+    print '=*'*27
+
 def adhoc_test3():
   slider = ConcursoExt()
   last_concurso = slider.get_last_concurso()

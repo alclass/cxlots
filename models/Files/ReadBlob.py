@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pickle, sys # numpy, os
+import os, pickle, sys # numpy, os
 
 import __init__
 __init__.setlocalpythonpath()
@@ -45,6 +45,8 @@ class BlobReader(object):
 
   def set_unpickler(self):
     datablob_path  = ls.GENERATED_DATA_DIR + self.datablob_filename
+    if not os.path.isfile(datablob_path):
+      raise IOError, 'File "%s" does not exist.' %datablob_path
     fileobj        = open(datablob_path, 'rb')
     self.unpickler = pickle.Unpickler(fileobj)
 
@@ -80,6 +82,8 @@ def process():
 def adhoc_test():
   # blobfilename = 'test.blob' # '1357090777.79.blob'
   blobfilename = '1357090777.79.blob'
+  cli_msg = 'Please, enter filename or hit <ENTER> for "%s" ? ' %blobfilename
+  blobfilename = raw_input(cli_msg)
   blobreader = BlobReader(blobfilename)
   for intlist in blobreader:
     index = blobreader.iterator.session_counter 

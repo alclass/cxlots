@@ -4,10 +4,15 @@ import sys
 '''
 
 '''
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
-from lib import jogos_functions_dependent as jogos_fd # get_line_patterns, get_column_patterns etc.
+from libfunctions.jogos import jogos_functions_dependent as jogos_fd # get_line_patterns, get_column_patterns etc.
+#from models.Concursos.ConcursoExt import ConcursoExt
+
+from maths.tils import TilR
+#from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
+
 def filter_in_those_within_coincides_histogram_range(jogo, coincides_ranges, up_to_nDoConc=None, LOOKUP_DEPTH=1000):
   '''
   
@@ -69,13 +74,22 @@ def filter_in_those_within_coincides_histogram_range(jogo, coincides_ranges, up_
     return True
 
 
+def filter_in_those_not_having_tilrwpatterns(jogo_as_dezenas, tilstats_reused_for_excluding_wpatterns, history_nDoConc_range=None):
+  '''
+  '''
+  # volante_caract = VolanteCharacteristics(n_dezenas_no_sorteio = len(jogo_as_dezenas))
+  n_slots = tilstats_reused_for_excluding_wpatterns.n_slots
+  tilr = TilR.get_tilr_from_pool(n_slots, history_nDoConc_range) # , volante_caract
+  wpattern = tilr.get_game_tilrpattern_as_str(jogo_as_dezenas)
+  if wpattern in tilstats_reused_for_excluding_wpatterns.get_wpatterns():
+    return False
+  return True
+
 def adhoc_test():
   '''
   '''
-
   pass
-
-
+    
 import unittest
 class MyTest(unittest.TestCase):
 

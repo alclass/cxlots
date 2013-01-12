@@ -7,8 +7,9 @@ Created on 28/12/2012
 @author: friend
 '''
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
+
 from models.ReadConcursosHistory import ConcursosHistoryPickledStorage
 from lib.funcsForStringPatternsEtAl import convert_intlist_to_spaced_zfillstr
 import random

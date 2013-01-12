@@ -7,7 +7,8 @@ __init__.setlocalpythonpath()
 
 import local_settings as ls
 
-from models.Concursos.ConcursoExt import ConcursoExt
+# IMPORTANT: this module should import ConcursoHTML instead of ConcursoExt, because the latter imports this one!!! 
+from models.Concursos.ConcursoHTML import ConcursoHTML
 from libfunctions.jogos import jogos_functions
 
 # ATTENTION: READ_CONCHIST constants start with 1!!!
@@ -19,12 +20,12 @@ READ_CONCHIST_AS_TIMEONWARDS_NONORDERED_INTS = 3
 READ_CONCHIST_LAST_ID                        = READ_CONCHIST_AS_TIMEONWARDS_NONORDERED_INTS
 
 def find_last_nDoConc():
-  slider = ConcursoExt()
+  slider = ConcursoHTML()
   return slider.get_n_last_concurso()
 
 def read_concursos_history(do_ordered_dozens=False):
   all_histjogos_as_dezenas = []
-  slider = ConcursoExt()
+  slider = ConcursoHTML()
   # print 'Please wait. Reading database :: read_all_past_concursos() '
   concursos = slider.get_all_concursos()
   for concurso in concursos:
@@ -256,7 +257,7 @@ import unittest
 class MyTest(unittest.TestCase):
 
   def test_equality_of_both_blob_and_db(self):
-    slider = ConcursoExt()
+    slider = ConcursoHTML()
     concursos_db = slider.get_all_concursos()
     pickled = ConcursosHistoryPickledStorage(read_as_id=READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
     pickled.read_or_create_not_returning_list()
@@ -270,7 +271,7 @@ class MyTest(unittest.TestCase):
       self.assertEqual(dezenas_blob.all(), dezenas_db.all())  
 
   def test_get_contrajogos_as_dezenas_down_from(self):
-    slider = ConcursoExt()
+    slider = ConcursoHTML()
     last_concurso = slider.get_last_concurso()
     jogos_dezenas_list = get_contrajogos_as_dezenas_down_from(last_concurso, last_concurso.nDoConc - 1)
     for i, jogo_as_dezenas in enumerate(jogos_dezenas_list):

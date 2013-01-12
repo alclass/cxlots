@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import time  # for timing purposes
-#import math
+'''
+volante_functions.py
+'''
+# import time  # for timing purposes
 
-a=1
-from cardprint import pprint
+def return_int_range_or_default_or_raise_ValueError(int_range, DEFAULT_INT_RANGE):
+  if int_range == None or len(int_range) != 2:
+    return DEFAULT_INT_RANGE
+  try:
+    least_n    = int_range[0]; int(least_n)
+    greatest_n = int_range[1]; int(greatest_n)
+  except ValueError:
+    return DEFAULT_INT_RANGE
+  if least_n > greatest_n:
+    raise ValueError, 'least_n (=%d) > greatest_n (=%d) ' %(least_n, greatest_n)
+  return int_range
 
 
 def findStandard2LetterNameInFilename(apostasFilename):

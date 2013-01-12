@@ -13,12 +13,29 @@ An iteration-capable set is one that follows Python's iteration protocol, it's c
 
 Method intersect() does the processing.
 
-The processing is not search-optimized, but it's a good-around, for the time being, for getting equal elements in two set.
+The processing is not search-optimized, but it's a good work-around, for the time being, for getting equal elements in two sets.
+
 The logic to find equals is the following:
 1) pick up two elements, one from each set
 2) if the two are equal, save the element (to a writing data blob file object) and continue, go back to 1 above
 3) not being equal, discard the lesser and pick up another element from the set that had the lesser element, go back to 2 above
 4) if, at any moment, a set expires (ie, has no further elements for comparison), terminate processing. 
+
+
+Example:
+
+Set 1      Set 2
+-----      -----
+1,2,3      4,5,6
+4,5,6      7,8,9
+
+The result set will be:
+
+Result Set
+-----
+4,5,6
+
+ie, both set 1 and set 2 have tuple-element 4,5,6
 
 
 To the future!
