@@ -8,9 +8,11 @@ __init__.setlocalpythonpath()
 # import local_settings as ls
 
 from models.Concursos.ConcursoExt import ConcursoExt
-from generators.GeradorIter import Gerador
+# from generators.GeradorIter import Gerador
+from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
+import models.Files.ReadConcursosHistory as RCH
 import libfunctions.jogos.jogos_functions_dependent as jogos_fd
-from libfunctions.filters.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
+# from libfunctions.filters.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
 
 class AnalyzerOfCoincides(object):
   
@@ -34,6 +36,14 @@ class AnalyzerOfCoincides(object):
 
 def report():
   slider = ConcursoExt()
+  n_last_concurso = slider.get_n_last_concurso()
+  for nDoConc in range(1001, n_last_concurso+1):
+    reader = ConcursosHistoryPickledStorage(read_as_id=RCH.READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
+    reader.set_upper_nDoConc(upper_nDoConc=nDoConc)
+    jogos_as_dezenas = reader.get_concursos_up_to_upper_nDoConc()
+    
+     
+  slider = ConcursoExt()
   concurso = slider.get_last_concurso()
   aggregated_histogram = {}
   N_SORTEADAS = len(concurso.get_dezenas())
@@ -55,79 +65,14 @@ def report():
   analyzer.analyze()
 
 
+
 def process():
   '''
   '''
   pass
 
 def adhoc_test():
-  
-  # slider = ConcursoHTML()
-  # last_nDoConc = find_last_nDoConc()
-  # backtrack_amount = 400
-  # down_to_nDoConc = last_nDoConc - backtrack_amount
-  # for nDoConc in range(last_nDoConc, down_to_nDoConc - 1, -1):
-#  concurso = slider.get_last_concurso()
-#  analyzer = Analyzer(concurso)
-#  analyzer.run()
-#  analyzer.report()
-  # report()
-  '''
-  n_of_coincides 0
-[507 510 535 533 530 538 518 512 506 485]
-min 485
-max 538
-avg 517.5
-std 15.8379291576
-n_of_coincides 1
-[376 375 356 364 373 368 382 385 376 395]
-min 356
-max 395
-avg 375.1
-std 10.4211323761
-n_of_coincides 2
-[112 107  99  96  92  87  94  95 104 108]
-min 87
-max 112
-avg 99.5
-std 7.6183987819
-n_of_coincides 3
-[ 4  8  8  7  5  6  6  7 14 12]
-min 4
-max 14
-avg 7.8
-std 2.93428015022
-n_of_coincides 4
-[1 0 2 0 0 1 0 1 0 0]
-min 0
-max 2
-
-  '''
-
-  coincides_ranges    = {}
-  #coincides_ranges[0] = (485, 538)
-  coincides_ranges[0] = (501, 518)
-  # coincides_ranges[1] = (356, 395)
-  coincides_ranges[1] = (366, 385)
-  #coincides_ranges[2] = ( 87, 112)
-  coincides_ranges[2] = ( 97, 102)
-  #coincides_ranges[3] = (  4,  14)
-  coincides_ranges[3] = (  5,  10)
-  coincides_ranges[4] = (  0,   2)
-  coincides_ranges[5] = (  0,   0)
-  coincides_ranges[6] = (  0,   0)
-  #slider = ConcursoExt()
-  gerador = Gerador()
-  # gerador = GeradorIterator()
-  print len(gerador)
-  for jogo_as_dezenas in gerador:
-    i = gerador.iterator.at_index
-    if i > 10:
-      break
-    print gerador.iterator.at_index, jogo_as_dezenas 
-    bool_result = filter_in_those_within_coincides_histogram_range(jogo_as_dezenas, coincides_ranges, up_to_nDoConc=None, LOOKUP_DEPTH=1000)
-    #if bool_result:
-    print jogo_as_dezenas, bool_result
+  pass
 
 
 import unittest

@@ -5,8 +5,9 @@ SetsCombiner
 '''
 import sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
+
 # from lib import lambdas
 from IndicesCombiner import IndicesCombiner
 import algorithmsForCombinatorics as afc
@@ -142,12 +143,24 @@ class SetsCombiner(object):
     indicesCombiner = IndicesCombiner(indicesCombiner_upLimit, indicesCombiner_size, indicesCombiner_mode)
     return indicesCombiner 
 
+  def isWorkSetWithQuantityValid(self, workSetWithQuantity):
+    workSet = workSetWithQuantity[0]
+    # workSet should not be empty, if it is, consider data invalid returning False 
+    if len(workSet) == 0:
+      return False
+    quantity = workSetWithQuantity[1]
+    # quantity must be greater than 0, however, if it is less than 1, just return, no exception raising for this case
+    if quantity < 1 or quantity > len(workSet):
+      return False
+    return True
+
   def addSetWithQuantities(self, workSetWithQuantity):
     if self.lock_workSets_insertion:
       error_msg = 'lock_workSets_insertion is True, ie, an inconsistent action (either static or dynamic) was issued. First all workSets are added, then the first call to combine() locks further additions.'
       raise IndexError, error_msg
-    workSet = workSetWithQuantity[0]
-    quantity = workSetWithQuantity[1]
+    if not self.isWorkSetWithQuantityValid(workSetWithQuantity):
+      return
+    workSet, quantity = workSetWithQuantity
     workSetObj = WorkSet(workSet, self.instantiateIndicesCombiner(workSet, quantity) )
     self.workSetObjs.append(workSetObj)
     
@@ -206,7 +219,8 @@ class SetsCombiner(object):
       if next_set != None:
         self.sets_to_join[self.LAST_INDEX] = next_set
         horizontal_combined_set = self.join_sets()
-        #self.horizontal_combined_sets.append(horizontal_combined_set) 
+        #self.horizontal_combined_sets.append(horizontal_combined_set)
+        self.horizontal_combined_set = horizontal_combined_set  
         yield horizontal_combined_set
       else:
         if self.go_leftsideways_to_combine(self.LAST_INDEX):
@@ -419,34 +433,12 @@ def simulate_set_multiply():
 
   print 'total comb',  sc.get_total_combinations()
 
-def adhoc_test3():
-  s = ['a','b','c']; combsize = 2
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
-  comb = ws.next()
-  while comb:
-    print comb
-    comb = ws.next()
 
-  print '-'*30
-
-  s = [4,5]; combsize = 2
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
-  comb = ws.next()
-  while comb:
-    print comb
-    comb = ws.next()
-
-  print '-'*30
-
-  s = [6,7,8,9]; combsize = 3
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
-  comb = ws.next()
-  while comb:
-    print comb
-    comb = ws.next()
-
+def test_yield():
+  for i in ynext():
+    print i
    
-def adhoc_test():
+def adhoc_test1():
   simulate_set_multiply()
   
 def adhoc_test2():
@@ -463,17 +455,69 @@ def ynext():
   for i in xrange(10):
     yield i
 
-def test_yield():
-  for i in ynext():
-    print i
-
 def adhoc_test3():
-  test_yield()
   
-def look_for_adhoctest_arg():
+  combiner = SetsCombiner()
+  
+  
+  s = ['a','b','c']; combsize = 2
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+  print '-'*30
+  combiner.addSetWithQuantities((s, combsize))
+
+  s = [4,5]; combsize = 2
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+  print '-'*30
+  combiner.addSetWithQuantities((s, combsize))
+
+  s = [6,7,8,9]; combsize = 3
+  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  comb = ws.next()
+  while comb:
+    print comb
+    comb = ws.next()
+
+  print '-'*30
+  combiner.addSetWithQuantities((s, combsize))
+  for comb in combiner.next_combination():
+    print comb
+  
+  total_combinations = combiner.get_total_combinations()
+  print 'total_combinations =', total_combinations
+
+def adhoc_test4():
+  test_yield()
+
+def adhoc_test():
+  adhoc_test3()
+
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

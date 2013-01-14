@@ -5,16 +5,20 @@ TilPatternsProducerByNumberBase.py
 '''
 import sys
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
+
 #import funcsForTil as ffTil
 from TilPattern import TilDefiner
 # from TilPattern import TilPattern
 import maths.NumberSystem as NS
 import maths.combinatorics.algorithmsForCombinatorics as afc
+from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
 
-class TilProducerByNumberBase(NS.NumberSystem):
+class TilProducerNB(NS.NumberSystem):
   '''
+  Formerly TilProducerByNumberBase
+  
   This class inherits from NumberSystem (in package maths, homonime module NumberSystem.py)
   
   The parent class is capable of adding one.  Here, the polymorphic intent is to adding one continuously until sum(digits) is equal to "soma".
@@ -46,7 +50,7 @@ class TilProducerByNumberBase(NS.NumberSystem):
   
   '''
 
-  def __init__(self, tildefiner):
+  def __init__(self, tildefiner, volante_caract=None):
     '''
     The former implementation of this class did not store patterns array,
       because of that, it was a lot slower and had a few bugs;
@@ -57,9 +61,18 @@ class TilProducerByNumberBase(NS.NumberSystem):
     base = tildefiner.soma + 1
     super(self.__class__, self).__init__(arraySize, base)
     self.tildefiner = tildefiner
+    self.set_volante_caract(volante_caract)
     self.wpatterns_array = []
     self.store_wpatterns_array()
     self.restart_parcours() # same as ==>> self.parcours_index = 0
+
+
+  def set_volante_caract(self, volante_caract=None):
+    if volante_caract == None or type(volante_caract) != VolanteCharacteristics:
+      # Default it
+      self.volante_caract = VolanteCharacteristics()
+    else:
+      self.volante_caract = volante_caract
 
   def store_wpatterns_array(self):
     '''
@@ -74,7 +87,7 @@ class TilProducerByNumberBase(NS.NumberSystem):
       wpattern = ''.join(map(str, digits))
       self.wpatterns_array.append(wpattern)
 
-  def get_n_combinations(self, concursoBase):
+  def get_n_combinations(self):
     '''
     This method is applied to "wpattern" (in fact, array, its list transform) that is pointer to by the parcours_index, ie, the current wpattern
     
@@ -87,18 +100,19 @@ class TilProducerByNumberBase(NS.NumberSystem):
       = 1 * 66 * 66 * 12 * 12 = 
       = 627264 combinations
     '''
-    remainder = concursoBase.N_DE_DEZENAS_NO_VOLANTE % self.tildefiner.n_slots
+    remainder = self.volante_caract.n_dezenas_no_volante % self.tildefiner.n_slots
     if remainder != 0:
       # not yet implemented
-      return None
-    total_elems_per_slot = concursoBase.N_DE_DEZENAS_NO_VOLANTE / self.tildefiner.n_slots
+      raise ValueError, 'TilProducerNB has not yet implemented Tils with n_slots not dividing total dozens in gamecard.'
+      # return None
+    total_elems_per_slot = self.volante_caract.n_dezenas_no_volante / self.tildefiner.n_slots
     array = self.get_pattern()
     total_combinations = 1
     for n_elems_happening_in_slot in array:
       total_combinations *= afc.combineNbyC(total_elems_per_slot, n_elems_happening_in_slot)
     return total_combinations
     
-    return len(self.wpatterns_array)
+    #return len(self.wpatterns_array)
   
   def get_total(self):
     return len(self.wpatterns_array)
@@ -156,6 +170,12 @@ class TilProducerByNumberBase(NS.NumberSystem):
       return
     error_msg = 'wpattern (=%s) does not exist to return its index in move_to_wpattern()' %p_wpattern
     raise IndexError, error_msg  
+
+  def next_wpattern(self):
+    self.do_next_partition()
+    if self.values == None:
+      return None
+    return self.get_wpattern()
 
   def get_wpattern(self):
     '''
@@ -226,23 +246,23 @@ class TilProducerByNumberBase(NS.NumberSystem):
     return '<TilByNBase(%d,%d) last=%s>' %(self.tildefiner.n_slots, self.tildefiner.soma, str(self.lastElem))
     
 
-def adhoc_test():
+def adhoc_test1():
   tildefiner = TilDefiner(5,6)
-  tpbns = TilProducerByNumberBase(tildefiner)
-  exec('from models.Concurso import ConcursoBase')
-  concursoBase = eval('ConcursoBase()')
+  tpbns = TilProducerNB(tildefiner)
   print 'first / last', tpbns.get_first(), tpbns.get_last()
   total_combinations = 0; tpbns.restart_parcours()
   while tpbns.parcours_wnext():
-    n_combinations = tpbns.get_n_combinations(concursoBase)
+    n_combinations = tpbns.get_n_combinations()
     print '>>>', tpbns.parcours_index, tpbns.get_wpattern(), n_combinations 
     total_combinations += n_combinations
   print 'total_combinations', total_combinations
 
 def adhoc_test2():
-  tildefiner = TilDefiner(6,6)
-  tpbns = TilProducerByNumberBase(tildefiner)
-  wpattern = tpbns.next_wpattern(); c=0
+  tildefiner = TilDefiner(5,6)
+  tpbns = TilProducerNB(tildefiner)
+  tpbns.do_next_partition
+  wpattern = tpbns.get_wpattern()
+  c=0
   print 'first / last', tpbns.get_first(), tpbns.get_last()
   print 'before while-loop', tpbns.get_wpattern()
   while wpattern != None:
@@ -251,21 +271,51 @@ def adhoc_test2():
     wpattern = tpbns.next_wpattern()
   print 'after while-loop', tpbns.get_wpattern()
   print 'total', tpbns.get_total() 
-  tildefiner = TilDefiner(6,6)
-  tpbns = TilProducerByNumberBase(tildefiner)
+  
+  tildefiner = TilDefiner(5,6)
+  tpbns = TilProducerNB(tildefiner)
   print tpbns.get_total()
   print 'first / last', tpbns.at(0), tpbns.at(tpbns.get_total() - 1)
-  print 'index of "000005"', tpbns.index('000005')
-  print 'index of "000006"', tpbns.index('000006')
-  print 'index of "000024"', tpbns.index('000024')
-  print 'index of "600000"', tpbns.index('600000')
-  print 'index of "650000"', tpbns.index('650000')
-  
+  print 'index of "000005"', tpbns.index('00005')
+  print 'index of "000006"', tpbns.index('00006')
+  print 'index of "000024"', tpbns.index('00024')
+  print 'index of "600000"', tpbns.index('60000')
+  print 'index of "650000"', tpbns.index('65000')
+    
+def adhoc_test():
+  try:
+    n_test = int(sys.argv[2])
+    funcname = 'adhoc_test%d()' %n_test
+    exec(funcname)
+    return
+  except IndexError: # in case sys.argv is less than < 3
+    pass
+  except ValueError: # in case sys.argv[2] is not an int
+    pass
+  adhoc_test1()
 
-def look_for_adhoctest_arg():
+def process():
+  '''
+  '''
+  pass
+    
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      process()
+
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

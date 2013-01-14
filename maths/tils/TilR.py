@@ -4,7 +4,7 @@
 TilR.py
 '''
 # import numpy, time, sys
-import sys
+import copy, sys
 
 import __init__
 __init__.setlocalpythonpath()
@@ -13,18 +13,10 @@ from libfunctions.jogos import volante_functions
 from models.Concursos.ConcursoExt import ConcursoExt
 from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
 # from TilPattern import TilDefiner
-from TilProducer import TilProducer
+#from TilProducer import TilProducer
 import maths.statistics.HistoryFrequency as hf
+from TilStats import TilStats
 
-
-class Dict2(dict):
-  def add1_or_set1_to_key(self, k):
-    if self.has_key(k):
-      self[k]+=1
-    else:
-      self[k]=1
-      
-      
           
 class TilR(object):
   '''
@@ -120,6 +112,18 @@ class TilR(object):
       self.tilrsets.append(tilrset)
       index_ini = index_fim; index_fim += self.n_elems_per_slot
 
+  def get_dozens_in_slot_n(self, n):
+    if self.tilrsets == None or len(self.tilrsets) == 0:
+      return []
+    try:
+      int(n)
+    except ValueError:
+      return []
+    last_index = len(self.tilrsets) - 1
+    if n < 0 or n > last_index:
+      return []
+    return copy.copy(self.tilrsets[n])
+
   def redo_place_dozens_in_the_slots(self):
     try:
       self.history_nDoConc_range
@@ -159,65 +163,6 @@ class TilR(object):
     return self.get_game_tilrpattern_as_list_and_str(dezenas)[1]
    
   
-class TilStats(TilProducer):
-  
-  def __init__(self, n_slots=None, soma=None):
-    super(TilStats, self).__init__(n_slots, soma)
-    self.wpatterndict = Dict2()
-    self.wpatterns = []
- 
-  def add_pattern_as_str(self, pattern_str):
-    self.wpatterndict.add1_or_set1_to_key(pattern_str)
-    self.wpatterns = self.wpatterndict.keys()
-
-  def add_pattern_as_list(self, pattern_list):
-    pattern_str = ''.join(map(str, pattern_list))
-    self.add_pattern_as_str(pattern_str)
-
-  def get_wpatterns(self):
-    return self.wpatterns # to gain performance instead of issuing dict.keys() (below)
-    # return self.wpatterndict.keys()
-  
-  def print_difference(self):
-    self.alltilwpatterns
-    added_wpatterns = self.wpatterndict.keys() 
-    for wpattern in self.alltilwpatterns:
-      if wpattern not in added_wpatterns:
-        print 'Not occurred', wpattern   
-
-  def print_summary(self):
-    wpatterns_and_quants = self.wpatterndict.items()
-    wpatterns_and_quants.sort(key = lambda x : x[1])
-    for wpattern_and_quant in wpatterns_and_quants:
-      wpattern = wpattern_and_quant[0]
-      quant    = wpattern_and_quant[1]
-      print wpattern, ':', quant, 'times'
-    print 'pattern total', len(wpatterns_and_quants)
-    self.print_difference()
-    self.print_python_list_for_all_patterns_with_less_than_n_occurrences(4)
-
-  def print_python_list_for_all_patterns_with_less_than_n_occurrences(self, n_occurrences):
-    outlist = []
-    print 'self.alltilwpatterns', self.alltilwpatterns
-    for wpattern in self.alltilwpatterns:
-      if self.wpatterndict.has_key(wpattern):
-        quant = self.wpatterndict[wpattern]
-        if quant >= n_occurrences:
-          continue
-    # ie, either not wpattern is not in self.wpatterndict or its quant < n_occurrences
-      outlist.append(wpattern)
-    # now write a Python list source code
-    print 'outlist', outlist
-    outstr = "tilrwpatterns_to_filter_out = ["
-    for wpattern in outlist:
-      sourcecode ="'%s'," %wpattern 
-      outstr += sourcecode
-    outstr += "] # len/size = %d" %(len(outlist))
-    # return outstr
-    print outstr
-    
-  # (inherited) get_n_all_tilrpatterns(self) or __len__(self):
-  # (inherited) def get_alltilpatterns_as_intlists(self):
     
 tilr_pool = {}; tilr_pool_keys_queue = []; TILR_POOL_SIZE = 20
 def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_caract=None):

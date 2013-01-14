@@ -19,10 +19,6 @@ READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS    = 2
 READ_CONCHIST_AS_TIMEONWARDS_NONORDERED_INTS = 3
 READ_CONCHIST_LAST_ID                        = READ_CONCHIST_AS_TIMEONWARDS_NONORDERED_INTS
 
-def find_last_nDoConc():
-  slider = ConcursoHTML()
-  return slider.get_n_last_concurso()
-
 def read_concursos_history(do_ordered_dozens=False):
   all_histjogos_as_dezenas = []
   slider = ConcursoHTML()
@@ -56,8 +52,7 @@ def set_read_as_id(read_as_id):
     read_as_id = READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS
   return read_as_id 
 
-def set_upper_nDoConc(upper_nDoConc = None):
-  last_nDoConc = find_last_nDoConc()
+def set_upper_nDoConc(last_nDoConc, upper_nDoConc = None):
   if upper_nDoConc == None:
     # Default
     return last_nDoConc 
@@ -79,15 +74,23 @@ class ConcursosHistoryPickledStorage(object):
 
   def __init__(self, read_as_id=None, upper_nDoConc=None):
     self.set_read_as_id(read_as_id)
-    self.last_nDoConc = find_last_nDoConc()
-    self.set_upper_nDoConc(upper_nDoConc)
     self.numpy_histjogos = []
+    slider               = ConcursoHTML()
+    self.last_nDoConc    = slider.get_n_last_concurso()
+    self.total_concursos = slider.get_total_concursos()
+    self.set_upper_nDoConc(upper_nDoConc)
 
   def set_read_as_id(self, read_as_id=None):
     self.read_as_id = set_read_as_id(read_as_id)
 
   def set_upper_nDoConc(self, upper_nDoConc=None):
-    self.upper_nDoConc = set_upper_nDoConc(upper_nDoConc)
+    self.upper_nDoConc = set_upper_nDoConc(self.last_nDoConc, upper_nDoConc)
+    self.read_or_create_not_returning_list
+
+  def get_concursos_up_to_upper_nDoConc(self):
+    if len(self.numpy_histjogos) != self.total_concursos:
+      raise IndexError, 'An Inconsistent Condition happened: len(self.numpy_histjogos)=%d != self.total_concursos=%d ' %(len(self.numpy_histjogos), self.total_concursos)
+    return self.numpy_histjogos[:self.upper_nDoConc-1]
 
   def read_or_create_not_returning_list(self):
     '''
@@ -123,7 +126,7 @@ class ConcursosHistoryPickledStorage(object):
 
   def output_list_reading_from_blob_file(self):
     self.read_from_blob_file()
-    return self.numpy_histjogos
+    return self.get_concursos_up_to_upper_nDoConc()
 
   def read_from_blob_file(self):
     # print 'Load Picking from self.blobfilepath =', self.blobfilepath
