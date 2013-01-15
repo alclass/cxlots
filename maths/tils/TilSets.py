@@ -19,9 +19,25 @@ class TilSets(object):
     self.putDezenasInsideTilSets()
 
   This tool-chain does the following:
-  1st) gets a list/array containing the frequency delta for each "til" eg (12,12,12,11,11) means 12 units in frequency for the 3 first elements and 11 units in frequency for the last two
-  2nd) takes the frequency delta array and transform it into a tuple-array with the min-max border for each "til" eg (110,121) (122,133) (134,145) (146, 156) (157,167)
+  1st) gets a list/array containing the frequency delta for each "til" eg (12,12,12,11,11)
+       means 12 units in frequency for the 3 first elements and 11 units in frequency
+       for the last two
+  2nd) takes the frequency delta array and transform it into a tuple-array with
+       the min-max border for each "til"
+       Ex. slot 1 = (110,121); slot 2 = (122,133); slot 3 = (134,145); slot 4 = (146, 156); slot 5 = (157,167)
   3nd) puts the element in "frequencies" inside the til-sets according to where it gets in
+       Ex. if the game (1,2,3,4,5,6) has the following frequencies per dozen:
+       f(1) = 115; f(2)=160; f(3)=122; f(4)=121; f(5)=156; f(6)=145
+       Tils would be:
+       f(1) = 115 which is within slot 1 = (110,121)
+       f(2) = 160 which is within slot 5 = (157,167)
+       f(3) = 122 which is within slot 2 = (122,133)
+       f(4) = 121 which is within slot 1 = (110,121)
+       f(5) = 156 which is within slot 4 = (146,156)
+       f(6) = 145 which is within slot 3 = (134,145)
+       The order of Tils, then, is 152143 and the quantity per slot (Til itself) is 21111.
+       So, for the hipothetical game (1,2,3,4,5,6) its Til(5,6) is 21111.
+  
   '''
   def __init__(self, frequencies, tilN):
     '''
@@ -180,13 +196,29 @@ def test_tilObjs2():
   print 'tilSets', tilSets   #print 'listWithFrequencyBordersTuple', self.listWithFrequencyBordersTuple, 'min max', self.minFreq, self.maxFreq
 #test_tilObjs2()
 
+def adhoc_test():
+  '''
+  '''
+  pass
 
-def look_for_adhoctest_arg():
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+ 
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
-      test_tilObjs()
-      test_tilObjs2()
+      adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      pass
+      # process()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
-  pass
+  look_up_cli_params_for_tests_or_processing()
