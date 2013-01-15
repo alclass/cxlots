@@ -74,7 +74,7 @@ class ConcursosHistoryPickledStorage(object):
 
   def __init__(self, read_as_id=None, upper_nDoConc=None):
     self.set_read_as_id(read_as_id)
-    self.numpy_histjogos = []
+    self.numpy_histjogos = None
     slider               = ConcursoHTML()
     self.last_nDoConc    = slider.get_n_last_concurso()
     self.total_concursos = slider.get_total_concursos()
@@ -87,10 +87,15 @@ class ConcursosHistoryPickledStorage(object):
     self.upper_nDoConc = set_upper_nDoConc(self.last_nDoConc, upper_nDoConc)
     self.read_or_create_not_returning_list
 
-  def get_concursos_up_to_upper_nDoConc(self):
+  def get_games_up_to(self, upper_nDoConc_param=None):
+    if self.numpy_histjogos == None:
+      self.read_or_create_not_returning_list()
     if len(self.numpy_histjogos) != self.total_concursos:
       raise IndexError, 'An Inconsistent Condition happened: len(self.numpy_histjogos)=%d != self.total_concursos=%d ' %(len(self.numpy_histjogos), self.total_concursos)
-    return self.numpy_histjogos[:self.upper_nDoConc-1]
+    upper_nDoConc_to_consider = self.upper_nDoConc
+    if upper_nDoConc_param != None and (1 <= upper_nDoConc_param <= self.n_last_concurso):
+      upper_nDoConc_to_consider = upper_nDoConc_param
+    return self.numpy_histjogos[:upper_nDoConc_to_consider-1]
 
   def read_or_create_not_returning_list(self):
     '''

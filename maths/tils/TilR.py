@@ -10,6 +10,7 @@ import __init__
 __init__.setlocalpythonpath()
 
 from libfunctions.jogos import volante_functions
+from libfunctions.pattern_string_et_al.stringpatterns_functions import to_descendant_stair_str
 from models.Concursos.ConcursoExt import ConcursoExt
 from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
 # from TilPattern import TilDefiner
@@ -162,8 +163,17 @@ class TilR(object):
   def get_game_tilrpattern_as_str(self, dezenas):
     return self.get_game_tilrpattern_as_list_and_str(dezenas)[1]
    
-  
-    
+  def get_game_tilrpattern_as_desc_stair(self, dezenas):
+    '''
+    Examples:
+      1) suppose wpattern is '01212'
+      Its descendent stair is '2211' (information is lost here)
+      2) suppose wpattern is '01302'
+      Its descendent stair is '321' (information is lost here)
+    '''
+    tilrpattern_as_list = self.get_game_tilrpattern_as_list(dezenas)
+    return to_descendant_stair_str(tilrpattern_as_list)
+
 tilr_pool = {}; tilr_pool_keys_queue = []; TILR_POOL_SIZE = 20
 def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_caract=None):
   '''
@@ -185,7 +195,7 @@ def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_car
   if not tilr_pool.has_key(nonnone_tilr_pool_key):
     tilr_pool[nonnone_tilr_pool_key] = tilr_pool_obj
     tilr_pool_keys_queue.append(nonnone_tilr_pool_key)
-  if len(tilr_pool_keys_queue) > TILR_POOL_SIZE:
+  while len(tilr_pool_keys_queue) > TILR_POOL_SIZE or len(tilr_pool) > TILR_POOL_SIZE:
     # This is a FIFO Queue, ie, First-In First-Out
     tilr_pool_key = tilr_pool_keys_queue[0] 
     del tilr_pool[tilr_pool_key]

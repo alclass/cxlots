@@ -1,79 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import numpy, sys # , os, pickle, 
+import sys # , os, pickle, numpy 
 
 import __init__
 __init__.setlocalpythonpath()
 
-# import local_settings as ls
-
-from models.Concursos.ConcursoExt import ConcursoExt
-# from generators.GeradorIter import Gerador
 from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
 import models.Files.ReadConcursosHistory as RCH
-import libfunctions.jogos.jogos_functions_dependent as jogos_fd
-# from libfunctions.filters.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
+from libfunctions.utils.pyobjects_ext import Dict2
+from maths.tils import TilR
 
-class AnalyzerOfCoincides(object):
-  
-  def __init__(self, aggregated_histogram):
-    self.aggregated_histogram = aggregated_histogram
-  
-  def analyze(self):
-    n_coincides_list = self.aggregated_histogram.keys()
-    for self.n_of_coincides in n_coincides_list:
-      self.analyze_coincidence()
-
-  def analyze_coincidence(self):
-    print 'n_of_coincides', self.n_of_coincides
-    array_coincides_history = numpy.array( self.aggregated_histogram[self.n_of_coincides] )
-    print array_coincides_history
-    print 'min', array_coincides_history.min()
-    print 'max', array_coincides_history.max()
-    print 'avg', (1.0 + array_coincides_history.sum())/len(array_coincides_history)
-    print 'std', array_coincides_history.std()
-  
-
+start_nDoConc = 101
 def report():
-  slider = ConcursoExt()
-  n_last_concurso = slider.get_n_last_concurso()
-  for nDoConc in range(1001, n_last_concurso+1):
-    reader = ConcursosHistoryPickledStorage(read_as_id=RCH.READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
-    reader.set_upper_nDoConc(upper_nDoConc=nDoConc)
-    jogos_as_dezenas = reader.get_concursos_up_to_upper_nDoConc()
-    
+  wpatterndict = Dict2(); desc_stair_dict = Dict2()
+  reader = ConcursosHistoryPickledStorage(read_as_id=RCH.READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
+  jogos_as_dezenas = reader.get_games_up_to()
+  start_index = start_nDoConc - 1
+  for i, jogo_as_dezenas in enumerate(jogos_as_dezenas[start_index:]):
+    passing_nDoConc = start_nDoConc + i
+    the_one_just_before = passing_nDoConc - 1
+    tilr     = TilR.get_tilr_from_pool(n_slots=5, history_nDoConc_range = (1, the_one_just_before)) 
+    wpattern = tilr.get_game_tilrpattern_as_str(jogo_as_dezenas)
+    #print wpattern, 'concurso', passing_nDoConc, jogo_as_dezenas
+    desc_stair_str = tilr.get_game_tilrpattern_as_desc_stair(jogo_as_dezenas) 
+    print str(passing_nDoConc).zfill(4), wpattern, desc_stair_str
+    wpatterndict.add1_or_set1_to_key(wpattern)
+    desc_stair_dict.add1_or_set1_to_key(desc_stair_str)
+  for wpattern in wpatterndict.keys():
+    print wpattern, ':', wpatterndict[wpattern]
+  for wpattern in desc_stair_dict.keys():
+    print wpattern, ':', desc_stair_dict[wpattern]
      
-  slider = ConcursoExt()
-  concurso = slider.get_last_concurso()
-  aggregated_histogram = {}
-  N_SORTEADAS = len(concurso.get_dezenas())
-  N_SORTEADAS_MAIS_NENHUMA_COINCIDENCIA = N_SORTEADAS + 1
-  for i in range(N_SORTEADAS_MAIS_NENHUMA_COINCIDENCIA): 
-    aggregated_histogram[i] = []
-  for i in range(10):
-    print i, concurso.nDoConc, concurso.get_dezenas()
-    coincides_histogram = jogos_fd.get_coincides_histogram_against_a_lookup_depth(concurso.get_dezenas(), up_to_nDoConc=concurso.nDoConc-1, LOOKUP_DEPTH=1000) 
-    if coincides_histogram == None:
-      continue 
-    print coincides_histogram
-    the_n_coincides = coincides_histogram.values()
-    print the_n_coincides, sum(the_n_coincides)
-    for i, coincide_quantity in enumerate(the_n_coincides):
-      aggregated_histogram[i].append(coincide_quantity)
-    concurso = concurso.get_previous()
-  analyzer = AnalyzerOfCoincides(aggregated_histogram)
-  analyzer.analyze()
-
-
-
 def process():
   '''
   '''
+  report()
   pass
 
 def adhoc_test():
   pass
-
 
 import unittest
 class MyTest(unittest.TestCase):
@@ -91,7 +56,6 @@ def look_up_cli_params_for_tests_or_processing():
       unittest.main()
     elif arg.startswith('-p'):
       process()
-
 
 if __name__ == '__main__':
   look_up_cli_params_for_tests_or_processing()

@@ -29,6 +29,15 @@ def convert_intlist_to_spaced_zfillstr(dezenas_in, zfill_n=2, do_sort=False):
   dezenas = ' '.join(dezenas)
   return dezenas
 
+def to_descendant_stair_str(intlist):    
+  # 1st: filter out zeroes
+  intlist = filter(swlambda.is_nonzero, intlist)
+  # 2st: sort descendantly
+  intlist.sort()
+  intlist.reverse()
+  intlist_as_str = ''.join(map(str, intlist))
+  return intlist_as_str
+
 def listToStr(listIn):
   outStr = ''
   for element in listIn:

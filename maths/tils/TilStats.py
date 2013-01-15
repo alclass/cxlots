@@ -14,6 +14,22 @@ from TilProducer import TilProducer
 
   
 class TilStats(TilProducer):
+  '''
+  The purpose of this class (TilStats) is to perform statistics on an array of Til Patterns
+  
+  For the time being, the statistics are:
+  1) histogram with occurrences
+  2) the difference set (though this is not properly a statistic)
+  
+  Examples:
+  1) About the histogram:
+     02211 may have happened 21 times, so a Python-dict (say, pydict) will have pydict['02211']=21
+  
+  2) About the difference set
+     In spite of TilR's (5, 6), there are 210 combinations of them.  Some of them have never occurred.
+     More particularly, a pattern such as 06000 or 00501 has never occurred,
+     so they will come up in the difference set.
+  '''
   
   def __init__(self, n_slots=None, soma=None):
     super(TilStats, self).__init__(n_slots, soma)
