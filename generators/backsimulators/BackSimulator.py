@@ -2,18 +2,14 @@
 # -*- coding: utf-8 -*-
 import sys # numpy, os, pickle, 
 
-#import localpythonpath
-#localpythonpath.setlocalpythonpath()
 import __init__
 __init__.setlocalpythonpath()
 
 # import local_settings as ls
 
-from lib import jogos_functions
-#from models.ReadConcursosHistory import find_last_nDoConc
-from models.ReadConcursosHistory import ConcursosHistoryMetrics  # ConcursosHistoryPickledStorage
-from models.ConcursoHTML         import ConcursoHTML
-
+from libfunctions.jogos import jogos_functions
+from models.Files.ReadConcursosHistory import ConcursosHistoryMetrics  # ConcursosHistoryPickledStorage
+from models.Concursos.ConcursoExt import ConcursoExt
 
 class Analyzer(object):
   
@@ -67,7 +63,7 @@ class Analyzer(object):
 
 def adhoc_test():
   
-  slider = ConcursoHTML()
+  slider = ConcursoExt()
   # last_nDoConc = find_last_nDoConc()
   # backtrack_amount = 400
   # down_to_nDoConc = last_nDoConc - backtrack_amount

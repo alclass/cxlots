@@ -7,8 +7,8 @@ import os
 import sys
 import urllib
 
-import localpythonpath
-localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
 import local_settings as ls
 

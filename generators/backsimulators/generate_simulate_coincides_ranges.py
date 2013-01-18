@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 import numpy, pickle, sys # , os, pickle, 
 
-#import localpythonpath
-#localpythonpath.setlocalpythonpath()
 import __init__
 __init__.setlocalpythonpath()
 
 import local_settings as ls
 
 from generators.GeradorIter import Gerador
-from lib.filter_functions_dependent import  filter_in_those_within_coincides_histogram_range
+from libfunctions.filters.filter_functions_dependent import  filter_in_those_within_coincides_histogram_range
 
 n_pass=0
 def get_coincides_range_dict():

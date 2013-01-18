@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 import numpy, sys # , os, pickle, 
 
-#import localpythonpath
-#localpythonpath.setlocalpythonpath()
+import __init__
+__init__.setlocalpythonpath()
 
 # import local_settings as ls
 
-from models.ConcursoExt import ConcursoExt
+from models.Concursos.ConcursoExt import ConcursoExt
 from generators.GeradorIter import Gerador
 #from models.ReadConcursosHistory import get_contrajogos_as_dezenas_down_from
-from lib import jogos_functions
-from lib import filter_functions
-#import lib.jogos_functions_dependent as jogos_fd
-#from lib.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
+from libfunctions.jogos import jogos_functions
+from libfunctions.filters import filter_functions
+from maths.metrics.PatternDistanceAnalyzer import PatternDistanceAnalyzer
+from libfunctions.utils.pyobjects_ext import Dict2
 
 class AnalyzerOfRepeats(object):
   
@@ -68,10 +68,11 @@ def generator_with_a_bet():
 leftFillToNSpaces  = lambda s, n : ' '*(n-len(s)) + s
 rightFillToNSpaces = lambda s, n : s + ' '*(n-len(s))
 def   analyze():
+  patternDistance = PatternDistanceAnalyzer()
   START_AT_N_CONC = 5 
   slider = ConcursoExt()
   last_concurso = slider.get_last_concurso()
-  repeats_dict = {}
+  repeats_dict = Dict2()
   for nDoConc in range(START_AT_N_CONC, last_concurso.nDoConc+1):
     concurso = slider.get_concurso_by_nDoConc(nDoConc)
     contrajogos_as_dezenas_list = last_concurso.get_contrajogos_as_dezenas_list_down_to_depth(depth=4, inclusive=True)
@@ -80,10 +81,8 @@ def   analyze():
     #print concurso.nDoConc, concurso.date, concurso.get_dezenas(), contrajogos_as_dezenas_list 
     repeats_array = jogos_functions.get_array_n_repeats_with_m_previous_games(concurso.get_dezenas(), contrajogos_as_dezenas_list)
     token = ''.join(map(str, repeats_array))
-    if repeats_dict.has_key(token):
-      repeats_dict[token]+=1
-    else:
-      repeats_dict[token]=1
+    patternDistance.add_pattern(token)
+    repeats_dict.add1_or_set1_to_key(token)
   tokens_and_quants = repeats_dict.items()
   tokens_and_quants.sort(key = lambda x : x[1])
   tokens_and_quants.reverse()
@@ -93,11 +92,14 @@ def   analyze():
     pattern = rightFillToNSpaces(token, 3)
     zquant  = leftFillToNSpaces(str(quant), 3)
     print pattern, ':', zquant 
-
+  patternDistance.mount_distances_histogram()
+  patternDistance.summarize()
+  analyze()
 
 def process():
-  # analyze()
-  generator_with_a_bet()
+  pass
+  #analyze()
+  # generator_with_a_bet()
 
 def adhoc_test():
   pass

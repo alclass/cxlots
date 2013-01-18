@@ -2,13 +2,11 @@
 # -*- coding: utf-8 -*-
 import sys #numpy, sys # , os, pickle, 
 
-#import localpythonpath
-#localpythonpath.setlocalpythonpath()
 import __init__
 __init__.setlocalpythonpath()
 # import local_settings as ls
 
-from models.ConcursoHTML import ConcursoHTML
+from models.Concursos.ConcursoExt import ConcursoExt
 
 class AnalyzerOfUpAndDownForSoma(object):
   
@@ -16,7 +14,7 @@ class AnalyzerOfUpAndDownForSoma(object):
     pass
 
 def process():
-  slider = ConcursoHTML()
+  slider = ConcursoExt()
   concursos = slider.get_all_concursos(); soma_anterior = None
   for concurso in concursos:
     soma = sum(concurso.get_dezenas())

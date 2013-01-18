@@ -5,7 +5,7 @@
 '''
 import numpy, sys
 
-from sqlalchemy import Column, Integer, Sequence, String, create_engine # BoundMetaData, mapper 
+from sqlalchemy import Column, Integer, Sequence, String, create_engine, Table, MetaData # mapper 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -152,6 +152,27 @@ class HistFreqUpdater(object):
       raise ValueError, error_msg
       
 
+def adhoc_test3():
+  '''
+db = create_engine('sqlite:///tutorial.db')
+db.echo = False  # Try changing this to True and see what happens
+metadata = BoundMetaData(db)
+users = Table('users', metadata,
+    Column('user_id', Integer, primary_key=True),
+    Column('name', String(40)),
+    Column('age', Integer),
+    Column('password', String),
+)
+users.create()
+  '''
+  engine.echo = True
+  metadata = MetaData(engine)
+  histDB = Table('mshistfreqs', metadata,
+    Column('nDoConc', Integer, primary_key=True),
+    Column('charfreqs', String(300)),
+  )
+  histDB.create()
+
 def adhoc_test2():
   Session = sessionmaker(bind=engine)
   session = Session()
@@ -167,13 +188,28 @@ def adhoc_test2():
   session.commit()
 
 def adhoc_test():
+  adhoc_test3()
+
+def process():
   print 'Running (Updating) HistFreqUpdater() '
   HistFreqUpdater()
 
-def look_for_adhoctest_arg():
+import unittest
+class MyTest(unittest.TestCase):
+
+  def test_1(self):
+    pass
+
+def look_up_cli_params_for_tests_or_processing():
   for arg in sys.argv:
     if arg.startswith('-t'):
       adhoc_test()
+    elif arg.startswith('-u'):
+      # unittest complains if argument is available, so remove it from sys.argv
+      del sys.argv[1]
+      unittest.main()
+    elif arg.startswith('-p'):
+      process()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  look_up_cli_params_for_tests_or_processing()

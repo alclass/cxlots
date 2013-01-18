@@ -7,15 +7,16 @@
 import BeautifulSoup as bf
 
 import sys
-import localpythonpath
-localpythonpath.setlocalpythonpath()
-
-import models.ConcursoHTML as conc
-import models.FieldsAndTypes as fat
-# import models.JogoSlider.JogoSlider
-from models.ConcursoSlider import ConcursoSlider
-
+import __init__
+__init__.setlocalpythonpath()
 import local_settings as ls
+
+from models.Concursos.ConcursoSlider import ConcursoSlider
+import models.Concursos.ConcursoHTML as conc
+import libfunctions.db_sql.FieldsAndTypes as fat
+# import models.JogoSlider.JogoSlider
+#from models.ConcursoSlider import ConcursoSlider
+
 class ConcursoHTMLScraper(object):
 
   def __init__(self, htmlDataFilename = ls.MS_DATAFILE_ABSPATH):

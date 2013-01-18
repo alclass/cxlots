@@ -165,7 +165,7 @@ def get_array_n_repeats_with_m_previous_games(jogo_as_dezenas, contrajogos):
   max_repeating = max(actual_repeats)
   output_array_as_in_documentation = []
   for n_repeats in range(1, max_repeating + 1):
-    with_this_repeat = filter(swlambda.greater_or_equal, actual_repeats)
+    with_this_repeat = [c >= n_repeats for c in actual_repeats]
     total_with_this_repeat = len(with_this_repeat)
     output_array_as_in_documentation.append(total_with_this_repeat)
     # print 'with_this_repeat', with_this_repeat,  'max_repeat',  max_repeat 

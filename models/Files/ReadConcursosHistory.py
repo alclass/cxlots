@@ -131,7 +131,7 @@ class ConcursosHistoryPickledStorage(object):
 
   def output_list_reading_from_blob_file(self):
     self.read_from_blob_file()
-    return self.get_concursos_up_to_upper_nDoConc()
+    return self.get_games_up_to()
 
   def read_from_blob_file(self):
     # print 'Load Picking from self.blobfilepath =', self.blobfilepath

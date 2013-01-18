@@ -9,6 +9,7 @@ from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
 import models.Files.ReadConcursosHistory as RCH
 from libfunctions.utils.pyobjects_ext import Dict2
 from maths.tils import TilR
+from maths.metrics.PatternDistanceAnalyzer import PatternDistanceAnalyzer
 
 start_nDoConc = 101
 def report():
@@ -16,6 +17,7 @@ def report():
   reader = ConcursosHistoryPickledStorage(read_as_id=RCH.READ_CONCHIST_AS_TIMEONWARDS_ORDERED_INTS)
   jogos_as_dezenas = reader.get_games_up_to()
   start_index = start_nDoConc - 1
+  patternDistance = PatternDistanceAnalyzer()
   for i, jogo_as_dezenas in enumerate(jogos_as_dezenas[start_index:]):
     passing_nDoConc = start_nDoConc + i
     the_one_just_before = passing_nDoConc - 1
@@ -25,11 +27,14 @@ def report():
     desc_stair_str = tilr.get_game_tilrpattern_as_desc_stair(jogo_as_dezenas) 
     print str(passing_nDoConc).zfill(4), wpattern, desc_stair_str
     wpatterndict.add1_or_set1_to_key(wpattern)
+    patternDistance.add_pattern(wpattern)
     desc_stair_dict.add1_or_set1_to_key(desc_stair_str)
   for wpattern in wpatterndict.keys():
     print wpattern, ':', wpatterndict[wpattern]
   for wpattern in desc_stair_dict.keys():
     print wpattern, ':', desc_stair_dict[wpattern]
+  patternDistance.mount_distances_histogram()
+  patternDistance.summarize()
      
 def process():
   '''

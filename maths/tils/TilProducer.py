@@ -8,7 +8,7 @@ import sys
 import __init__
 __init__.setlocalpythonpath()
 
-import funcsForTil as ffTil
+import libfunctions.jogos.til_functions as ffTil
 from TilPattern import TilDefiner
 from TilPattern import TilPattern
 
