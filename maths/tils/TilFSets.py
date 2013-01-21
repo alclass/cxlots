@@ -8,7 +8,7 @@ Created on 05/12/2011
 #import scipy.stats
 import sys
 
-class TilSets(object):
+class TilFSets(object):
   '''
   This class has only one public method (though public/private is not enforced in Python)
   And this is getTilSets()
@@ -177,12 +177,12 @@ def getTilSets(frequencies, tilN):
   '''
   This method is a sort of "handler" to produce the til-sets via calling the same name instance method getTilSets()
   '''
-  tilSetsObj = TilSets(frequencies, tilN)
+  tilSetsObj = TilFSets(frequencies, tilN)
   return tilSetsObj.getTilSets()
 
 def test_tilObjs():
   freqs = range(1,15)
-  tilSetsObj = TilSets(freqs, 14)
+  tilSetsObj = TilFSets(freqs, 14)
   tilSets = tilSetsObj.getTilSets()
   print 'tilSets', tilSets   #print 'listWithFrequencyBordersTuple', self.listWithFrequencyBordersTuple, 'min max', self.minFreq, self.maxFreq
 #test_tilObjs()
@@ -191,7 +191,7 @@ def test_tilObjs2():
   hist = {1: 785, 2: 735, 3: 643, 4: 631, 5: 566, 6: 460, 7: 458, 8: 371, 9: 332, 10: 297, 11: 275, 12: 238, 13: 217, 14: 222, 15: 186, 16: 155, 17: 152, 18: 116, 19: 114, 20: 118, 21: 93, 22: 85, 23: 70, 24: 79, 25: 70, 26: 60, 27: 56, 28: 43, 29: 43, 30: 34, 31: 32, 32: 28, 33: 25, 34: 14, 35: 17, 36: 25, 37: 15, 38: 15, 39: 11, 40: 21, 41: 13, 42: 7, 43: 11, 44: 13, 45: 11, 46: 3, 47: 5, 48: 6, 49: 2, 50: 6, 51: 5, 52: 6, 53: 5, 54: 5, 55: 3, 56: 3, 58: 1, 59: 3, 60: 3, 61: 2, 62: 4, 63: 1, 65: 1, 68: 2, 70: 1, 73: 1, 76: 1, 78: 1, 83: 1, 89: 1}
   # keys will be thrown away (lost), because algorithm keeps only the sequencial position
   freqs = hist.values()
-  tilSetsObj = TilSets(freqs, 6)
+  tilSetsObj = TilFSets(freqs, 6)
   tilSets = tilSetsObj.getTilSets()
   print 'tilSets', tilSets   #print 'listWithFrequencyBordersTuple', self.listWithFrequencyBordersTuple, 'min max', self.minFreq, self.maxFreq
 #test_tilObjs2()

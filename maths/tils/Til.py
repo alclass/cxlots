@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-TilR.py
+Til.py
+This module implements TWO public classes (in general, we have one class per module)
+These 2 classes are:
+
++ TilF
++ TilR
+
+Most of the explanation for TilF and TilR are found in TilBase class's documentation.
+TilBase implements equal parts for the two.
 '''
 # import numpy, time, sys
 import copy, sys
@@ -13,20 +21,76 @@ from libfunctions.jogos import volante_functions
 from libfunctions.pattern_string_et_al.stringpatterns_functions import to_descendant_stair_str
 from models.Concursos.ConcursoExt import ConcursoExt
 from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
-# from TilPattern import TilDefiner
-#from TilProducer import TilProducer
 import maths.statistics.HistoryFrequency as hf
 from TilStats import TilStats
-from TilSets import TilSets
+from TilFSets import TilFSets
 
-          
-class Til(object):
+class TilInterface(object):
   '''
-  This class (TilR) slots 1/nth, where n is the number of slots, of dozens in their frequency ascending order.
+  This class simulates an Interface in the "Object-Oriented" sense
+  It more or less is a sketch of methods to be implemented in the class TilBase
+  See TilBase for more info. 
+  '''
   
-  As an illustration, suppose total elements is 60. Then, quintils (TilR n_slots=5) will order all dozens in their frequency order into 5 sets (slots).
+  def set_volante_caract(self):
+    pass
+
+  def set_n_slots(self):
+    pass
   
-  The difference between TilR and Til is following:
+  def place_dozens_in_the_slots(self):
+    pass
+
+
+class TilBase(TilInterface):
+  '''
+  This class shapes a protocol-like method definition
+    to be used for the classes:
+    + Til and
+    + TilR
+    
+  Til is the class that defines a "til element".  A til element is a pattern, string or list, that
+    tells how many items, of s (or "soma") belongs to a certain frequency slot n (n is the array size of this til element).
+    
+  The difference between a Til object and a TilR object is semantic in the frequency information.
+  
+  For example:
+  
+  1) A Til(n_slot=5, n_items=6) = '03210' means:
+
+  + 3 items occurred in the second frequency range, 
+  + 2 items occurred in the third frequency range,
+  + 1 item  occurred in the fourth frequency range
+  
+  The first and last frequency ranges had no occurrence of items.
+  
+  2) A TilR(n_slot=5, n_items=6) = '03210' means the same as above, 
+     the difference is how the frequency is constructed.
+     
+  How frequency is each of the two (Til and TilR)
+  
+  1) In Til:
+     Each slot is defined by the frequency amounts themselves. So from the least frequency to the highest, 
+     the slot range ranges are derived. 
+  
+  2) In TilR:
+     Items enter the slots equally, independently on its frequencies.
+     
+  Example:
+  
+  If a game has, against a certain games background, the following tils:
+
+  +  Til(n_slot=5, n_items=6)(game x1)  = '03210'
+  +  TilR(n_slot=5, n_items=6)(game x1) = '21111'
+  
+  Each til will be interpreted according to the explanation given above.  In a nut shell:
+
+  1) the TilF distribution takes into account ranges based on frequency
+  2) the TilR distribution takes into account the fact that each slot
+     has equal (or almost equal if division has remainder) amount of items
+      
+
+  In other words, the difference between TilR and Til is following:
   
   Til cuts sets limits by equal distance frequencies, so the frequency is the determing factor in slicing dozens into slots
   TilR cuts sets limits by equal (or so, depending on division remainders) number of dozens
@@ -35,11 +99,12 @@ class Til(object):
    1) in TilR(n_slots=5) each slots (metric set) has exactly 12 dozens
    2) in Til(n_slots=5) each slots (metric set) has a variable number of dozens, 
       and it's not surprising to observe an empty set (or a set with very few dozens) and another one with much more than 12 in it
-  
+      
   '''
+ 
   DEFAULT_N_SLOTS = 5
   
-  def __init__(self, n_slots = None, history_nDoConc_range = None, volante_caract=None):
+  def __init__(self, n_slots = None, history_ini_fin_range = None, volante_caract=None):
     '''
     Parameter "inclusive" (attribute self.CONCURSO_PROPER_INCLUDED_IN_RANGE) 
       does one important differenciation in the process
@@ -55,7 +120,7 @@ class Til(object):
     '''
     self.set_volante_caract(volante_caract)
     self.set_n_slots(n_slots)
-    self.set_history_nDoConc_range(history_nDoConc_range)
+    self.set_history_ini_fin_range(history_ini_fin_range)
 
   def set_volante_caract(self, volante_caract):
     if volante_caract == None or type(volante_caract) != VolanteCharacteristics:
@@ -90,44 +155,36 @@ class Til(object):
       raise ValueError, error_msg
     self.n_elems_per_slot = self.volante_caract.n_dezenas_no_volante / self.n_slots
 
-  def set_history_nDoConc_range(self, history_nDoConc_range=None):
+  def set_history_ini_fin_range(self, history_ini_fin_range=None):
     '''
     This method is private!!!  From the "outside", use set_concurso_and_range() 
     '''
     slider = ConcursoExt()
     HIST_RANGE_DEFAULT = (1, slider.get_n_last_concurso()) 
-    self.history_nDoConc_range = volante_functions.return_int_range_or_default_or_raise_ValueError(history_nDoConc_range, HIST_RANGE_DEFAULT)
+    self.history_ini_fin_range = volante_functions.return_int_range_or_default_or_raise_ValueError(history_ini_fin_range, HIST_RANGE_DEFAULT)
     self.redo_place_dozens_in_the_slots()
 
-  def place_dozens_in_the_slots(self):
-    # in the future, whether jogo is Megasena or other will have to be passed on to histfreqobj
-    histfreq     = hf.histfreqobj.get_histfreq_within_range(self.history_nDoConc_range)
-    # all_dezenas  = range(1, self.volante_caract.n_dezenas_no_volante + 1)
-    tilSetsObj   = TilSets(histfreq, self.n_slots)
-    # though the name is tilrset, here, in fact, it's tilset with the "r"
-    self.tilrsets = tilSetsObj.getTilSets()
-
   def get_dozens_in_slot_n(self, n):
-    if self.tilrsets == None or len(self.tilrsets) == 0:
+    if self.tilsets == None or len(self.tilsets) == 0:
       return []
     try:
       int(n)
     except ValueError:
       return []
-    last_index = len(self.tilrsets) - 1
+    last_index = len(self.tilsets) - 1
     if n < 0 or n > last_index:
       return []
-    return copy.copy(self.tilrsets[n])
+    return copy.copy(self.tilsets[n])
 
   def redo_place_dozens_in_the_slots(self):
     try:
-      self.history_nDoConc_range
+      self.history_ini_fin_range
     except AttributeError:
       # not yet time to recompute, due to construction-time order of attribute setting
       return
     self.place_dozens_in_the_slots()
 
-  def get_game_tilrpattern_as_list(self, dezenas):
+  def get_items_tilpattern_as_list(self, items):
     '''
     This method takes a tuple of dozens (a game) and calculates its TilR(n) pattern
     Example:
@@ -141,23 +198,23 @@ class Til(object):
       freq(d6=46)=slot1
     Its TilR(5) pattern will be 21201 which means 2 dozens in slot 1, 1 dozen in slot 2 and so on
     ''' 
-    tilrpattern = [0]*len(self.tilrsets)
-    for dezena in dezenas:
-      for i, tilr in enumerate(self.tilrsets):
-        if dezena in tilr:
-          tilrpattern[i]+=1
+    tilpattern = [0]*len(self.tilsets)
+    for item in items:
+      for i, tilset in enumerate(self.tilsets):
+        if item in tilset:
+          tilpattern[i]+=1
           break
-    return tilrpattern
+    return tilpattern
   
-  def get_game_tilrpattern_as_list_and_str(self, dezenas):
-    tilrpattern_as_list = self.get_game_tilrpattern_as_list(dezenas)
-    tilrpattern_as_str = ''.join(map(str, tilrpattern_as_list))
-    return tilrpattern_as_list, tilrpattern_as_str 
+  def get_items_tilpattern_as_list_and_str(self, items):
+    tilpattern_as_list = self.get_items_tilpattern_as_list(items)
+    tilpattern_as_str = ''.join(map(str, tilpattern_as_list))
+    return tilpattern_as_list, tilpattern_as_str 
 
-  def get_game_tilrpattern_as_str(self, dezenas):
-    return self.get_game_tilrpattern_as_list_and_str(dezenas)[1]
+  def get_items_tilpattern_as_str(self, items):
+    return self.get_items_tilpattern_as_list_and_str(items)[1]
    
-  def get_game_tilrpattern_as_desc_stair(self, dezenas):
+  def get_items_tilpattern_as_desc_stair(self, items):
     '''
     Examples:
       1) suppose wpattern is '01212'
@@ -165,8 +222,78 @@ class Til(object):
       2) suppose wpattern is '01302'
       Its descendent stair is '321' (information is lost here)
     '''
-    tilrpattern_as_list = self.get_game_tilrpattern_as_list(dezenas)
-    return to_descendant_stair_str(tilrpattern_as_list)
+    tilpattern_as_list = self.get_game_tilrpattern_as_list(items)
+    return to_descendant_stair_str(tilpattern_as_list)
+
+class TilF(TilBase):
+  '''
+  This class (TilF) slots 1/nth, where n is the number of slots, of dozens in a equal-frequency distribution,
+    ie, items fall into slots according to their frequencies
+  
+  As an illustration, suppose total elements is 60. Then, quintils (TilR n_slots=5)
+    will order all items (dozens) in their frequency order into 5 sets (slots).
+    
+  Suppose item is (1,2,3,4,5,6) and their frequencies are (f1,f2,f3,f4,f5,f6)
+  Suppose universe set is range(1, 61) and
+  Suppose that occurrences minimum is 10 and maximum is 100
+  Suppose that the slots (let's say we have 5 slots) are ranged with the following min-max tuples:
+  slot0 = (10,25)
+  slot1 = (26,47)
+  slot2 = (48,67)
+  slot3 = (68,96)
+  slot4 = (97,100)
+  Suppose lastly that:
+  (f1=100, f2=11, f3=55, f4=34, f5=71, f6=71)
+  Now we can "place" items into their slots:
+    1 with f1=100 goes to slot4 = (97,100), because 100 belongs to (97,100) 
+    2 with f2=11  goes to slot0 = (10,25),  because  11 belongs to (10,25) 
+      And so on up to 6
+  The tilset indices in order are 402133 and the til pattern is 11121
+  
+  '''
+  def place_dozens_in_the_slots(self):
+    # in the future, whether jogo is Megasena or other will have to be passed on to histfreqobj
+    histfreq     = hf.histfreqobj.get_histfreq_within_range(self.history_ini_fin_range)
+    # all_dezenas  = range(1, self.volante_caract.n_dezenas_no_volante + 1)
+    tilSetsObj   = TilFSets(histfreq, self.n_slots)
+    # though the name is tilrset, here, in fact, it's tilset with the "r"
+    self.tilsets = tilSetsObj.getTilSets()
+
+
+class TilR(TilBase):
+  '''
+  This class (TilR) slots 1/nth, where n is the number of slots, of dozens in their frequency ascending order.
+  
+  As an illustration, suppose total elements is 60. Then, quintils (TilR n_slots=5)
+    will order all dozens in their frequency order into 5 sets (slots).
+  
+  '''
+  def place_dozens_in_the_slots(self):
+    '''
+    This method is polymorphic (ie, it's different in between TilF and (this) TilR
+    '''
+    histfreq = hf.histfreqobj.get_histfreq_within_range(self.history_ini_fin_range)
+    all_dezenas = range(1, self.volante_caract.n_dezenas_no_volante + 1)
+    dezenas_with_histfreq_sorted_by_freqs = zip(all_dezenas, histfreq)
+    dezenas_with_histfreq_sorted_by_freqs.sort(key = lambda x : x[1])
+    dezenas_to_slots = zip(*dezenas_with_histfreq_sorted_by_freqs)[0]
+    self.tilsets = []
+    # self.n_elems_per_slot is calculated previously in the process chain
+    index_ini = 0; index_fim = self.n_elems_per_slot 
+    while index_ini < self.volante_caract.n_dezenas_no_volante - self.n_elems_per_slot + 1:
+      tilset = dezenas_to_slots[index_ini : index_fim] 
+      self.tilsets.append(tilset)
+      index_ini = index_fim; index_fim += self.n_elems_per_slot 
+
+  def getBorderTupleOfTilSets(self, retry=False):
+    if self.tilsetobj == None:
+      if retry:
+        error_msg = 'Error in getBorderTupleOfTilSets() :: self.tilsetobj continued to be None after a retry. It is either a program error or database is empty.'
+        raise ValueError, error_msg
+      else:
+        self.flow_concurso_concursorange_histfreq_wpattern()
+        return self.getBorderTupleOfTilSets(self, retry=True)
+    return self.tilsetobj.getBorderTupleOfTilSets()
 
 tilr_pool = {}; tilr_pool_keys_queue = []; TILR_POOL_SIZE = 20
 def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_caract=None):
@@ -205,15 +332,22 @@ def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_car
 def run_history():
   slider = ConcursoExt()
   volante_caract = VolanteCharacteristics(n_dezenas_no_volante=60, n_dezenas_no_sorteio=6)
+  tilfstats = TilStats(n_slots=5, soma=volante_caract.n_dezenas_no_sorteio)
   tilrstats = TilStats(n_slots=5, soma=volante_caract.n_dezenas_no_sorteio)
-  tilrobj   = Til(n_slots=5, history_nDoConc_range = None, volante_caract=volante_caract)
+  tilfobj   = TilF(n_slots=5, history_ini_fin_range = None, volante_caract=volante_caract)
+  tilrobj   = TilR(n_slots=5, history_ini_fin_range = None, volante_caract=volante_caract)
   for nDoConc in xrange(101, slider.get_n_last_concurso()+1):
     concurso = slider.get_concurso_by_nDoConc(nDoConc)
     # reuse tilrobj!
-    tilrobj.set_history_nDoConc_range(history_nDoConc_range = (1, nDoConc-1))
-    pattern_as_list = tilrobj.get_game_tilrpattern_as_list(concurso.get_dezenas())
-    tilrstats.add_pattern_as_list(pattern_as_list)
-    print concurso.get_dezenas(), pattern_as_list 
+    tilfobj.set_history_ini_fin_range(history_ini_fin_range = (1, nDoConc-1))
+    tilrobj.set_history_ini_fin_range(history_ini_fin_range = (1, nDoConc-1))
+    f_pattern_as_list, f_wpattern = tilfobj.get_items_tilpattern_as_list_and_str(concurso.get_dezenas())
+    r_pattern_as_list, r_wpattern = tilrobj.get_items_tilpattern_as_list_and_str(concurso.get_dezenas())
+    tilfstats.add_pattern_as_list(f_pattern_as_list)
+    tilrstats.add_pattern_as_list(r_pattern_as_list)
+    print 'f', f_wpattern, 'r', r_wpattern, concurso.get_dezenas_str(), nDoConc 
+  tilfstats.print_summary()
+  print 'len(tilfstats)', len(tilfstats) 
   tilrstats.print_summary()
   print 'len(tilrstats)', len(tilrstats) 
       
