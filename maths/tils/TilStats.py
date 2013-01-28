@@ -90,6 +90,96 @@ class TilStats(TilProducer):
   # (inherited) def get_alltilpatterns_as_intlists(self):
     
       
+class TilStatsWithDozens(object):
+  '''
+  This class is a beginning idea, nothing has been "accomplished" yet
+  Its methods come from the now extinct TilConcurso class, 
+    so it's to be thought out later on, okay?
+  '''
+
+
+  def get_freq_of_dozen(self, dezena):
+      index = dezena - 1
+      freq = self.histfreq[index]
+      return freq
+
+  def get_dezenas_and_their_frequencies_for_concurso(self):
+    dezenas = self.concurso.get_dezenas()
+    freqs = []
+    for dezena in dezenas:
+      freq = self.get_freq_of_dozen(dezena)
+      freqs.append(freq)
+    return zip(dezenas, freqs)
+
+  def get_dezenas_their_frequencies_and_til_for_concurso(self):
+    # tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
+    zipped = self.get_dezenas_and_their_frequencies_for_concurso()
+    # unzip dezenas and freqs
+    dezenas, freqs = zip(*zipped)
+    tils = []
+    for dezena in dezenas:
+      for i in range(len(self.tilsetobj.tilSets)):
+        if dezena in self.tilsetobj.tilSets[i]:
+          tils.append(i)
+          break
+    return zip(dezenas, freqs, tils)
+    
+  # should be private to class, triggered by flow_concursorange_histfreq_wpattern()
+  def calc_concursotil_wpattern(self):
+    self.tilsetobj = ts.TilSets(self.histfreq, self.n_slots)
+    dezenas = self.concurso.get_dezenas()
+    tilpatternlist = [0] * self.tilsetobj.tilN # tilN is the same as slots
+    for dezena in dezenas:
+      for i, tilset in enumerate(self.tilsetobj.tilSets):
+        if dezena in tilset:
+          # print 'found', dezena, 'inside i=',i, tilSets[i]   
+          tilpatternlist[i] += 1
+          break
+    wpattern = ''.join(map(str, tilpatternlist))
+    self.set_wpattern(wpattern)
+    # self.tilpatternlist = tilpatternlist 
+  
+  def get_percentual_freqs_per_til(self):
+    percentual_freqs_per_til = []
+    for tilset in self.tilsetobj.tilSets:
+      tilset_total_freq = 0
+      for dezena in tilset:
+        freq = self.get_freq_of_dozen(dezena)
+        tilset_total_freq += freq
+      # percentual_per_til = 100 * tilset_total_freq / self.histfreq_sum # this version is supposedly quicker in computation time 
+      percentual_per_til = int( round ( 100.0 * tilset_total_freq / self.histfreq_sum , 0) ) 
+      percentual_freqs_per_til.append(percentual_per_til)
+    return percentual_freqs_per_til
+
+  def get_tilpattern_interlaced_with_n_dozens_per_til(self):
+    n_dozens_per_til = []
+    for tilset in self.tilsetobj.tilSets:
+      n_dozens_per_til.append(len(tilset))
+    tilpatternlist = [c for c in self.wpattern]      
+    return zip(tilpatternlist, n_dozens_per_til, self.get_percentual_freqs_per_til())
+
+  def is_same_tilpattern(self, tilpattern):
+    if self.concursotilpattern == tilpattern:
+      return True
+    return False 
+
+  def does_pass_tilqueue(self, tilqueue):
+    '''
+    Jogo passes (filters in) tilqueue if at least one tilpattern in the queue coincides with the one this jogo has
+    '''
+    # can this method be optimized?
+    for tilpattern in tilqueue:
+      if self.is_same_tilpattern(tilpattern):
+        return True
+    return False
+
+  def __str__(self):
+    output_text = str(self.concurso)
+    output_text += ' range' + str(self.concurso_range)
+    return output_text
+
+
+      
 def adhoc_test():
   '''
   

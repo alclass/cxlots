@@ -16,21 +16,19 @@ def sumDigits(pattern):
   Eg
   '10221' will sum as follows: 1+0+2+2+1=6
   '''
-  if pattern == None:
-    return None
   # in the future, refactor this part to test for an iterator, instead of str, list or tuple
-  if type(pattern) not in [str, list, tuple]:
+  if pattern == None or type(pattern) not in [str, list, tuple]:
     return None
-  soma = 0
-  for c in pattern:
-    try:
-      soma += int(c)
-    except ValueError:
-      return None
-  return soma
+  try:
+    int_pattern = [int(c) for c in pattern]
+    soma = sum(int_pattern)
+    return soma
+  except ValueError:
+    return None
+  raise Exception, 'Program flow logical error in function sumDigits() :: pattern = %s ' %(str(pattern))
 
 
-def getTilPatternsFor(patternSize=10, patternSoma=6):
+def getAllPossibleTilPatternsFor(n_slots=5, psoma=6):
   '''
   The Til Patterns are found with the help of finding first the "Integer Partitions"
   Once having found the "Integer Partitions", two operations are called, ie:
@@ -63,12 +61,13 @@ def getTilPatternsFor(patternSize=10, patternSoma=6):
   ----------------------------  
   
   '''
-  subtokens = combinatorics.geraSumComponents(6)
-  subtokens = combinatorics.sumComponentsToListOfStrs(subtokens)
-  subtokens = combinatorics.stuffStrWithZeros(subtokens, patternSize)
-  subtokens = combinatorics.filterOutStringsGreaterThanSize(subtokens, patternSize)
+  subtokens = combinatorics.generate_integer_partitions(psoma)
+  # print 'subtokens', subtokens 
+  subtokens = [''.join(map(str,subtoken)) for subtoken in subtokens] # combinatorics.sumComponentsToListOfStrs(subtokens)
+  # print 'subtokens', subtokens 
+  subtokens = combinatorics.stuffStrWithZeros(subtokens, n_slots)
+  subtokens = combinatorics.filterOutStringsGreaterThanSize(subtokens, n_slots)
   return combinatorics.getPermutations(subtokens)
-
 
 import unittest
 class Test(unittest.TestCase):
@@ -82,15 +81,17 @@ class Test(unittest.TestCase):
     for pattern in ['a10221', 'string', 1.23, ['blah','blah'],'-1','+0']:
       self.assertIsNone(sumDigits(pattern))
 
+def do_adhoc_test(n_slots, psoma):
+  print 'getAllPossibleTilPatternsFor(n_slots=%d, psoma=%d) ' %(n_slots, psoma) 
+  all_possible_til_patterns = getAllPossibleTilPatternsFor(n_slots, psoma)
+  print 'all_possible_til_patterns', all_possible_til_patterns
+  print 'size', len(all_possible_til_patterns) 
+
 def adhoc_test():
-  patternSize=4; patternSoma=6
-  tilpatterns = getTilPatternsFor(patternSize, patternSoma)
-  print 'tilpatterns', tilpatterns
-  print 'size', len(tilpatterns) 
-  patternSize=10; patternSoma=6
-  tilpatterns = getTilPatternsFor(patternSize, patternSoma)
-  # print 'tilpatterns', tilpatterns
-  print 'size', len(tilpatterns) 
+  n_slots=4; psoma=6
+  do_adhoc_test(n_slots, psoma)
+  n_slots=10; psoma=6
+  do_adhoc_test(n_slots, psoma)
 
 def look_for_adhoctest_arg():
   for arg in sys.argv:

@@ -27,7 +27,7 @@ from TilFSets import TilFSets
 
 class TilInterface(object):
   '''
-  This class simulates an Interface in the "Object-Oriented" sense
+  This class "simulates" an Interface in the "Object-Oriented" sense
   It more or less is a sketch of methods to be implemented in the class TilBase
   See TilBase for more info. 
   '''
@@ -45,18 +45,24 @@ class TilInterface(object):
 class TilBase(TilInterface):
   '''
   This class shapes a protocol-like method definition
-    to be used for the classes:
-    + Til and
+    to be used for the TWO classes:
+    + TilF  
+     and
     + TilR
+  
+  TilBase contains functionality for the extending classes: TilF and TilR.  
+  TilF and TilR are classes that are capable of calculating a "til element".
+  
+  A Til Element is a pattern, generally expressed as a string or a list, 
+    that indicates where the components of an array or set position themselves in frequency slots.
     
-  Til is the class that defines a "til element".  A til element is a pattern, string or list, that
-    tells how many items, of s (or "soma") belongs to a certain frequency slot n (n is the array size of this til element).
+  An example of a Til Element pattern (to be further explained below) is '03210'.
     
-  The difference between a Til object and a TilR object is semantic in the frequency information.
+  The difference between a TilF object and a TilR object is << semantic >> in their frequency information.
   
   For example:
   
-  1) A Til(n_slot=5, n_items=6) = '03210' means:
+  1) A TilF(n_slot=5, n_items=6) = '03210' means:
 
   + 3 items occurred in the second frequency range, 
   + 2 items occurred in the third frequency range,
@@ -65,22 +71,28 @@ class TilBase(TilInterface):
   The first and last frequency ranges had no occurrence of items.
   
   2) A TilR(n_slot=5, n_items=6) = '03210' means the same as above, 
-     the difference is how the frequency is constructed.
+     the difference is how the frequency slots are constructed.
      
-  How frequency is each of the two (Til and TilR)
+  How frequency slots are constructed in each of the two Tils (TilF and TilR)
   
-  1) In Til:
+  1) In TilF:
      Each slot is defined by the frequency amounts themselves. So from the least frequency to the highest, 
-     the slot range ranges are derived. 
+     the slots are divided taking into account that the frequencies themselves are equally distanced among the slots.
+     
+     Example:
+       If MinFreq is 11 and MaxFreq is 50 and there are 4 frequency slots: slot ranges will be: [11,20],[21,30],[31,40],[41,50]
   
   2) In TilR:
      Items enter the slots equally, independently on its frequencies.
-     
-  Example:
-  
-  If a game has, against a certain games background, the following tils:
 
-  +  Til(n_slot=5, n_items=6)(game x1)  = '03210'
+     Example:
+       If number of items is 60 and there are 5 frequency slots: each slot will contain 12 items (notice: 12*5=60),
+         items entering the slots in the order of least occurring to the most occurring
+     
+  A comparing example with TilF and TilR:
+    If a game has, against a certain games background, the following tils:
+
+  +  TilF(n_slot=5, n_items=6)(game x1) = '03210'
   +  TilR(n_slot=5, n_items=6)(game x1) = '21111'
   
   Each til will be interpreted according to the explanation given above.  In a nut shell:
@@ -107,7 +119,7 @@ class TilBase(TilInterface):
   def __init__(self, n_slots = None, history_ini_fin_range = None, volante_caract=None):
     '''
     Parameter "inclusive" (attribute self.CONCURSO_PROPER_INCLUDED_IN_RANGE) 
-      does one important differenciation in the process
+      does one important differentiation in the process
     
     This differentiation is the following
     1) when one wants to observe/analyze a drawn sorteio, the sorteio itself should not be not counted,
@@ -146,7 +158,7 @@ class TilBase(TilInterface):
       raise ValueError, 'n_slots (=%d) < 2' %n_slots
     self.n_slots = n_slots
     self.verify_n_slots_is_good()
-    self.redo_place_dozens_in_the_slots()
+    self.redo_place_items_in_the_slots()
 
   def verify_n_slots_is_good(self):
     remainder = self.volante_caract.n_dezenas_no_volante % self.n_slots
@@ -162,9 +174,9 @@ class TilBase(TilInterface):
     slider = ConcursoExt()
     HIST_RANGE_DEFAULT = (1, slider.get_n_last_concurso()) 
     self.history_ini_fin_range = volante_functions.return_int_range_or_default_or_raise_ValueError(history_ini_fin_range, HIST_RANGE_DEFAULT)
-    self.redo_place_dozens_in_the_slots()
+    self.redo_place_items_in_the_slots()
 
-  def get_dozens_in_slot_n(self, n):
+  def get_items_in_slot_n(self, n):
     if self.tilsets == None or len(self.tilsets) == 0:
       return []
     try:
@@ -176,13 +188,13 @@ class TilBase(TilInterface):
       return []
     return copy.copy(self.tilsets[n])
 
-  def redo_place_dozens_in_the_slots(self):
+  def redo_place_items_in_the_slots(self):
     try:
       self.history_ini_fin_range
     except AttributeError:
       # not yet time to recompute, due to construction-time order of attribute setting
       return
-    self.place_dozens_in_the_slots()
+    self.place_items_in_the_slots()
 
   def get_items_tilpattern_as_list(self, items):
     '''
@@ -251,7 +263,7 @@ class TilF(TilBase):
   The tilset indices in order are 402133 and the til pattern is 11121
   
   '''
-  def place_dozens_in_the_slots(self):
+  def place_items_in_the_slots(self):
     # in the future, whether jogo is Megasena or other will have to be passed on to histfreqobj
     histfreq     = hf.histfreqobj.get_histfreq_within_range(self.history_ini_fin_range)
     # all_dezenas  = range(1, self.volante_caract.n_dezenas_no_volante + 1)
@@ -268,7 +280,7 @@ class TilR(TilBase):
     will order all dozens in their frequency order into 5 sets (slots).
   
   '''
-  def place_dozens_in_the_slots(self):
+  def place_items_in_the_slots(self):
     '''
     This method is polymorphic (ie, it's different in between TilF and (this) TilR
     '''
