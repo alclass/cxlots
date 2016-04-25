@@ -35,7 +35,7 @@ class ConcursoHTML(ConcursoBase):
   def __init__(self):
     super(ConcursoHTML, self).__init__()
     self.concursoDict = {}
-    self.fieldnamesInOrder = [] # this extra attribute will mnot be necessary in Python 3, for in Py3 it's possible to maintain order in a dict
+    self.fieldnamesInOrder = [] # this extra attribute will not be necessary in Python 3, for in Py3 it's possible to maintain order in a dict
     self.dezenas  = None  # self.dezenas is set "lazily"
 
   def transport_dict_into_attrs(self):

@@ -22,7 +22,7 @@ class ConcursoBase(Base):
   nDoConc = Column(Integer, Sequence('ms_id_seq'), primary_key=True)
   # id = nDoConc
   jogoCharOrig = Column(String(12))
-  date = Column(Date(8))   #dataDeSorteio = date
+  date = Column(Date)   #dataDeSorteio = date
   N_DE_DEZENAS = 6
   N_DE_DEZENAS_NO_VOLANTE = 60
   dezenas = None

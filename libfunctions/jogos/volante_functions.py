@@ -6,6 +6,22 @@ volante_functions.py
 # import time  # for timing purposes
 
 def return_int_range_or_default_or_raise_ValueError(int_range, DEFAULT_INT_RANGE):
+  # type: (tuple, tuple) -> tuple
+  '''
+  This function returns the DEFAULT_INT_RANGE is int_range is None, if it's not a 2-tuple and if elements of the 2-tuple are not int
+  But, it will raise ValueError is the first element is greater than the second. (There is a unittest for all these cases.)
+
+  IMPORTANT: one thing may change in the future: if elements of the 2-tuple are not int, there may be a raising
+    (but I hope I do update this __doc__ and the unittest if this change comes to happen.)
+
+  Args:
+    int_range: tuple
+    DEFAULT_INT_RANGE: tuple
+
+  Returns:
+    object: tuple
+
+  '''
   if int_range == None or len(int_range) != 2:
     return DEFAULT_INT_RANGE
   try:

@@ -7,7 +7,9 @@ import sys
 sys.path.insert(0, '..')
 standardNames = ['LF','LM','MS']
 
-# import syncSorteios as sync  CAN NOT happen here, because it instantiate Base (and Base is not yet ready, because it's below), so it is imported down below close to where it is needed, in getJogosObj(s2LN)
+# import syncSorteios as sync  CAN NOT happen here, because it instantiates Base
+#   (and Base is not yet ready, because it's below),
+#   so it is imported down below close to where it is needed, in getJogosObj(s2LN)
 
 
 class Base(object):
