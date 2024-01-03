@@ -6,7 +6,7 @@ import __init__
 __init__.setlocalpythonpath()
 
 from maths.combinatorics.IndicesCombiner import IndicesCombiner
-from maths.combinatorics.algorithmsForCombinatorics import combineNbyC 
+from maths.combinatorics.combinatoric_algorithms import combine_n_c_by_c
 from libfunctions.pattern_string_et_al.stringpatterns_functions import convert_intlist_to_spaced_zfillstr
 
 addOneToEachElement = lambda x : x + 1
@@ -88,7 +88,7 @@ class Gerador(object):
     return self.iterator
   
   def __len__(self):
-    return combineNbyC(self.N_DEZENAS_NO_VOLANTE, self.N_DEZENAS_NO_SORTEIO)
+    return combine_n_c_by_c(self.N_DEZENAS_NO_VOLANTE, self.N_DEZENAS_NO_SORTEIO)
   
   # here ENDS class Gerador(object):
 

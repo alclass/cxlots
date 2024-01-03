@@ -10,7 +10,7 @@ __init__.setlocalpythonpath()
 
 # from lib import lambdas
 from IndicesCombiner import IndicesCombiner
-import algorithmsForCombinatorics as afc
+import combinatoric_algorithms as afc
 
 
 class WorkSet(object):
@@ -59,7 +59,7 @@ class WorkSet(object):
       return self.total_combinations
     n = len(self.workSet)
     c = self.indicesCombiner.size
-    self.total_combinations = afc.combineNbyC(n, c)
+    self.total_combinations = afc.combine_n_c_by_c(n, c)
     return self.total_combinations
 
   def next(self):
@@ -314,7 +314,7 @@ class SetsCombinerMemoryIntensive(object):
     for workSetWithQuantity in self.workSetsWithQuantities:
       workSet = workSetWithQuantity[0]
       quantity = workSetWithQuantity[1]
-      n_combinations_for_workSet = afc.combineNbyC(len(workSet), quantity)
+      n_combinations_for_workSet = afc.combine_n_c_by_c(len(workSet), quantity)
       self.total_combinations *= n_combinations_for_workSet
     return self.total_combinations 
 

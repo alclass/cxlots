@@ -12,7 +12,7 @@ __init__.setlocalpythonpath()
 from TilPattern import TilDefiner
 # from TilPattern import TilPattern
 import maths.NumberSystem as NS
-import maths.combinatorics.algorithmsForCombinatorics as afc
+import maths.combinatorics.combinatoric_algorithms as afc
 from models.Concursos.VolanteCharacteristics import VolanteCharacteristics
 
 class TilProducerNB(NS.NumberSystem):
@@ -96,7 +96,7 @@ class TilProducerNB(NS.NumberSystem):
       Because TilR equally occupies the slots, there are, in the example of Megasena, 12 dozens per slot (5 slots total, 60 dozens altogether)
       So the n. of combinations will be:
       
-      afc.combineNbyC(12,0) * afc.combineNbyC(12,2) * afc.combineNbyC(12,2) * afc.combineNbyC(12,1) * afc.combineNbyC(12,1) =
+      afc.combine_n_c_by_c(12,0) * afc.combine_n_c_by_c(12,2) * afc.combine_n_c_by_c(12,2) * afc.combine_n_c_by_c(12,1) * afc.combine_n_c_by_c(12,1) =
       = 1 * 66 * 66 * 12 * 12 = 
       = 627264 combinations
     '''
@@ -109,7 +109,7 @@ class TilProducerNB(NS.NumberSystem):
     array = self.get_pattern()
     total_combinations = 1
     for n_elems_happening_in_slot in array:
-      total_combinations *= afc.combineNbyC(total_elems_per_slot, n_elems_happening_in_slot)
+      total_combinations *= afc.combine_n_c_by_c(total_elems_per_slot, n_elems_happening_in_slot)
     return total_combinations
     
     #return len(self.wpatterns_array)

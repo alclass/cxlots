@@ -1,0 +1,8 @@
+[github text with character limit]
+==================================
+cxlots, in the past, was a project that intended to combine numbers for a certain lottery product based on its historical results. That was a mistake unfortunately not seen, mostly because each new future drawing has no connection to past ones. However, the codebase that existed at the point of discontinuity might be reoriented towards...
+
+
+[github text without character limit]
+=====================================
+cxlots, in the past, was a project that intended to combine numbers for a certain lottery product based on its historical results. That was a mistake unfortunately not seen, mostly because each new future drawing has no connection to past ones. However, the codebase that existed at the point of discontinuity might be reoriented towards larger number groups trending simulation, ie, the system would not attempt to discover anything in the future but to visualize how number groups evolve historically.

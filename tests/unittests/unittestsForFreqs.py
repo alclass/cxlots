@@ -76,7 +76,7 @@ class Test(unittest.TestCase):
     tilProducer = fm.statsStore['tilProducer']
     tilPattern = tilProducer.getTilNForConcursoI(5, 101)
     # megasena has 6 dezenas
-    self.assertEqual(fft.sumDigits(tilPattern), 6)
+    self.assertEqual(fft.sum_digits(tilPattern), 6)
     
     pass
 

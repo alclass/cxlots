@@ -1,23 +1,25 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+"""
+libfunctions/jogos/til_functions.py
 
+"""
 import sys
-
-import __init__
-__init__.setlocalpythonpath()
-
-import maths.combinatorics.algorithmsForCombinatorics as combinatorics
+import maths.combinatorics.combinatoric_algorithms as combinatorics
 
 
-def sumDigits(pattern):
-  '''
-  This function sums a sequence of numbers in a string or an iterator from which int(element) is possible
-  From the context of cxlots, its function is to sum up the digits in a pattern string
-  Eg
+def sum_digits(pattern):
+  """
+  This function sums a sequence of numbers in a string or
+    an iterator from which int(element) is possible
+  From the context of cxlots, its function is to sum up
+    the digits in a pattern string
+
+  Example:
   '10221' will sum as follows: 1+0+2+2+1=6
-  '''
-  # in the future, refactor this part to test for an iterator, instead of str, list or tuple
-  if pattern == None or type(pattern) not in [str, list, tuple]:
+  """
+  # in the future, refactor this part to test it for an iterator,
+  # instead of str, list or tuple
+  if pattern is None or type(pattern) not in [str, list, tuple]:
     return None
   try:
     int_pattern = [int(c) for c in pattern]
@@ -25,23 +27,25 @@ def sumDigits(pattern):
     return soma
   except ValueError:
     return None
-  raise Exception, 'Program flow logical error in function sumDigits() :: pattern = %s ' %(str(pattern))
+  # errmsg = 'Program flow logical error in function sum_digits() :: pattern = %s ' % str(pattern)
+  # raise ValueError(errmsg)
 
 
-def getAllPossibleTilPatternsFor(n_slots=5, psoma=6):
-  '''
+def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
+  """
   The Til Patterns are found with the help of finding first the "Integer Partitions"
+    @see module combinations.py
+
   Once having found the "Integer Partitions", two operations are called, ie:
-  1) stuff the patterns with less than patternSize with 0 (zeros)
-  2) those patterns that are greater in size than patternSize are filtered out
+    1) stuff the patterns with less than patternSize with 0 (zeros)
+    2) those patterns that are greater in size than patternSize are filtered out
   The result set corresponds to the wanted Til Patterns
-  
-  Eg.
+
+  Example:
   eg1 getTilPatternsFor(patternSize=2, patternSoma=3) results in a 7-element array, ie:
   ----------------------------  
   06  60  15  51  24  42  33
   ----------------------------  
-  
   eg1 getTilPatternsFor(patternSize=5, patternSoma=6) results in a 210-element array, ie:
   ----------------------------  
   00006 00060 00600 06000 60000 00015 00051 00105 00150 00501 00510 01005 01050 01500 05001
@@ -60,47 +64,31 @@ def getAllPossibleTilPatternsFor(n_slots=5, psoma=6):
   20211 21012 21021 21102 21120 21201 21210 22011 22101 22110 11112 11121 11211 12111 21111
   ----------------------------  
   
-  '''
+  """
   subtokens = combinatorics.generate_integer_partitions(psoma)
   # print 'subtokens', subtokens 
   subtokens = [''.join(map(str,subtoken)) for subtoken in subtokens] # combinatorics.sumComponentsToListOfStrs(subtokens)
   # print 'subtokens', subtokens 
-  subtokens = combinatorics.stuffStrWithZeros(subtokens, n_slots)
-  subtokens = combinatorics.filterOutStringsGreaterThanSize(subtokens, n_slots)
-  return combinatorics.getPermutations(subtokens)
+  subtokens = combinatorics.fill_right_zeroes_to_eachstr_in_list(subtokens, n_slots)
+  subtokens = combinatorics.filter_out_strings_greater_than_size(subtokens, n_slots)
+  return combinatorics.get_permutations(subtokens)
 
+import unittest
 import unittest
 class Test(unittest.TestCase):
   def test_sumDigits(self):
     expected = 6 # eg 1+0+2+2+1=6
     for pattern in ['10221', '11112', '600000000', '111111','0000000000000051']:
-      self.assertEqual(sumDigits(pattern), expected)
+      self.assertEqual(sum_digits(pattern), expected)
     for pattern in ['310221', '911112', '1600000000', '9111111','30000000000000051', '0']:
       # expected is still the same above, ie 6
-      self.assertNotEqual(sumDigits(pattern), expected)
+      self.assertNotEqual(sum_digits(pattern), expected)
     for pattern in ['a10221', 'string', 1.23, ['blah','blah'],'-1','+0']:
-      self.assertIsNone(sumDigits(pattern))
+      self.assertIsNone(sum_digits(pattern))
 
-def do_adhoc_test(n_slots, psoma):
-  print 'getAllPossibleTilPatternsFor(n_slots=%d, psoma=%d) ' %(n_slots, psoma) 
-  all_possible_til_patterns = getAllPossibleTilPatternsFor(n_slots, psoma)
-  print 'all_possible_til_patterns', all_possible_til_patterns
-  print 'size', len(all_possible_til_patterns) 
-
-def adhoc_test():
-  n_slots=4; psoma=6
-  do_adhoc_test(n_slots, psoma)
-  n_slots=10; psoma=6
-  do_adhoc_test(n_slots, psoma)
-
-def look_for_adhoctest_arg():
-  for arg in sys.argv:
-    if arg.startswith('-t'):
-      adhoc_test()
-    elif arg.startswith('-u'):
-      # unittest complains if arguments are not the ones expected by itself
-      del sys.argv[1:]
-      unittest.main()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  """
+  @see the adhoctest module (adhoctest_til_functions.py)
+  """
+  pass

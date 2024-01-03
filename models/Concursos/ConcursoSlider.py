@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 import __init__
 __init__.setlocalpythonpath()
 
-from maths.combinatorics.algorithmsForCombinatorics import permute
+from maths.combinatorics.combinatoric_algorithms import permute
 from libfunctions import system_wide_lambdas as swlambdas
 
 import local_settings as ls

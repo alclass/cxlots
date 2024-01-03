@@ -12,7 +12,7 @@ app_root_abspath = folder_abspath [ : -len('maths/frequencies') ]
 sys.path.insert(0, app_root_abspath)
 from models.JogoSlider import JogoSlider
 # from models.JogoTil import JogoTil
-import maths.combinatorics.algorithmsForCombinatorics as fsPerm
+import maths.combinatorics.combinatoric_algorithms as fsPerm
 import TilSets as ts
 import HistoryFrequency as hf
 #===============================================================================
@@ -81,7 +81,7 @@ class TilPatternVector():
     self.soma = sum(range(len(chrDict)))
     self.patternSize = len(wordPattern)
     listPattern = [wordPattern]
-    self.vector = fsPerm.getPermutations(listPattern)
+    self.vector = fsPerm.get_permutations(listPattern)
 
   def getVectorSize(self):
     if self.vector:
