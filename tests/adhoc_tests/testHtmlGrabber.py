@@ -12,7 +12,7 @@ htmlFragAsTestForComparison = '''
 
 class TestHtmlGrabber(unittest.TestCase):
   '''
-  A test class for the maths module
+  A test class for the maths2 module
   '''
   def setUp(self):
     '''

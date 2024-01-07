@@ -115,7 +115,7 @@ class HistoricoUpdater(object):
 
     # consistency of nOfDezenas will be checked in the unpicking process
     if self.nDeDezenasSorteadas == len(jogo):
-      jogoCharOrig = pprint.numberListToStickedChar(jogo)
+      jogoCharOrig = pprint.number_list_to_sticked_char(jogo)
       jogoReg['jogoCharOrig'] = jogoCharOrig
       if nDoConc >= 1:
         self.jogosReg[nDoConc] = dict(jogoReg)
@@ -218,7 +218,7 @@ def writeJogosToFile(jogos, txtDataFilename):
   fileOut = open(txtDataFilename,'a')
   nOfConcurso = 0
   for jogo in jogos:
-    line = pprint.numberListToStrCommaless(jogo)
+    line = pprint.number_list_to_str_commaless(jogo)
     nOfConcurso += 1
     print 'Writing conc.', nOfConcurso, '==>>', line
     line += '\n'

@@ -12,7 +12,7 @@ import __init__
 __init__.setlocalpythonpath()
 
 from ConcursoSlider import ConcursoSlider
-from libfunctions import system_wide_lambdas as swlambdas
+from fs import system_wide_lambdas as swlambdas
 
 Base = declarative_base()
 class ConcursoBase(Base):

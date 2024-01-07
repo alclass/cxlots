@@ -13,7 +13,7 @@ import local_settings as ls
 
 from models.Concursos.ConcursoSlider import ConcursoSlider
 import models.Concursos.ConcursoHTML as conc
-import libfunctions.db_sql.FieldsAndTypes as fat
+import fs.db_sql.FieldsAndTypes as fat
 # import models.JogoSlider.JogoSlider
 #from models.ConcursoSlider import ConcursoSlider
 

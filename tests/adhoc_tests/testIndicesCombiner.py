@@ -16,9 +16,9 @@ def test1():
   print 'icObj', icObj
   print 'icObj.current()', icObj.current()
   print 'icObj.next()', icObj.next()
-  print 'icObj.next()', icObj.moveToLastOne()
-  #print 'icObj.nextZeroless()', icObj.nextZeroless()
-  print 'icObj.allSets()', icObj.allSets()
+  print 'icObj.next()', icObj.move_to_last_one()
+  #print 'icObj.next_zeroless()', icObj.next_zeroless()
+  print 'icObj.all_sets()', icObj.all_sets()
   
   icObj = ic.IndicesCombiner(4,3, False)
   result = ic.createWorkSetsWithIndicesCombiner([12, 15, 19, 21, 32], icObj)

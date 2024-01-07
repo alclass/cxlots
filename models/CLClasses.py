@@ -140,7 +140,7 @@ class Base(object):
       # plug "business rule" in the future, ie, call a method to calculate probabilities such as those of lotomania
       self.nDeCombs = 11372635
       return self.nDeCombs
-    self.nDeCombs = ic.comb(self.totalDeDezenasNoVolante, self.nDeDezenasSorteadas)
+    self.nDeCombs = ic.iCmb(self.totalDeDezenasNoVolante, self.nDeDezenasSorteadas)
     return self.nDeCombs
 
   def __str__(self):
@@ -268,7 +268,7 @@ class Jogo(Base):
     nUpper = 111213141516171819202122232425
     '''
     jogo = self.getJogo()
-    wholeInt = pprint.numberListToAWholeInt(jogo)
+    wholeInt = pprint.number_list_to_a_whole_int(jogo)
     nInt = wholeInt - self.getIntFromLowestJogo()
     return nInt
 
@@ -276,10 +276,10 @@ class Jogo(Base):
     maiorAMenor = list(self.jogo)
     maiorAMenor.sort()
     maiorAMenor.reverse()
-    maiorAMenor = map(lambdas.minusOne, maiorAMenor)
+    maiorAMenor = map(lambdas.minus_one, maiorAMenor)
     #print 'maiorAMenor', maiorAMenor
     lgiObj = lc.LgiCombiner(self.getNDeCombs()-1,-1,maiorAMenor)
-    lgi = lgiObj.getLgi()
+    lgi = lgiObj.get_lgi()
     #print 'lgi', lgi
     # test in here
     '''
@@ -324,7 +324,7 @@ class Jogo(Base):
     return
 
   def pprintCommaless(self):
-    return pprint.numberListToStrCommaless(self.jogo) # default zfill is 2
+    return pprint.number_list_to_str_commaless(self.jogo) # default zfill is 2
 
   def __str__(self):
     outStr = '%s %s' %(self.standard2LetterName, str(self.jogo))

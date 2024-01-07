@@ -8,7 +8,7 @@ import sys
 import __init__
 __init__.setlocalpythonpath()
 
-from libfunctions.jogos import volante_functions
+from fs.jogos import volante_functions
 
 class VolanteCharacteristics(object):
 

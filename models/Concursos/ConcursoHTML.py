@@ -7,8 +7,8 @@ from sqlalchemy import Column, Float, Integer, Boolean #, DateTime # String,
 import __init__
 __init__.setlocalpythonpath()
 
-import libfunctions.db_sql.FieldsAndTypes as fat
-import libfunctions.date_currency_et_al.converterForDateAndCurrency as conv
+import fs.db_sql.FieldsAndTypes as fat
+import fs.date_currency_et_al.converterForDateAndCurrency as conv
 
 from ConcursoBase import ConcursoBase
 

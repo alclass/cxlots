@@ -76,7 +76,7 @@ class ConcursoExt(conc.Concurso):
           # print 'found', dezena, 'inside i=',i, tilSets[i]   
           tilPatternList[i] += 1
           break
-    tilPatternStr = ffStr.listToStr(tilPatternList)
+    tilPatternStr = ffStr.trans_list_to_nonspace_jointstr(tilPatternList)
     return tilPatternStr
 
 def showTilsForConcursos(concFrom=None, concTo=None, tilN=None):

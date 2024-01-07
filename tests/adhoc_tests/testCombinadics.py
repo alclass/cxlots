@@ -24,7 +24,7 @@ def findIndexFromCombination(dezenas):
   for i in range(6):
     m = dezenas[i]
     r = 6 - i
-    c=combinador.comb(m,r)
+    c=combinador.iCmb(m, r)
     index += c
     #print 'c(%d,%d)=%d' %(m,r,c)
   #print 'index', int(index)
@@ -34,15 +34,15 @@ def testIndexUpperLimit():
   total=0
   for r in range(6,0,-1):
     m = 53+r
-    c=combinador.comb(m,r)
+    c=combinador.iCmb(m, r)
     print 'c(%d,%d)=%d' %(m,r,c)
     total+=c
   print 'total', total
-  c=combinador.comb(60,6)
+  c=combinador.iCmb(60, 6)
   print 'c=combinador.comb(60,6)', c
   print '(total == c-1)', total == c - 1
 
-LIMITE_MAX_COMB60_6A6 = combinador.comb(60,6)
+LIMITE_MAX_COMB60_6A6 = combinador.iCmb(60, 6)
 def findDezenasFromIndexNonRecursive(index, dezenasOut=[None]*6, soma=0, pos=6, MAX_LIMIT = LIMITE_MAX_COMB60_6A6 - 1):
   '''
   This method is sequential in nature, ie, it runs the indices upward one step at a time.
@@ -56,7 +56,7 @@ def findDezenasFromIndexNonRecursive(index, dezenasOut=[None]*6, soma=0, pos=6, 
   for pos in range(6,0,-1):
     ini = pos 
     for d in range(ini,62):  # 61 is just to allow the algorithm making d minus 1 after soma+adding is > index
-      adding = combinador.comb(d-1,pos)
+      adding = combinador.iCmb(d - 1, pos)
       #print 'adding', adding, 'soma', soma, 'd', d
       if soma + adding == index:
         #print 'adding + soma', adding + soma, 'd', d, 'pos', 6 - pos
@@ -81,7 +81,7 @@ def finishUpFindDezenas(dezenasOut, pos, d):
 
 def findDezenasFromIndex(index, soma, somaAnt, d1, d, d2, pos, posAnt, dezenasOut):
   somaAnt = somaAnt
-  soma += combinador.comb(d, pos)
+  soma += combinador.iCmb(d, pos)
   if soma == index:
     return finishUpFindDezenas(dezenasOut, pos, d)
   # this is the condition to move pos to the right ie pos -= 1

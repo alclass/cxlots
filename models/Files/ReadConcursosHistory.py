@@ -9,7 +9,7 @@ import local_settings as ls
 
 # IMPORTANT: this module should import ConcursoHTML instead of ConcursoExt, because the latter imports this one!!! 
 from models.Concursos.ConcursoHTML import ConcursoHTML
-from libfunctions.jogos import jogos_functions
+from fs.jogos import jogos_functions
 
 # ATTENTION: READ_CONCHIST constants start with 1!!!
 # Reason: see method HistoryReader.set_read_as_id(), this methods needs to know the constants' range, its min and max.
@@ -30,7 +30,7 @@ def read_concursos_history(do_ordered_dozens=False):
     else:
       dezenas = concurso.get_dezenas_in_orig_order()
     # print i, # dezenas
-    if concurso.nDoConc % 250 == 0:
+    if concurso.n_conc % 250 == 0:
       pass
       # print concurso.nDoConc, 'done'
     all_histjogos_as_dezenas.append(dezenas)
@@ -240,9 +240,9 @@ class ConcursosHistoryMetrics(ConcursosHistoryPickledStorage):
 
 
 def get_contrajogos_as_dezenas_down_from(concurso, depth):
-  if depth > concurso.nDoConc:
+  if depth > concurso.n_conc:
     return None
-  pickled = ConcursosHistoryPickledStorage(read_as_id=None, upper_nDoConc=concurso.nDoConc)
+  pickled = ConcursosHistoryPickledStorage(read_as_id=None, upper_nDoConc=concurso.n_conc)
   jogos_dezenas_list = pickled.read_or_create()
   if len(jogos_dezenas_list) > depth:
     offset = len(jogos_dezenas_list) - depth
@@ -281,7 +281,7 @@ class MyTest(unittest.TestCase):
   def test_get_contrajogos_as_dezenas_down_from(self):
     slider = ConcursoHTML()
     last_concurso = slider.get_last_concurso()
-    jogos_dezenas_list = get_contrajogos_as_dezenas_down_from(last_concurso, last_concurso.nDoConc - 1)
+    jogos_dezenas_list = get_contrajogos_as_dezenas_down_from(last_concurso, last_concurso.n_conc - 1)
     for i, jogo_as_dezenas in enumerate(jogos_dezenas_list):
       nDoConc = i+1
       concurso = slider.get_concurso_by_nDoConc(nDoConc)

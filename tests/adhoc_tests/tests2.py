@@ -93,13 +93,13 @@ def filterMinusOne(jogo):
 def testLgiOf():
   jogo = [10, 8, 7, 5, 3, 2]
   print 'jogo', jogo
-  lgiObj = lgicomb.LgiCombiner(ic.comb(60, 6)-1,-1,jogo)
-  lgi = lgiObj.getLgi()
+  lgiObj = lgicomb.LgiCombiner(ic.iCmb(60, 6) - 1, -1, jogo)
+  lgi = lgiObj.get_lgi()
   print 'lgi', lgi
   jogo = filterMinusOne(jogo)
   print 'jogo', jogo
-  lgiObj = lgicomb.LgiCombiner(ic.comb(60, 6)-1,-1,jogo)
-  lgi = lgiObj.getLgi()
+  lgiObj = lgicomb.LgiCombiner(ic.iCmb(60, 6) - 1, -1, jogo)
+  lgi = lgiObj.get_lgi()
   print 'lgi', lgi
 
 def testLgiInJogoClass():
@@ -107,7 +107,7 @@ def testLgiInJogoClass():
   jogo = jogosObj.getLastJogo()
   print 'jogo', jogo
   jogoObj = CLClasses.Jogo(jogo, 'LF')
-  lgi = jogoObj.getLgi()
+  lgi = jogoObj.get_lgi()
 
 if __name__ == '__main__':
   pass

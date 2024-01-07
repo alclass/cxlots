@@ -4,7 +4,7 @@ import sys, time # os, random, sys
 
 
 in_between_1_and_60 = lambda x : x >= 1 and x <= 60
-import libfunctions.system_wide_lambdas as swlambdas
+import fs.system_wide_lambdas as swlambdas
 
 class LineToDezenas(object):
   

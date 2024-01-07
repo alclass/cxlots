@@ -10,7 +10,7 @@ import __init__
 __init__.setlocalpythonpath()
 
 from maths.combinatorics.combinatoric_algorithms import permute
-from libfunctions import system_wide_lambdas as swlambdas
+from fs import system_wide_lambdas as swlambdas
 
 import local_settings as ls
 engine_uri = 'sqlite:///' + ls.SQLITE_DATA_FILE_PATH # abs paths require 4 bars (ie, ////)
@@ -80,7 +80,7 @@ class ConcursoSlider(object):
     self.set_all_concursos(refresh)
     if self.last_concurso == None:
       return 0
-    return self.last_concurso.nDoConc
+    return self.last_concurso.n_conc
     
   def get_concurso_by_nDoConc(self, nDoConc=None, refresh=False):
     '''
@@ -100,11 +100,11 @@ class ConcursoSlider(object):
       return None
     index = nDoConc - 1
     concurso = self.all_concursos[index] 
-    if nDoConc == concurso.nDoConc:
+    if nDoConc == concurso.n_conc:
       # raise ValueError, 'nDoConc=%d pedido é diferente do concurso.nDoConc=%d achado' %(nDoConc, concurso.nDoConc)
       return concurso
     # well, nDoConc != concurso.nDoConc, let's fall back the get it by sql-querying
-    result_set = self.session.query(self.CLASSREF).filter( self.CLASSREF.nDoConc == nDoConc )
+    result_set = self.session.query(self.CLASSREF).filter(self.CLASSREF.n_conc == nDoConc)
     if result_set.count() == 0:
       return None 
     elif result_set.count() == 1:
@@ -159,7 +159,7 @@ class ConcursoSlider(object):
       self.session.add(concurso)
     self.session.commit()
 
-# import maths.combinatorics.algorithmsForCombinatorics as combinatorics
+# import maths2.combinatorics.algorithmsForCombinatorics as combinatorics
 def derive_all_concursos_with_dezenas(dezenas):
   permuted_jogos = permute(dezenas)
   jogoCharOrig_list = []

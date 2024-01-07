@@ -115,7 +115,7 @@ class Conferidor(object):
         line = apostasFile.readline()
         continue
       #print random.randint(0,9),
-      jogo = pprint.extractNumbersInANumberSpacedStrIntoANumberList(line)
+      jogo = pprint.trans_spacesep_numberstr_to_intlist(line)
       nDaAposta += 1
       #print nDaAposta, 'Conferindo aposta:', jogo
       nDeCoincs = fCoincs.getNOfCoincidences(self.historyTargetJogo, jogo)
@@ -129,7 +129,7 @@ class Conferidor(object):
       if nDeCoincs in self.acertosComPremio[-2:]:
         #print
         print self.totalDePremios,'/',nOfLines, 'nDeCoincs', nDeCoincs,'in',
-        print pprint.numberListToStrCommaless(jogo)
+        print pprint.number_list_to_str_commaless(jogo)
         #, 'against history', self.historyTargetJogo, 'in nDoConcDaAposta', self.nDoConcDaAposta
       line = apostasFile.readline()
     #print
