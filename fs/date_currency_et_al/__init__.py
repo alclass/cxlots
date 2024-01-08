@@ -30,7 +30,7 @@ def add_path_if_not_already_added(relpath):
   if relpath not in sys.path:
     sys.path.insert(0, relpath)
   try:
-    import appspythonpath  # importing will run sys.path globally on localpythonpath module
+    import local_settings  # importing will run sys.path globally on localpythonpath module
     appspythonpath.set_appspythonpath()
     return
   except ImportError:
@@ -39,7 +39,7 @@ def add_path_if_not_already_added(relpath):
 
 def setlocalpythonpath():
   for relpath in ['.', '..', '../..', '../../..', '../../../..']:
-    filepath = relpath + '/' + 'appspythonpath.py'
+    filepath = relpath + '/' + 'local_settings.py'
     if os.path.isfile(filepath):
       # found local_settings.py, add, if it's not already there, its path to sys.path
       add_path_if_not_already_added(relpath)

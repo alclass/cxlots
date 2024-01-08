@@ -235,7 +235,7 @@ def random_permutation(perm):
     perm[j] = k
 
 
-def generate_integer_partitions(soma, parcel=-1, acc=None):
+def mount_all_integer_partitions_for(soma, parcel=-1, acc=None):
   """
 
   geraSumComponents(soma, parcel=-1, acc=[]) is an [[[ Integer Partitions generator ]]]
@@ -259,14 +259,14 @@ def generate_integer_partitions(soma, parcel=-1, acc=None):
     parcel = soma
   if parcel == soma:
     acc += [[parcel]]
-    return generate_integer_partitions(soma, parcel-1, acc)
+    return mount_all_integer_partitions_for(soma, parcel - 1, acc)
   dif = soma - parcel
   if dif == 1:
     acc += [[parcel, 1]]
-    return generate_integer_partitions(soma, parcel-1, acc)
+    return mount_all_integer_partitions_for(soma, parcel - 1, acc)
   kept_acc = list(acc)
   new_acc = []
-  sub_acc = generate_integer_partitions(dif, dif, [])
+  sub_acc = mount_all_integer_partitions_for(dif, dif, [])
   for sub in sub_acc:
     # well, the 'if' below was a tough decision to correct a repeat
     # eg. gera(5) was having [3,2] and [2,3]
@@ -277,43 +277,100 @@ def generate_integer_partitions(soma, parcel=-1, acc=None):
   kept_acc += new_acc
   acc = kept_acc
   if parcel > 1:
-    return generate_integer_partitions(soma, parcel-1, acc)
+    return mount_all_integer_partitions_for(soma, parcel - 1, acc)
   return acc
 
 
 def filter_out_strings_greater_than_size(words, size):
-  filtered_str_list = []
-  for word in words:
-    if len(word) <= size:
-      filtered_str_list.append(word)
-  return filtered_str_list
+  return list(filter(lambda s: len(s) <= size, words))
 
 
-def fill_array(elem, comb_array, up_int):
+def stablish_base_int_partitions_for(elem, comb_array, up_int):
   """
   called by method init_comb_array in class RCombiner
   """
-  comb_array[0] = elem
-  soma = sum(comb_array)
-  if soma == up_int:
-    return comb_array
-  return None
+  intpartitions = mount_all_integer_partitions_for(up_int)
+  comb_array_size = len(comb_array)
+  intpartitions_size_of_comb_array = list(filter(lambda e: len(e)==comb_array_size, intpartitions))
+  return intpartitions_size_of_comb_array
+
+
+def comb_arrange(intpartition):
+  """
+
+  """
+  ini_set = set(intpartition)
+  return permute_n(intpartition)
+
 
 
 class RCombiner:
+  """
+  fs.maths.combinatorics.combinatoric_algorithms.RCombiner
+    This classes organized arrangements of integer partitions that sum up to a certain target value.
+    One possible application of this class is in the Megasena game
+    (@see the two 'expand' methods below which contain a bit more information/explanation).
+  """
 
   def __init__(self, a_size, up_int=6):
     self.a_size = a_size
     self.up_int = up_int
+    self.base_intpartitions = None
     self.init_comb_array()
-    self.comb_array = None
 
   def init_comb_array(self):
-    self.comb_array = [0] * self.a_size
-    self.comb_array = fill_array(self.a_size, self.comb_array, self.up_int, )
+    """
+    Example
+    size=3 upInt=6 base_intpartitions=[[4, 1, 1], [3, 2, 1], [2, 2, 2]]
+    This means the base_intpartitions have all combinations (not arrangements) that makes up a sum of 6
+    """
+    self.base_intpartitions = [0] * self.a_size
+    self.base_intpartitions = stablish_base_int_partitions_for(self.a_size, self.base_intpartitions, self.up_int)
+
+  def expand_base_intpartitions_as_arrangements(self):
+    """
+    Example
+    size=3 upInt=6 base_intpartitions=[[4, 1, 1], [3, 2, 1], [2, 2, 2]]
+    expanded = [[4, 1, 1], [1, 4, 1], [1, 1, 4], [3, 2, 1], [3, 1, 2],
+                [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3], [2, 2, 2]]
+    This means the expanded intpartitions have all arrangements, ie [4, 1, 1] is different from [1, 4, 1]
+      that makes up a sum of 6
+    """
+    outlist = []
+    for intpartition in self.base_intpartitions:
+      arranges = permute(intpartition)
+      outlist += arranges
+    return outlist
+
+  def expand_base_intpartitions_to_slots(self, n_slots=6):
+    """
+    Example
+    size=3 upInt=6 base_intpartitions=[[4, 1, 1], [3, 2, 1], [2, 2, 2]]
+    Let's see two case of expansion by slots.
+    1) with slots=6 (or 6rows), there are 200 sets
+    expanded = [[[4, 1, 1, 0, 0, 0], [4, 1, 0, 1, 0, 0], [4, 1, 0, 0, 1, 0], [4, 1, 0, 0, 0, 1], ...]
+    2) with slots=10 (or 6 columns), there are 1200 sets
+    expanded = [[4, 1, 1, 0, 0, 0, 0, 0, 0, 0], [4, 1, 0, 1, 0, 0, 0, 0, 0, 0], [4, 1, 0, 0, 1, 0, 0, 0, 0, 0],...]
+
+    One application of this mounting is to form "one possible metric" for the "Megasena" game
+      which has a matrix of 6 rows and 10 columns.
+    The application is as following:
+    - suppose a dozens draw with 6 numbers
+    - all these 6 numbers may be cast into one arranged set above, eg, [4, 1, 0, 0, 1, 0, 0, 0, 0, 0];
+    - the above example 'column' set means: 4 dozens happened in the first column, one in the second, one in the fifth.
+    - a database of this mentioned metric for all history games may be recorded and then analysed looking for patterns,
+      if some pattern exists.
+    """
+    outlist = []
+    for intpartition in self.base_intpartitions:
+      n_zeroes = n_slots - len(intpartition)
+      partition_w_zeroes = intpartition + [0]*n_zeroes
+      arranges = permute(partition_w_zeroes)
+      outlist += arranges
+    return outlist
 
   def __str__(self):
-    outstr = 'size=%d upInt=%d combArray=%s' % (self.a_size, self.up_int, str(self.comb_array))
+    outstr = 'size=%d upInt=%d base_intpartitions=%s' % (self.a_size, self.up_int, str(self.base_intpartitions))
     return outstr
 
 
@@ -321,6 +378,12 @@ def adhoc_test1():
   # testAdHocRCombiner():
   rc = RCombiner(3)
   print(rc)
+  allsets = rc.expand_base_intpartitions_as_arrangements()
+  print(allsets)
+  allsets = rc.expand_base_intpartitions_to_slots(n_slots=6)
+  print('6 rows', len(allsets), allsets)
+  allsets = rc.expand_base_intpartitions_to_slots(n_slots=10)
+  print('10 columns', len(allsets), allsets)
 
 
 def adhoc_test2():
@@ -345,7 +408,7 @@ def adhoc_test4():
   5 R: [[5], [4, 1], [3, 2], [3, 1, 1], [2, 2, 1], [2, 1, 1, 1], [1, 1, 1, 1, 1]]
   """
   for soma in range(5, 6):
-    acc = generate_integer_partitions(soma, soma, [])
+    acc = mount_all_integer_partitions_for(soma, soma, [])
     # check it up
     for elem in acc:
       calc_soma = sum(elem)
@@ -398,7 +461,12 @@ def process():
     print('Invalid command')
 
 
+def adhoc_test5():
+  n_combs = combine_n_c_by_c(20, 5)
+  print('ca.combine_n_c_by_c(70, 7)', n_combs)
+
+
 if __name__ == '__main__':
   """
   """
-  process()
+  adhoc_test1()

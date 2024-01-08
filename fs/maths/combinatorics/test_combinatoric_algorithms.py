@@ -57,3 +57,22 @@ class TestComb(unittest.TestCase):
     ]
     returned_permutation = ca.get_genpermutations_o_str(alist)
     self.assertEqual(expected_permutation, returned_permutation)
+
+  def test_generate_integer_partitions(self):
+    """
+    geraSumComponents(soma, parcel=-1, acc=[]) is an [[[ Integer Partitions generator ]]]
+    The name geraSumComponents() was given here
+      before I came across the established term Integer Partitions
+      from the technical literature;
+
+    Eg geraSumComponents(soma=4) results in:
+      [[4], [3, 1], [2, 2], [2, 1, 1], [1, 1, 1, 1]]
+    """
+    soma = 4
+    returned_partitions = ca.mount_all_integer_partitions_for(soma=soma)
+    expected_partitions = [[4], [3, 1], [2, 2], [2, 1, 1], [1, 1, 1, 1]]
+    self.assertEqual(expected_partitions, expected_partitions)
+    soma = 5
+    returned_partitions = ca.mount_all_integer_partitions_for(soma=soma)
+    expected_partitions = [[5], [4, 1], [3, 2], [3, 1, 1],  [2, 2, 1], [2, 1, 1, 1], [1, 1, 1, 1, 1]]
+    self.assertEqual(expected_partitions, expected_partitions)

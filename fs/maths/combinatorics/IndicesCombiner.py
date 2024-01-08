@@ -162,13 +162,6 @@ class IndicesCombiner(object):
         errmsg = 'Inconsistent array: next elem can be %s than a previous one %s' %(context, str(self.i_array))
         raise ValueError(errmsg)
 
-  def current(self):
-    """
-    Returns the current iArray
-    Notice that iArray is modified by methods like next() and first()
-    """
-    return copy.copy(self.i_array)
-
   def make_before_first(self):
     """
     No matter overlap kind, the "before first" is an array of minus one
@@ -226,7 +219,7 @@ class IndicesCombiner(object):
     """
     The same as self. last
     """
-    return self.first
+    return self.last
 
   @property
   def first_zeroless(self):
@@ -247,31 +240,11 @@ class IndicesCombiner(object):
     """
     self.i_array = list(self.i_array_given)
 
-  def move_to_last_one(self):
-    """
-    Moves iArray position to the last one and returns it
-    Example:
-      overlap=True,  size=3, upLimit=15 :: [15,15,15]
-      overlap=False, size=4, upLimit=33 :: [30,31,32,33]
-    """
-    self.i_array = self.last
-    return self.i_array
-
-  def move_to_first(self):
-    """
-    Moves iArray position to the first one and returns it
-    Example:
-      overlap=True,  size=3, upLimit=15 :: [0,0,0]
-      overlap=False, size=4, upLimit=33 :: [0,1,2,3]
-    """
-    self.i_array = self.tell_first_i_array()
-    return copy.copy(self.i_array)
-
   def park_before_first(self):
     """
     Move to first element and set flag self.parked_at_first_element to True 
     """
-    self.i_array = self.make_before_first()
+    self.i_array = [-1] * self.n_slots
 
   @property
   def last(self):
@@ -494,7 +467,7 @@ class IndicesCombiner(object):
     When the last one is current, a None will be returned
     """
     if not self.overlap:
-      self.i_array = icf.add_one(self.i_array)
+      self.i_array = icf.add_one(self.i_array, up_limit=self.up_limit)
       return self.i_array
     # check before first element
     if self.i_array is not None and self.i_array == [-1] * self.n_slots:
@@ -556,16 +529,34 @@ class IndicesCombiner(object):
     return copy.copy(self.i_array)
 
   def next_zeroless(self):
-    i_array = self.next()
-    i_array = map(lambda e: e + 1, i_array)
-    return i_array
+    """
+    Example:
+      if i_array (the current one) is [0, 3]
+        the next_zeroless is [1, 2]  # remember that combinations should be always a growing sequence
+      if i_array (the current one) is [0, 3, 5]
+        the next_zeroless is also [1, 2, 3]
+      if i_array (the current one) is [1, 2, 3]
+        the next_zeroless is itself (also [1, 2, 3]) because there's no zero in it
+      Now suppose the whole combination set is [[0,1]],
+        then its next_zeroless is None, ie it's treated the same as next() or add_one()
+    """
+    # look up zeroes
+    if self.up_limit == 1 and self.n_slots == 2:
+      # the case in which whole combination set is [[0,1]]
+      return None
+    bool_array = list(map(lambda e: e == 0, self.i_array))
+    if True in bool_array:
+      zeroless = list(range(self.n_slots))
+      # position i_array to it
+      self.i_array = copy.copy(zeroless)
+      return zeroless
+    return self.i_array
 
   def get_first_elements(self, upto=10):
     if upto > self.total_comb:
       upto = self.total_comb
     other = copy.copy(self)
-    other.move_to_first()
-    i_array = other.current()
+    i_array = other.move_to_first()
     for i in range(upto):
       if i_array is None:
         return

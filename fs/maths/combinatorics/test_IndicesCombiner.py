@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 fs/maths/combinatorics/IndicesCombiner.py
   Contains the class IndicesCombiner that models a combinadic object (@see ref @wikipedia below)
@@ -20,7 +20,11 @@ class TestIndicesCombiner(unittest.TestCase):
       ic = iCmb.IndicesCombiner(2, 2, False)
     [0, 1]   [0, 2]   [1, 2]
     """
-    ic = iCmb.IndicesCombiner(2, 2, False)
-
-
+    expected_set = [[0, 1], [0, 2], [1, 2]]
+    ic = iCmb.IndicesCombiner(3, 2, False)
+    expected_first = expected_set[0]
+    self.assertEqual(expected_first, ic.first)
+    expected_last = expected_set[-1]
+    self.assertEqual(expected_last, ic.last)
+    self.assertEqual(expected_set, list(ic.gen_all_sets()))
 

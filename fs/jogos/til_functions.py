@@ -72,7 +72,7 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
       return [str(psoma)]
     else:
       return []
-  subtokens = combinatorics.generate_integer_partitions(psoma)
+  subtokens = combinatorics.mount_all_integer_partitions_for(psoma)
   subtokens = ["".join(map(str, subtoken)) for subtoken in subtokens]
   subtokens = combinatorics.fill_right_zeroes_to_eachstr_in_list(subtokens, n_slots)
   subtokens = combinatorics.filter_out_strings_greater_than_size(subtokens, n_slots)
