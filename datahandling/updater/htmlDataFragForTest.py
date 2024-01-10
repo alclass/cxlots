@@ -213,7 +213,7 @@ def compareConcursos(htmlConcursos, concursos):
 import HTMLGrabber as hg
 def prelimaryTest():
   bsObj = bs.BeautifulSoup(htmlTextSampleWith4Records)
-  htmlConcursos = hg.processRowsAcrossTable(bsObj)
+  htmlConcursos = hg.process_rows_across_table(bsObj)
   compareConcursos(htmlConcursos, concursos)
 #  for concurso in concursos:
 #    print concurso
