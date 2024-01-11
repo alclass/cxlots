@@ -9,7 +9,7 @@ import local_settings as ls
 
 # IMPORTANT: this module should import ConcursoHTML instead of ConcursoExt, because the latter imports this one!!! 
 from models.Concursos.ConcursoHTML import ConcursoHTML
-from fs.jogos import jogos_functions
+from fs.jogosfs import jogos_functions
 
 # ATTENTION: READ_CONCHIST constants start with 1!!!
 # Reason: see method HistoryReader.set_read_as_id(), this methods needs to know the constants' range, its min and max.
@@ -173,7 +173,7 @@ class ConcursosHistoryPickledStorage(object):
       do_ordered_dozens = False
     all_histjogos_as_dezenas = read_concursos_history(do_ordered_dozens)
     self.numpy_histjogos = []
-    print 'Picking to self.blobfilepath =', self.blobfilepath, ' pickle.HIGHEST_PROTOCOL =', pickle.HIGHEST_PROTOCOL, 'for', len(all_histjogos_as_dezenas), 'jogos'
+    print 'Picking to self.blobfilepath =', self.blobfilepath, ' pickle.HIGHEST_PROTOCOL =', pickle.HIGHEST_PROTOCOL, 'for', len(all_histjogos_as_dezenas), 'jogosfs'
     for dozens in all_histjogos_as_dezenas:
       numpy_jogo = numpy.array(dozens)
       self.numpy_histjogos.append(numpy_jogo)

@@ -7,7 +7,7 @@ __init__.setlocalpythonpath()
 
 from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
 import models.Files.ReadConcursosHistory as RCH
-from fs.utils.pyobjects_ext import Dict2
+from fs.util.pyobjects_ext import Dict2
 from maths.tils import TilR
 from maths.metrics.PatternDistanceAnalyzer import PatternDistanceAnalyzer
 

@@ -33,7 +33,7 @@ class ChooserSomaFiltre(Filtre):
 
     4) on the other hand, if soma is very acute (ie, close to upper and lower bounds),
        the system might give out higher probabilities, though limiting bounds represent
-       too few jogos (at the end, not very helpful anyway, but, as composed with other filters,
+       too few jogosfs (at the end, not very helpful anyway, but, as composed with other filters,
        that's something)
   '''
 

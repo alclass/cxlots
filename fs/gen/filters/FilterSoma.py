@@ -207,7 +207,7 @@ def isToExcludeSomeParImpar(nDeRefBackwardJogo=Sena.getNOfLastJogo()):
   # logically, the if below is not needed, but code may change in the future (the way it is is for clearness) 
   if nDePares in [2,3,4]:
     acc[nDePares] += 1
-  for i in range(1,4): # go backwards 4 jogos (3 here + 1 above)
+  for i in range(1,4): # go backwards 4 jogosfs (3 here + 1 above)
     backwardJogo = Sena.jogosPool.getJogo(nDeRefBackwardJogo-i)
     nDePares = backwardJogo.getNDePares()
     #print backwardJogo, 'nDePares', nDePares 

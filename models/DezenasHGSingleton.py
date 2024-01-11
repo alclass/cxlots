@@ -12,11 +12,11 @@ import numpy, os, time
   
   histórico/freqüência em que um nº repete
   
-  cruzamento das heurísticas anteriores (triangulação para formar o conjunto de jogos a apostar) (Algoritmos genéticos? Otimização PO?)
+  cruzamento das heurísticas anteriores (triangulação para formar o conjunto de jogosfs a apostar) (Algoritmos genéticos? Otimização PO?)
   comparar acertos da tarefa acima  (passado longe a passado recente, ambos conhecidos)
   
   Rotinas auxiliares
-    gerador de massa de testes/jogos (randômico / parametrizado)
+    gerador de massa de testes/jogosfs (randômico / parametrizado)
 '''
 
 a=1
@@ -474,7 +474,7 @@ def recursiveDelCoincidentOnes(allJogos, nOfCoincIn=3):
   return allJogos
 
 def chainLevel2toApostas(nOfNextConc=Sena.getNOfLastJogo()+1, nOfCoincIn=3):
-  # read in all jogos
+  # read in all jogosfs
   filePath = '../Apostas/CombinationsChain-level-2-%d.txt' %(nOfNextConc)
   inFile = open(filePath)
   line = inFile.readline(); c = 0

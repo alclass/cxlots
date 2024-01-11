@@ -99,7 +99,7 @@ class Base(object):
     Convention was set to nDeDezenasSorteadas instead of getNDeDezenasAMarcar()
 
     This will be a problem only for lotomania
-    In due time, one scheme will be needed for encoding jogos to generate
+    In due time, one scheme will be needed for encoding jogosfs to generate
     Notice that lgi's and binDecRepr's will 'suffer' of the same problem
 
     '''
@@ -123,9 +123,9 @@ class Base(object):
     # txt and pickle.obj were discontinued
 
     elif ext == 'txt':
-      filename = self.sqlTable + '-jogos-sorteados.txt'
+      filename = self.sqlTable + '-jogosfs-sorteados.txt'
     elif ext == 'obj':
-      filename = self.sqlTable + '-jogos-sorteados.pickle.obj'
+      filename = self.sqlTable + '-jogosfs-sorteados.pickle.obj'
     '''
     return filename
 
@@ -380,7 +380,7 @@ class Jogos(Base):
   def unpickelHistoricoDosJogosSorteados(self):
     filename = self.getFilename('obj')
     nOfBits = takeOut11.minNOfBits(self.totalDeDezenasNoVolante)
-    self.jogos = du.unpickleJogosDataFile(filename, self.nDeDezenasSorteadas, nOfBits)
+    self.jogosfs = du.unpickleJogosDataFile(filename, self.nDeDezenasSorteadas, nOfBits)
 
   def getTable(self):
     return self.table
@@ -446,8 +446,8 @@ class Jogos(Base):
     # well, this should never happen, raise an exception
       raise IndexError, 'ateNumero is less than -1, this means an error exists in the system. Program cannot continue.'
     if ateNumero == -1 or ateNumero > len(self.jogos):
-      # if ateNumero is not given, default to all jogos
-      # if ateNumero is greater than total, do the same, default to all jogos
+      # if ateNumero is not given, default to all jogosfs
+      # if ateNumero is greater than total, do the same, default to all jogosfs
       return self.jogos
     return self.jogos[:ateNumero]
 
@@ -475,7 +475,7 @@ class Jogos(Base):
     This method will be deprecated because table data will, in the future,
     come from a sql table
     '''
-    # table has one row more than jogos
+    # table has one row more than jogosfs
     if ateNumero == -1 or ateNumero > len(self.table) + 1:
       return self.table
     return self.table[:ateNumero+1]
@@ -636,7 +636,7 @@ class PartialJogos(Base):
       self.histG =  self.jogosObj.getHistG()
       return self.workJogos
     for i in range(self.ateConcurso + 1, newAteConcurso + 1):
-      jogo = self.jogos[i]
+      jogo = self.jogosfs[i]
       self.workJogos.append(jogo)
       self.histG =  incrementalHistogram(self.histG, jogo)
     return self.workJogos

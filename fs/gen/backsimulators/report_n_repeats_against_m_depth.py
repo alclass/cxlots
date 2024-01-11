@@ -10,10 +10,10 @@ __init__.setlocalpythonpath()
 from models.Concursos.concurso_extended import ConcursoExt
 from generators.GeradorIter import Gerador
 #from models.ReadConcursosHistory import get_contrajogos_as_dezenas_down_from
-from fs.jogos import jogos_functions
-from fs.filters import filter_functions
+from fs.jogosfs import jogos_functions
+from fs.gen.filters.filters import filter_functions
 from maths.metrics.PatternDistanceAnalyzer import PatternDistanceAnalyzer
-from fs.utils.pyobjects_ext import Dict2
+from fs.util.pyobjects_ext import Dict2
 
 class AnalyzerOfRepeats(object):
   

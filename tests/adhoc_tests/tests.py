@@ -12,9 +12,9 @@ def testTable(table=None):
   if not table:
     table = cx.readDataIntoTable()
     if not table:
-      raise ValueError, 'could not get jogos table'
+      raise ValueError, 'could not get jogosfs table'
     elif len(table) < 2:
-      raise ValueError, 'jogos table is empty'
+      raise ValueError, 'jogosfs table is empty'
   headerFields = table[0]
   '''
   Test to see if data coming from the csv is okay
@@ -28,7 +28,7 @@ def testTable(table=None):
 
 def testGetJogoNumero(numero=-1):
   jogosObj = Jogos.getJogosObj()
-  print 'last jogos len', jogosObj.getLastConcurso()
+  print 'last jogosfs len', jogosObj.getLastConcurso()
   if numero == -1:
     jogo = jogos.getLastJogo()
     pprint.printJogo(jogo)
@@ -71,7 +71,7 @@ def getJogoFromTableRow(tableRow, headerFields):
 
 def getJogosFromTable(table, headerFields):
   '''
-  Get all jogos in the table list of lists
+  Get all jogosfs in the table list of lists
   '''
   jogos=[]
   for tableRow in table:
@@ -134,12 +134,12 @@ def testGenerateTils():
   '''
   #workJogos = fctt.getHistoryJogos()
   #workJogos = ra.getHistoryJogos()
-  histG = ra.makeHistogram() #(jogos)
+  histG = ra.makeHistogram() #(jogosfs)
   print '[CALLING] generateTils(histG)'
   points = generateFaixasForTil(histG)
   
 def testGetEntireTillFaixas():
-  histG = ra.makeHistogram() #(jogos)
+  histG = ra.makeHistogram() #(jogosfs)
   getEntireTillFaixas(histG)
   '''
   TIL = 5
@@ -175,12 +175,12 @@ def testGenerateTils():
   '''
   #workJogos = fctt.getHistoryJogos()
   #workJogos = ra.getHistoryJogos()
-  histG = ra.makeHistogram() #(jogos)
+  histG = ra.makeHistogram() #(jogosfs)
   print '[CALLING] generateTils(histG)'
   points = generateFaixasForTil(histG)
 
 def testGetEntireTillFaixas():
-  histG = ra.makeHistogram() #(jogos)
+  histG = ra.makeHistogram() #(jogosfs)
   getEntireTillFaixas(histG)
   '''
   TIL = 5
@@ -191,7 +191,7 @@ def testGetEntireTillFaixas():
 def testRandomJogosFilterOut11Coincs():
   nOfJogosToGen=1000
   jogos = generateRandomJogos(nOfJogosToGen)
-  #sequenceData.printJogos(jogos)
+  #sequenceData.printJogos(jogosfs)
   newJogos=filterOut11Coincs(jogos)
   sequenceData.printJogos(newJogos)
 

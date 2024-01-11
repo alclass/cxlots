@@ -3,7 +3,7 @@
 """
 """
 import sys
-from fs.jogos import volante_functions
+from fs.jogosfs import volante_functions
 
 
 class VolanteCharacteristics(object):

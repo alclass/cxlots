@@ -9,7 +9,7 @@ __init__.setlocalpythonpath()
 import FilterConstants as filtercte
 import local_settings as ls
 
-from fs.filters import filter_functions # get_line_patterns, get_column_patterns etc.
+from fs.gen.filters.filters import filter_functions
 from generators.GeradorIter import Gerador 
 
 class FunctionModel(object):

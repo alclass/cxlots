@@ -5,7 +5,7 @@ gen/backsimulators/backsimulator.py
 # numpy, os, pickle,
 """
 import sys
-from fs.jogos import jogos_functions
+from fs.jogosfs import jogos_functions
 from models.Files.ReadConcursosHistory import ConcursosHistoryMetrics  # ConcursosHistoryPickledStorage
 from models.Concursos.concurso_extended import ConcursoExt
 

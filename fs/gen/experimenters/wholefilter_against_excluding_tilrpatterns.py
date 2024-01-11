@@ -15,7 +15,7 @@ import local_settings as ls
 from maths.tils import TilR
 # from models.Files.ReadConcursosHistory import ConcursosHistoryPickledStorage
 from generators.GeradorIter import Gerador
-import fs.filters.filter_functions_dependent as filter_fd
+import fs.gen.filters.filters.filter_functions_dependent as filter_fd
 from fs.strfs.str_patterns import trans_intlist_to_zfillstrlist
 
 def generate_all_combinations_against_excluding_tilrpatterns():

@@ -9,8 +9,8 @@ __init__.setlocalpythonpath()
 
 from models.Concursos.concurso_extended import ConcursoExt
 from generators.GeradorIter import Gerador
-import fs.jogos.jogos_functions_dependent as jogos_fd
-from fs.filters.filter_functions_dependent import filter_in_those_within_coincides_histogram_range
+import fs.jogosfs.jogos_functions_dependent as jogos_fd
+from fs.gen.filters.filters import filter_in_those_within_coincides_histogram_range
 
 class AnalyzerOfCoincides(object):
   

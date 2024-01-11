@@ -64,8 +64,8 @@ def testPartialJogos():
   std2letter = 'LF'
   updateBase(std2letter)
   jogosObj = getJogosObj(std2letter)
-  jogos = jogosObj.getJogos()
-  pprint.printJogos(jogos)
+  jogosfs = jogosObj.getJogos()
+  pprint.printJogos(jogosfs)
   '''
   jObj = CLClasses.getJogosObj('LF')
   print 'jObj.standard2LetterName', jObj.standard2LetterName
