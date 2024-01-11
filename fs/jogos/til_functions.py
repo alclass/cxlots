@@ -4,7 +4,7 @@ fs/jogos/til_functions.py
 
 """
 import sys
-import maths.combinatorics.combinatoric_algorithms as combinatorics
+import fs.maths.combinatorics.combinatoric_algorithms as combinatorics
 
 
 def sum_digits(pattern):
@@ -42,7 +42,7 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
   The result set corresponds to the wanted Til Patterns
 
   Example:
-  eg1 getTilPatternsFor(patternSize=2, patternSoma=3) results in a 7-element array, ie:
+  eg1 getTilPatternsFor(patternSize=2, patternSoma=6) results in a 7-element array, ie:
   ----------------------------  
   06  60  15  51  24  42  33
   ----------------------------  
@@ -82,6 +82,7 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
 def adhoctest():
   res = get_all_possible_til_patterns_for(n_slots=5, psoma=6)
   print(res)
+  print('size', len(res))
 
 
 if __name__ == '__main__':

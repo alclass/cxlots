@@ -1,21 +1,110 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """
   This module should not, by design, depend on local system modules
     "import sys" above is fine!
   
   For the functions that do depend on local system modules, they were organized in 
     another module called jogos_function_dependent
-    
-  This was to help see and control any dynamic "import" (with exec()) that was found necessary
-    due to cross-dependency issues (example: x imports y that imports back x)
-    
-  One way we solve this is to import x, in y, dynamically. But, because this may generate confusion,
-    functions that had this issue of cross-dependency were moved to "smaller" modules where it's
-    easier to "keep track" of them 
-import sys
+
+sqlite3 database
+  nconc
+  dezenas_ord_sor
+  n_acertos
+  n_acertos_unid
+  n_acertos_leftdigit
+  n_pares
+  media100
+  dp100
+  resto6
+  resto10
+  n_simmetrical  eg 35 & 53 is 1-simmetrical
+  colocurr eg 6000000000 1000400001 etc
+  rowocurr 600000 100401
+  quadpatt 2112  eg Q1(12 25) Q2(28) Q3(53) Q4(39 58)
+  diagpatt 2220000000 d1(01, 12, 23, 34, 45, 56) d2(02, 13, 24, 35, 46, 57)
+  coincpatt INT
+    # rule n_coinc_concprev1*7^6 + n_coinc_concprev2*7^5 + n_coinc_concprev3*7^4 + ...
+  nconcslastoccurstr eg if jogo is 1, 2, 3, 4, 5 & 6 and if nconcslastoccurstr = 010203040506
+    # this means dozen 1 happened 1 conc ago, dozen 2, 2 concs' ago, dozen 3, 3 conc's ago etc
 """
-from fs import system_wide_lambdas as swlambda
+
+
+def calc_n_coinc_w_prevconc(jogo, dezena_w_gaps_til_repeat_dict):
+  """
+    # rule n_coinc_concprev1*7**6 + n_coinc_concprev2*7**5 + n_coinc_concprev3*7**4 + ...
+  Example with supposition
+  Suppose jogo = 1,2,3,4,5,6
+    1,2 coincide with the first before last draw
+    3,4,5 coincide with the second before last draw
+    6 coincide with the fourth before last draw
+  That result should be:
+    coincpatt = 2*7**6 + 3*7**5 + 1*7**3 = 286062
+  meaning:
+    the first two happened one conc ago
+    the the 3 next happened two conc's ago
+    the last one happened four conc's ago
+  Notice that this indicator has value 0 (zero) if all dozens happened more than 7 conc's ago
+  On the other side, if all 6 dozens happened one conc before, it'll have a maximum value of 6*7**6
+    which is 705894
+  """
+  coincpatt = 0
+  gapdict = {}
+  for dezena in dezena_w_gaps_til_repeat_dict:
+    n_gaps = dezena_w_gaps_til_repeat_dict[dezena]
+    if n_gaps in gapdict:
+      gapdict[n_gaps] += 1
+    else:
+      gapdict[n_gaps] = 1
+  for n_gap in gapdict:
+    expo = 7 - n_gap
+    coincpatt += gapdict[n_gap] * 7 ** expo
+  return coincpatt
+
+
+def get_diag_n_for_dozen(dezena, diag_matrix=None):
+  if diag_matrix is None:
+    diag_matrix = form_diag_matrix_positions()
+  for i, diag in enumerate(diag_matrix):
+    if dezena in diag:
+      return i
+  return None
+
+
+def form_diag_matrix_positions():
+  """
+  diag1 (01, 12, 23, 34, 45, 56)
+  diag2 (02, 13, 24, 35, 46, 57)
+  diag3 (03, 14, 25, 36, 47, 58)
+  diag4 (04, 15, 26, 37, 48, 59)
+  diag5 (05, 16, 27, 38, 49, 60)
+  diag6 (06, 17, 28, 39, 50, 51)
+  diag7 (07, 18, 29, 40, 41, 52)
+  diag8 (08, 19, 30, 31, 42, 53)
+  diag9 (09, 20, 21, 32, 43, 54)
+  diag10 (10, 11, 22, 33, 44, 55)
+  Algorithm
+    start pos(1, 1) with 1
+      going one place to the right, add 11
+        if place resultant is diviseable by 10, add 1
+      going one place down, add 1 (modulo 60)
+        if place resultant is diviseable by 10, subtract 9
+  """
+  matrix = []
+  line = []
+  for i in range(1, 11):
+    val = i
+    for j in range(1, 7):
+      if j == 1:
+        line.append(i)
+        continue
+      if val % 10 != 0:
+        val += 11
+      else:  # val % 10 == 0:
+        val += 1
+      line.append(val)
+    matrix.append(line)
+    line = []
+  return matrix
 
 
 def get_n_acertos(jogo, contrajogo):
@@ -59,7 +148,7 @@ def has_game_equal_or_more_than_n_acertos(compare_dezenas, all_jogos_as_dezenas,
 
 
 def get_n_impares(jogo):
-  return len(filter(swlambda.is_odd, jogo))
+  return len(filter(lambda n: n % 2 == 1, jogo))
 
 
 def get_line_pattern_and_drawing(jogo):
@@ -83,7 +172,7 @@ def get_line_pattern(jogo):
 def get_line_drawing(jogo):
   tens_digit_dict = get_line_pattern_and_drawing(jogo)
   quantities = tens_digit_dict.values()
-  quantities = filter(swlambda.is_nonzero, quantities)
+  quantities = filter(lambda n: n != 0, quantities)
   quantities.sort()
   quantities.reverse()
   quantities = map(str, quantities)
@@ -218,7 +307,7 @@ def adhoc_test():
   test_jogo_metrics(jogo)
 
 
-def adhoctest0():
+def adhoctest1():
   contrajogos = []
   contrajogo = (1, 2, 3, 4, 5, 6)
   contrajogos.append(contrajogo)
@@ -231,5 +320,28 @@ def adhoctest0():
   print(repeats_array)
 
 
+def adhoctest2():
+  """
+  Suppose jogo = 1,2,3,4,5,6
+    1,2 coincide with the first before last draw
+    3,4,5 coincide with the second before last draw
+    6 coincide with the fourth before last draw
+  That result should be:
+    coincpatt = 2*7**6 + 3*7**5 + 1*7**3 = 286062
+  """
+  jogo = 1, 2, 3, 4, 5, 6
+  dezena_w_gaps_til_repeat_dict = {
+    1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 4,
+  }
+  res = calc_n_coinc_w_prevconc(jogo, dezena_w_gaps_til_repeat_dict)
+  print('jogo', jogo, 'dict', dezena_w_gaps_til_repeat_dict)
+  print('result', res)
+  mtx = form_diag_matrix_positions()
+  for line in mtx:
+    print(line)
+  pdict = {i: get_diag_n_for_dozen(i, mtx) for i in range(1, 61)}
+  print(pdict)
+
+
 if __name__ == '__main__':
-  adhoctest0()
+  adhoctest2()
