@@ -3,9 +3,10 @@
 fs/dbfs/datafilefs/from_wks/from_excel_to_db_w_metrics.py
 
 """
-import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  #.get_pandas_df_from_ms_history_excelfile
+import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # get_pandas_df_from_ms_history_excelfile
 import fs.jogosfs.jogos_functions as jf
 import fs.jogosfs.jogos_metrics as jm
+
 
 def get_data_n_build_metrics():
   df = mer.get_pandas_df_from_ms_history_excelfile()
@@ -19,7 +20,6 @@ def get_data_n_build_metrics():
     print(jmetr)
     if i > 3:
       break
-
 
 
 def adhoctest():

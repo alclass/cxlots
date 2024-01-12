@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 """
+models/Concursos/test_VolanteCharacteristics.py
 """
 import sys
 from fs.jogosfs import volante_functions
@@ -9,14 +9,14 @@ import unittest
 
 class MyTest(unittest.TestCase):
 
-  def return_quina_4tuple(self):
-    n_dezenas_no_volante = 50;  n_dezenas_no_sorteio = 5;  int_range = (1, 50);  nome = 'Quina'
-    return n_dezenas_no_volante, n_dezenas_no_sorteio, int_range, nome
-
   def setUp(self):
     self.vc_sena_default = VolanteCharacteristics()
     n_dezenas_no_volante, n_dezenas_no_sorteio, int_range, nome = self.return_quina_4tuple()
     self.vc_quina = VolanteCharacteristics(n_dezenas_no_volante, n_dezenas_no_sorteio, int_range, nome)
+
+  def return_quina_4tuple(self):
+    n_dezenas_no_volante = 50;  n_dezenas_no_sorteio = 5;  int_range = (1, 50);  nome = 'Quina'
+    return n_dezenas_no_volante, n_dezenas_no_sorteio, int_range, nome
 
   def test_1_megasena_is_default(self):
     # subtest 1

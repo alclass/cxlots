@@ -13,8 +13,10 @@ class JogoMetrics:
     self.diag_matrix = jf.form_diag_matrix_positions()
     self.nconc = nconc
     self._tup_dez_ord_sor = None
+    self._tupledezenas = None
     self._ds_ord_sor_str = None
     self.d1, self.d2, self.d3, self.d4, self.d5, self.d6 = tuple([-1]*self.NDOZENS)
+    self.n_dezenas = -1
     self.treat_dezenas(tupledezenas)
     self.colpatt = ''
     self.diagpatt = ''
@@ -26,6 +28,12 @@ class JogoMetrics:
       strds = map(lambda e: str(e).zfill(2), list(self.tup_dez_ord_sor))
       self._ds_ord_sor_str = ''.join(strds)
     return self._ds_ord_sor_str
+
+  @property
+  def tupledezenas(self):
+    if self._tupledezenas is None:
+      self._tupledezenas = (self.d1, self.d2, self.d3, self.d4, self.d5, self.d6)
+    return self._tupledezenas
 
   def treat_dezenas(self, tupledezenas):
     """
@@ -39,13 +47,14 @@ class JogoMetrics:
     for i, dozen in enumerate(tupledezenas):
       fieldname = 'self.d' + str(i+1)  # notice that d1 is tupledezenas[0] ie the first is index+1
       assignment_comm = fieldname + ' = int(tupledezenas[' + str(i) + '])'
+      self.n_dezenas += 1
       try:
         exec(assignment_comm)
       except ValueError:
         pass
 
   @property
-  def dezenas(self):
+  def dezenas_list(self):
     return list(self.tupledezenas)
 
   @property
@@ -77,7 +86,6 @@ class JogoMetrics:
     if self.d1 > -1:
       self.colpatt = jf.get_column_pattern(self.jogo)
       self.diagpatt = jf.get_diag_n_for_dozen(self.jogo, self.diag_matrix)
-
 
   def __str__(self):
     outstr = f"""Jogo Metrics nconc={self.nconc} dz={self.jogo}

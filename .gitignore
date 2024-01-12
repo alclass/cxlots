@@ -1,8 +1,10 @@
 dados/
 venv/
+.idea/
+__pycache__/
+*/*__pycache__/*
 */local_settings.py
 local_settings.py
-.idea/
 */*.bak
+*.pyc
 */*.pyc
-*/*.sqlite

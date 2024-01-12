@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+"""
 volante_functions.py
-'''
+"""
 # import time  # for timing purposes
+DEFAULT_FILENAME = 'jogosfs-bet-mantidos.txt'
+
 
 def return_int_range_or_default_or_raise_ValueError(int_range, DEFAULT_INT_RANGE):
+  """
   # type: (tuple, tuple) -> tuple
-  '''
   This function returns the DEFAULT_INT_RANGE is int_range is None, if it's not a 2-tuple and if elements of the 2-tuple are not int
   But, it will raise ValueError is the first element is greater than the second. (There is a unittest for all these cases.)
 
@@ -21,50 +23,53 @@ def return_int_range_or_default_or_raise_ValueError(int_range, DEFAULT_INT_RANGE
   Returns:
     object: tuple
 
-  '''
-  if int_range == None or len(int_range) != 2:
+  """
+  if int_range is None or len(int_range) != 2:
     return DEFAULT_INT_RANGE
   try:
-    least_n    = int_range[0]; int(least_n)
-    greatest_n = int_range[1]; int(greatest_n)
+    least_n = int(int_range[0])
+    greatest_n = int(int_range[1])
   except ValueError:
     return DEFAULT_INT_RANGE
   if least_n > greatest_n:
-    raise ValueError, 'least_n (=%d) > greatest_n (=%d) ' %(least_n, greatest_n)
+    errmsg = 'least_n (=%d) > greatest_n (=%d) ' %(least_n, greatest_n)
+    raise ValueError(errmsg)
   return int_range
 
 
-def findStandard2LetterNameInFilename(apostasFilename):
-  '''
+def find_standard2_letter_name_in_filename(apostas_filename):
+  """
   Apostas filename are standardized
   yyyy-mm-dd-s2LN-apostas.txt[.n]
   where n, if exists, is a int number equal or greater than one
   Eg.
   2009-10-04-ms-apostas.txt.3
-  '''
-  pp = apostasFilename.split('-')
-  standard2LetterName = pp[3]
-  standard2LetterName = standard2LetterName.upper()
-  return standard2LetterName
+  """
+  pp = apostas_filename.split('-')
+  standard2_letter_name = pp[3]
+  standard2_letter_name = standard2_letter_name.upper()
+  return standard2_letter_name
 
-def recordNewBetFile(binDecReprJogos, fileOut='jogosfs-bet-mantidos.txt'):
-  mantemFile = open(fileOut,'w')
-  nOfExcluded = 0
-  for binDecReprJogo in binDecReprJogos:
-    jogoLine = JogoLine(None,None,binDecReprJogo)
-    line = jogoLine.getLine() + '\n'
-    mantemFile.write(line)
-  mantemFile.close()
+def record_new_bet_file(bin_dec_repr_jogos, file_out=None):
+  if file_out is None:
+    file_out = DEFAULT_FILENAME
+  mantem_file = open(file_out, 'w')
+  n_of_excluded = 0
+  for bin_dec_repr_jogo in bin_dec_repr_jogos:
+    jogo_line = JogoLine(None,None,bin_dec_repr_jogo)
+    line = jogo_line.getLine() + '\n'
+    mantem_file.write(line)
+  mantem_file.close()
 
-def queueTasks(fileIn='jogosfs-bet.txt'):
-  binDecReprJogosDict = chargeBetFileIntoBinDecReprDict(fileIn)
-  binDecReprJogos = filter11OutImpl2(binDecReprJogosDict)
+def queue_tasks(file_in='jogosfs-bet.txt'):
+  bin_dec_repr_jogos_dict = chargeBetFileIntoBinDecReprDict(file_in)
+  bin_dec_repr_jogos = filter11OutImpl2(bin_dec_repr_jogos_dict)
   # save some memory if possible
-  del binDecReprJogosDict
-  recordNewBetFile(binDecReprJogos)
+  del bin_dec_repr_jogos_dict
+  record_new_bet_file(bin_dec_repr_jogos)
 
-def generateSampleBet(quant):
-  print 'generateSampleBet()'
+def generate_sample_bet(quant):
+  print 'generate_sample_bet()'
   jogosBetFile = open('jogosfs-bet.txt')
   jogosSampleBetFile = open('sample-jogosfs-bet.txt','w')
   line = jogosBetFile.readline(); nOfLines = 0
@@ -74,42 +79,25 @@ def generateSampleBet(quant):
   jogosSampleBetFile.close()
 
 
-#import csv, os, pickle
-
-'''# establish where data file is located
-dataDir = '..' + os.sep + 'Dados'
-csvFile='D_LOTFAC.csv'
-csvPath=os.path.join(dataDir, csvFile)
-
-def readDataIntoTable2():
-***
-  Main routine to read jogosfs data from the csv file
-***
-  pReader = csv.reader(open(csvPath), dialect='excel', delimiter=';', quotechar='|')
-  rowCount = 0; fields=None; table = []
-  for row in pReader:
-
-'''
-
-def sweepCoincidencesInJogosConsecutives(jogos):
-  '''
+def sweep_coincidences_in_jogos_consecutives(jogos):
+  """
   Run thru jogosfs, calculating consecutive coincidences
-  '''
-  acum = 0; coincMin = 25; coincMax = 0
+  """
+  acum, coinc_min, coinc_max = 0, 25, 0
   for i in range(1,len(jogos)):
     jogo = jogos[i]
-    jogoPrevious = jogos[i-1]
-    nOfCoinc = getNOfCoincidences(jogo, jogoPrevious)
+    jogo_previous = jogos[i-1]
+    nOfCoinc = getNOfCoincidences(jogo, jogo_previous)
     print pprint(jogo), 'nOfCoinc', nOfCoinc
     acum += nOfCoinc
-    if nOfCoinc < coincMin:
-      coincMin = nOfCoinc
-    if nOfCoinc > coincMax:
-      coincMax = nOfCoinc
+    if nOfCoinc < coinc_min:
+      coinc_min = nOfCoinc
+    if nOfCoinc > coinc_max:
+      coinc_max = nOfCoinc
   average = acum / (0.0 + len(jogos) - 1)
   print 'average', average
-  print 'min coinc', coincMin
-  print 'max coinc', coincMax
+  print 'min coinc', coinc_min
+  print 'max coinc', coinc_max
   import comb as co
   averageInt = int(average) + 1
   nOfCombsWithAverage = co.iCmb(15, averageInt)
@@ -181,8 +169,8 @@ if __name__ == '__main__':
   testMinNOfBits()
   # testPackAndUnpack()
   fileIn='sample-jogosfs-bet.txt'
-  print 'queueTasks()'
-  #queueTasks(fileIn)
-  queueTasks()
-  #generateSampleBet(100)
+  print 'queue_tasks()'
+  #queue_tasks(fileIn)
+  queue_tasks()
+  #generate_sample_bet(100)
   '''

@@ -323,7 +323,7 @@ def queueTasks(fileIn='jogosfs-bet.txt'):
   recordNewBetFile(binDecReprJogos)
 
 def generateSampleBet(quant):
-  print 'generateSampleBet()'
+  print 'generate_sample_bet()'
   jogosBetFile = open('jogosfs-bet.txt')
   jogosSampleBetFile = open('sample-jogosfs-bet.txt','w')
   line = jogosBetFile.readline(); nOfLines = 0
@@ -483,10 +483,10 @@ def adhoc_test():
   testMinNOfBits()
   # testPackAndUnpack()
   fileIn='sample-jogosfs-bet.txt'
-  print 'queueTasks()'
-  #queueTasks(fileIn)
-  queueTasks()
-  #generateSampleBet(100)
+  print 'queue_tasks()'
+  #queue_tasks(fileIn)
+  queue_tasks()
+  #generate_sample_bet(100)
   '''
 
 import unittest
