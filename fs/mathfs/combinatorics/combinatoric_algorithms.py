@@ -14,6 +14,7 @@ Main functions here:
 
 """
 # import numpy, time, sys
+import copy
 import random
 import sys
 
@@ -156,6 +157,15 @@ def fill_right_zeroes_to_eachstr_in_list(strlist, each_str_size=10):
 
 
 def get_permutations(subtokens):
+  """
+  Example:
+    ...
+  Args:
+    subtokens:
+
+  Returns:
+
+  """
   total, all_perms = 0, []
   for token in subtokens:
     token_array = [e for e in token]
@@ -235,10 +245,105 @@ def random_permutation(perm):
     perm[j] = k
 
 
+
+
+def get_combine_sumsets2(leftmost, upto=6, slots=5, comb=None, combs=None):
+  combs = [] if combs is None else combs
+  if len(combs) == 0:
+    combs = [[leftmost]]
+    comb = combs[-1]
+  if sum(comb) > upto:
+    return get_combine_sumsets2(leftmost-1, upto, slots, comb, combs)
+  elif sum(comb) == upto:
+    combs.append(copy.copy(comb))
+    if len(comb) > 1:
+      comb.pop()
+    leftmost = comb[-1]
+    return get_combine_sumsets2(leftmost-1, upto, slots, comb, combs)
+  # elif sum(comb) < upto:
+  comb.append(leftmost)
+  if len(comb) > slots:
+    return combs
+  return get_combine_sumsets2(leftmost, upto, slots, comb, combs)
+
+
+def get_combine_sumsets(guide=3, upto=6, stack=None, results=None):
+  """
+  """
+  if guide > upto:
+    return get_combine_sumsets(guide-1, upto, stack, [])
+  elif guide < 1:
+    return results
+  stack = [] if stack is None else stack
+  results = [] if results is None else results
+  if sum(stack) + guide > upto:
+    return get_combine_sumsets(guide-1, upto, stack, results)
+  elif sum(stack) + guide == upto:
+    stack.append(guide)
+    results.append(copy.copy(stack))
+    if guide > 1:
+      stack.pop()
+      return get_combine_sumsets(guide-1, upto, stack, results)
+    else:  # guide is 1 at here
+      # move left
+      digit = stack.pop()
+      while digit > 1 and len(stack) > 0:
+        digit = stack.pop()
+      if len(stack) > 0:
+        return get_combine_sumsets(guide-1, upto, stack, results)
+  # else:  # ie sum(stack) + guide < upto
+  stack.append(guide)
+  return get_combine_sumsets(guide, upto, stack, results)
+
+
+def get_all_complements_to_sum(ongoidx, target_sum):
+  """
+  Example:
+    e1 => get_all_complements_to_sum(ongoidx=4, target_sum=6)
+      The output is: [4, 2], [4, 1, 1]
+    e2 => get_all_complements_to_sum(ongoidx=3, target_sum=6)
+      The output is: [3, 3], [3, 2, 1], [3, 1, 1, 1]
+    (etc)
+  Args:
+    ongoidx:
+    target_sum:
+
+  Returns:
+
+  """
+  diff = target_sum - ongoidx
+  ints = list(range(diff+1))
+  sets = get_combine_sumsets(ints, upto=target_sum)
+  complements = []
+  for i in range(len(ints), 0, -1):
+    pass
+
+
+
+
+
+def gen_all_integer_partitions_for(ongoidx=6, target_sum=6, up_to_slots=6):
+  # start by one full slot
+  if ongoidx == target_sum:
+    elem = f'{ongoidx}'
+    yield elem
+    ongoidx -= 1
+    return gen_all_integer_partitions_for(ongoidx, target_sum, up_to_slots)
+  complements = get_all_complements_to_sum(ongoidx, target_sum)
+  idx1integers = list(up_to_slots+1)
+  # first element
+  firstcount = idx1integers.pop()
+
+  for amount in list(range(up_to_slots-1, 0, -1)):
+    pass
+
 def mount_all_integer_partitions_for(soma, parcel=-1, acc=None):
   """
+This function 'mounts' the integer partitions recursively.
+TODO a non-recursive equivalent.
 
-  geraSumComponents(soma, parcel=-1, acc=[]) is an [[[ Integer Partitions generator ]]]
+  geraSumComponents(soma, parcel=-1, acc=[]) is
+    an [[[ Integer Partitions generator ]]]
   The name geraSumComponents() was given here
     before I came across the established term Integer Partitions
     from the technical literature;
@@ -350,7 +455,8 @@ class RCombiner:
     expanded = [[[4, 1, 1, 0, 0, 0], [4, 1, 0, 1, 0, 0], [4, 1, 0, 0, 1, 0], [4, 1, 0, 0, 0, 1], ...]
     2) with slots=10 (or 6 columns), there are 1200 sets
     expanded = [[4, 1, 1, 0, 0, 0, 0, 0, 0, 0], [4, 1, 0, 1, 0, 0, 0, 0, 0, 0], [4, 1, 0, 0, 1, 0, 0, 0, 0, 0],...]
-
+      Notice that it also "arranges" sequences starting with zeroes:
+        eg  [0, 1, 0, 0, 4, 0, 0, 0, 1, 0]
     One application of this mounting is to form "one possible metric" for the "Megasena" game
       which has a matrix of 6 rows and 10 columns.
     The application is as following:
@@ -367,6 +473,26 @@ class RCombiner:
       arranges = permute(partition_w_zeroes)
       outlist += arranges
     return outlist
+
+  def expand_slotpartitions_to_inbetween_graftedzeroes(self, n_slots=6):
+    """
+    The set produces here is the same as:
+      expand_base_intpartitions_to_slots(self, n_slots=6)
+    excluding the ones that have beginning zeroes or ending zeroes.
+    Example:
+      In the "expand_base" above, we saw that, as an example,
+        set [0, 1, 0, 0, 4, 0, 0, 0, 1, 0] in include.
+      However, the "inbetween_graftedzeroes" set does not contain
+         elements (sets in themselves) having starting or ending zeroes,
+         so that one must not be included.
+
+    Args:
+      n_slots:
+
+    Returns:
+
+    """
+
 
   def __str__(self):
     outstr = 'size=%d upInt=%d base_intpartitions=%s' % (self.a_size, self.up_int, str(self.base_intpartitions))
@@ -461,11 +587,18 @@ def process():
 
 
 def adhoc_test5():
+  """
   n_combs = combine_n_c_by_c(20, 5)
   print('ca.combine_n_c_by_c(70, 7)', n_combs)
-
+  Returns:
+  """
+  guide = 3
+  results = get_combine_sumsets(guide, upto=6)
+  print('guideint', guide, 'results', results)
+  results = get_combine_sumsets2(leftmost=guide, upto=6, slots=3)
+  print('guide', guide, 'results', results)
 
 if __name__ == '__main__':
   """
   """
-  adhoc_test1()
+  adhoc_test5()
