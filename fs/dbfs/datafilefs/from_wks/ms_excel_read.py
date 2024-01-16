@@ -6,16 +6,15 @@ fs/dbfs/datafilefs/from_wks/ms_excel_read.py
 import glob
 import os
 import pandas as pd
-
 import local_settings as ls
 filename_to_interpolate = "megasena_asloterias-com-br_ate_conc{nconc}_sorteio.xlsx"
 glob_asterisco_sorteio_xlsx = "*_sorteio.xlsx"
-lots_data_middlepath = 'dados/asloterias-com-br'
+aslots_foldername_u_appsdatafolder = 'asloterias-com-br'
 
 
 def get_ms_dados_folderpath():
-  data_basedirpath = ls.get_data_basedirpath()
-  lots_data_folderpath = os.path.join(data_basedirpath, lots_data_middlepath)
+  appsdata_basedirpath = ls.get_appsdata_basedirpath()
+  lots_data_folderpath = os.path.join(appsdata_basedirpath, aslots_foldername_u_appsdatafolder)
   return lots_data_folderpath
 
 

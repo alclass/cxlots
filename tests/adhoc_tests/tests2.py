@@ -106,7 +106,7 @@ def testLgiInJogoClass():
   jogosObj = CLClasses.getJogosObj('LF')
   jogo = jogosObj.getLastJogo()
   print 'jogo', jogo
-  jogoObj = CLClasses.Jogo(jogo, 'LF')
+  jogoObj = CLClasses.ShapeAreaCircleCalculator(jogo, 'LF')
   lgi = jogoObj.get_lgi()
 
 if __name__ == '__main__':

@@ -23,9 +23,9 @@ def create_table_if_not_exists():
   sql = f"""CREATE TABLE IF NOT EXISTS {MS_TABLENAME} (
     nconc INT PRIMARY KEY,
     ds_ord_sor_str CHAR(12) NOT NULL,
-    n_acertos INT,
-    n_acertos_leftdigit INT,
-    n_acertos_rightdigit INT,
+    comb_idx INT,
+    soma INT,
+    n_primos INT,
     n_pares INT,
     nconsecutivos INT,
     adjacente1 INT,

@@ -5,34 +5,65 @@ fs/mathfs/metrics/idxshapearea_circle_metric.py
 """
 import math
 import statistics
+import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.RCombiner
+COLUMN_POSITION_SIZE, ROW_POSITION_SIZE = 10, 6
 
 
-class Jogo:
+class ShapeAreaCircleCalculator:
 
-  def __init__(self, points):
-    self.points = points
+  def __init__(self, cardarray):
+    self.cardarray = cardarray
+    self.radius = None
+    self.center_x_y = None
+    self.dozen_col_indices, self.dozen_row_indices = get_col_n_row_1indices_from_dozensarray(self.cardarray)
+    self.rowstretch, self.colstretch = get_col_n_row_1indices_inbetweenzerografted_from_cardarray(self.cardarray)
     self.calculate_center_n_radius()
-    self._mid_x = (10 + 1) / 2
-    self._mid_y = (6 + 1) / 2
 
   @property
-  def card_mid_x(self):
-    return self._mid_x
+  def dozen_col_indices_str(self):
+    return ''.join(map(lambda e: str(e), self.dozen_col_indices))
 
   @property
-  def card_mid_y(self):
-    return self._mid_y
+  def dozen_row_indices_str(self):
+    return ''.join(map(lambda e: str(e), self.dozen_row_indices))
 
   @property
-  def mid_x(self):
-    return self._mid_x
+  def colstretch_str(self):
+    return ''.join(map(lambda e: str(e), self.colstretch))
 
   @property
-  def mid_y(self):
-    return self._mid_y
+  def rowstretch_str(self):
+    return ''.join(map(lambda e: str(e), self.rowstretch))
 
   def calculate_center_n_radius(self):
+    self.center_x_y = get_center_x_y_from_cardarray(self.cardarray)
+    self.radius = get_abstract_card_radius(self.center_x_y, self.cardarray)
+
+  def calc_col_n_row_1idx_zerografted(self):
     pass
+
+  def __str__(self):
+    ro1idpttstr = self.dozen_row_indices_str
+    co1idpttstr = self.dozen_col_indices_str
+    outstr = f"""  ShapeAreaCircleCalculator cardarray={self.cardarray} 
+      center={self.center_x_y} radius={self.radius}
+      rowpatt={ro1idpttstr} colpatt={co1idpttstr}
+      rowstretch={self.rowstretch_str} colpatt={self.colstretch_str}"""
+    return outstr
+
+
+def prune_beginning_n_ending_zeros_from_intlist(intlist):
+  while len(intlist) > 0:
+    if intlist[-1] == 0:
+      del intlist[-1]
+    else:
+      break
+  while len(intlist) > 0:
+    if intlist[0] == 0:
+      del intlist[0]
+    else:
+      break
+  return intlist
 
 
 def get_abstract_card_radius(center, array):
@@ -40,7 +71,7 @@ def get_abstract_card_radius(center, array):
   ccol, crow = center
   for d in array:
     # x is col
-    col, row = extract_as_tupl_row1idx_n_col1idx_from_carddozen(d)
+    col, row = extract_as_tupl_col1idx_n_row1idx_from_carddozen(d)
     dist = math.sqrt((col - ccol) ** 2 + (row - crow) ** 2)
     total_distances += dist
   mean_distance = total_distances / (len(array))
@@ -49,7 +80,7 @@ def get_abstract_card_radius(center, array):
   return radius
 
 
-def extract_as_tupl_row1idx_n_col1idx_from_carddozen(n, low_high_limit=(1, 60)):
+def extract_as_tupl_col1idx_n_row1idx_from_carddozen(n, low_high_limit=(1, 60)):
   """
   Example:
     dozen = 15 => row_idx = 2, col_idx = 5
@@ -64,9 +95,9 @@ def extract_as_tupl_row1idx_n_col1idx_from_carddozen(n, low_high_limit=(1, 60)):
     return None, None
   if n < low_high_limit[0] or n > low_high_limit[1]:
     return None, None
-  row1idx = math.ceil(n/10)  # notice that row1idx(10)=1 & row1idx(11)=2
   col1idx = ((n-1) % 10) + 1  # it's the same as the unit-digit
-  return row1idx, col1idx
+  row1idx = math.ceil(n/10)  # notice that row1idx(10)=1 & row1idx(11)=2
+  return col1idx, row1idx
 
 
 def separate_as_tupl_dozen_n_unit_from_carddozen(n, low_high_limit=(1, 60)):
@@ -87,14 +118,14 @@ def separate_as_tupl_dozen_n_unit_from_carddozen(n, low_high_limit=(1, 60)):
   return rowdigit, coldigit
 
 
-def get_rowpatt_n_colpatt_from_dozensarray(dozens):
+def get_col_n_row_1indices_from_dozensarray(dozens):
   rowpatt = []
   colpatt = []
   for d in dozens:
-    rowdigit, coldigit = extract_as_tupl_row1idx_n_col1idx_from_carddozen(d)
-    rowpatt.append(rowdigit)
+    coldigit, rowdigit = extract_as_tupl_col1idx_n_row1idx_from_carddozen(d)
     colpatt.append(coldigit)
-  return rowpatt, colpatt
+    rowpatt.append(rowdigit)
+  return colpatt, rowpatt
 
 
 def get_x_y_row_column_6x10pairs():
@@ -102,7 +133,7 @@ def get_x_y_row_column_6x10pairs():
   return tuplelist
 
 
-def calc_abstract_card_radius_of_cardarray(cardarray):
+def get_center_x_y_from_cardarray(cardarray):
   """
   01 02 03 04 05 06 07 08 09 10
   11 12 13 14 15 16 17 18 19 20
@@ -113,7 +144,7 @@ def calc_abstract_card_radius_of_cardarray(cardarray):
 
   Example: (14, 16, 18, 54, 56, 58)
   center should be (visually) 36
-  radius should be (visually) > 2 (in implementation, it's > 2*100=200
+  radius should be (visually) > 2 (in implementation, it's > 2*100=200)
     (the integer is to calculated-interpolated)
 
   bool_has_true_if_some_different = list(map(lambda e: e != rows[0], rows[1:]))
@@ -125,24 +156,20 @@ def calc_abstract_card_radius_of_cardarray(cardarray):
     print('radius is None', bool_has_true_if_some_different, 'columns', columns)
     return None
 
-
+  radius = get_abstract_card_radius(center, dezenas)
+  print('center', center, 'radius', radius)
   """
   dezenas = cardarray
-  columns, rows = [], []
-  # tuplelist = get_x_y_row_column_6x10pairs()
-  # print(len(tuplelist), tuplelist)
   rows = [math.floor(d / 10) for d in dezenas]
   columns = [d % 10 for d in dezenas]
   mid_col = statistics.mean(columns)
   mid_row = statistics.mean(rows)
-  print('midrow', mid_row,  'rows', rows, 'midcol', mid_col,  'columns', columns)
   center = (mid_row, mid_col)
-  radius = get_abstract_card_radius(center, dezenas)
-  print('center', center, 'radius', radius)
+  return center
 
 
-def get_as_pattstr_col_n_row_stretches(dozenarray):
-  rowstretch, colstretch = get_col_n_row_stretches(dozenarray)
+def get_asstr_col_n_row_1indices_inbetweenzerografted(dozenarray):
+  rowstretch, colstretch = get_col_n_row_1indices_inbetweenzerografted_from_cardarray(dozenarray)
   if (rowstretch, colstretch) == ([], []):
     return '', ''
   rowstretch_pattstr = ''.join(map(lambda e: str(e), rowstretch))
@@ -150,7 +177,34 @@ def get_as_pattstr_col_n_row_stretches(dozenarray):
   return rowstretch_pattstr, colstretch_pattstr
 
 
-def get_col_n_row_stretches(dozenarray):
+def get_col_n_row_1indices_from_cardarray(dozenarray):
+  row_1indices, column_1indices = [], []
+  for d in dozenarray:
+    col1idx, row1idx = extract_as_tupl_col1idx_n_row1idx_from_carddozen(d)
+    if col1idx is None or row1idx is None:
+      return [], []
+    column_1indices.append(col1idx)
+    row_1indices.append(row1idx)
+  return column_1indices, row_1indices
+
+
+def get_col_n_row_counted_pos_dict_from_cardarray(dozenarray):
+  col1indices, row1indices = get_col_n_row_1indices_from_cardarray(dozenarray)
+  col_count_dict, row_count_dict = {}, {}
+  for pos1idx in col1indices:
+    if pos1idx in col_count_dict:
+      col_count_dict[pos1idx] += 1
+    else:
+      col_count_dict[pos1idx] = 1
+  for pos1idx in row1indices:
+    if pos1idx in row_count_dict:
+      row_count_dict[pos1idx] += 1
+    else:
+      row_count_dict[pos1idx] = 1
+  return col_count_dict, row_count_dict
+
+
+def get_col_n_row_1indices_inbetweenzerografted_from_cardarray(dozenarray):
   """
 
   The "stretches" may be explained by an example:
@@ -161,45 +215,47 @@ def get_col_n_row_stretches(dozenarray):
   Notice the 0's (zeroes) stuffed into colstretch, the first one is '111111', the second is '1010101011'
   The rule here is that zeroes can only be inserted in between the non-zeroes, not before or after.
   """
-  nrows = []
-  ncolumns = []
-  for d in dozenarray:
-    lrtuple = extract_as_tupl_row1idx_n_col1idx_from_carddozen(d)
-    if lrtuple[0] is None:
-      return [], []
-    ncolumns.append(lrtuple[0])
-    nrows.append(lrtuple[1])
-  rowstretch = nrows[:]
-  colstretch = ncolumns[:]
-  # sweep rows
-  indices_before_the_first = []
-  for r in range(6):
-    boolarray = list(map(lambda e: r < e, nrows))
-    if False not in boolarray:
-      continue
-    boolarray = list(map(lambda e: r > e, nrows))
-    if False not in boolarray:
-      continue
-    boolarray = list(map(lambda e: r == e, nrows))
-    if True in boolarray:
-      continue
-    #
-    rowstretch.insert(r, 0)
-  for c in range(10):
-    boolarray = list(map(lambda e: r < e, ncolumns))
-    if False not in boolarray:
-      continue
-    boolarray = list(map(lambda e: r > e, ncolumns))
-    if False not in boolarray:
-      continue
-    boolarray = list(map(lambda e: r == e, ncolumns))
-    if True in boolarray:
-      continue
-    #
-    colstretch.insert(c, 0)
-  print()
-  print(ncolumns, 'colstretch', colstretch, nrows, 'rowstretch', rowstretch)
-  return rowstretch, colstretch
+  zero, columnsize, rowsize = 0, COLUMN_POSITION_SIZE, ROW_POSITION_SIZE
+  col_count_dict, row_count_dict = get_col_n_row_counted_pos_dict_from_cardarray(dozenarray)
+  column_counts = []
+  for idx1 in range(1, columnsize+1):
+    if idx1 in col_count_dict:
+      column_counts.append(col_count_dict[idx1])
+    else:
+      column_counts.append(zero)
+  prune_beginning_n_ending_zeros_from_intlist(column_counts)
+  row_counts = []
+  for idx1 in range(1, rowsize+1):
+    if idx1 in row_count_dict:
+      row_counts.append(row_count_dict[idx1])
+    else:
+      row_counts.append(zero)
+  prune_beginning_n_ending_zeros_from_intlist(row_counts)
+  return column_counts, row_counts
+
+
+def stretch_inbetween(alist):
+  """
+
+  """
+  if len(alist) < 1 or len(alist) > 6:
+    errmsg = f'alist has size {len(alist)}, ie not within set [1, 6]'
+    raise ValueError(errmsg)
+  if len(alist) in [1, 6]:
+    return []
+  possible_grafts = 6 - len(alist)
+  for i in range(1, possible_grafts+1):
+    grafts = '0'*i
+
+
+def gen_all_comb_for_col1idx_zerografted():
+  """
+  fs.mathfs.combinatorics.combinatoric_algorithms.RCombiner
+
+  """
+  for asize in range(1, 7):
+    combiner = ca.RCombiner(a_size=asize, up_int=6)
+    print(asize, combiner.base_intpartitions)
 
 
 def adhoctest():
@@ -222,8 +278,24 @@ def adhoctest():
   jogos.append(dezenas)
   for i, cardarray in enumerate(jogos):
     print('jogo', i+1, '=>', cardarray)
-    colstretch, rowstretch = get_col_n_row_stretches(cardarray)
-    calc_abstract_card_radius_of_cardarray(cardarray)
+    colstretch, rowstretch = get_col_n_row_1indices_inbetweenzerografted_from_cardarray(cardarray)
+    center = get_center_x_y_from_cardarray(cardarray)
+    print(center, colstretch, rowstretch)
+
+
+def adhoctest2():
+  dezenas = (14, 16, 18, 54, 56, 58)
+  calcor = ShapeAreaCircleCalculator(dezenas)
+  print(calcor)
+  dezenas = (4, 6, 8, 44, 46, 48)
+  calcor = ShapeAreaCircleCalculator(dezenas)
+  print(calcor)
+
+
+def adhoctest3():
+  dezenas = (14, 16, 18, 54, 56, 58)
+  col, row = get_col_n_row_1indices_inbetweenzerografted_from_cardarray(dezenas)
+  print(dezenas, col, row)
 
 
 def process():
@@ -231,6 +303,9 @@ def process():
 
 
 if __name__ == '__main__':
-  adhoctest()
+  """
+  adhoctest3()
+  adhoctest2()
   process()
-
+  """
+  gen_all_comb_for_col1idx_zerografted()

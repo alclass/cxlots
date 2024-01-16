@@ -141,7 +141,7 @@ class Stream(Filtre.Filtre):
     if lgi == None:
       return None
     jogo = self.mockIc.move_to(lgi)
-    jogoObj = CLClasses.Jogo(jogo, self.jogosObj.standard2LetterName)
+    jogoObj = CLClasses.ShapeAreaCircleCalculator(jogo, self.jogosObj.standard2LetterName)
     return jogoObj
 
   def first(self):
@@ -178,7 +178,7 @@ class Stream(Filtre.Filtre):
 
   def write(self, jogoObj):
     if type(jogoObj) == list:
-      jogoObj = CLClasses.Jogo(jogoObj, self.jogosObj.standard2LetterName)
+      jogoObj = CLClasses.ShapeAreaCircleCalculator(jogoObj, self.jogosObj.standard2LetterName)
       lgi = jogoObj.get_lgi()
     elif type(jogoObj) in [int, long]:
       lgi = jogoObj

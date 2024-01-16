@@ -15,7 +15,7 @@
         01 <=> 10 arithmetic simmetric
       Adding up, the triplesimmetry is '121'
 """
-import fs.mathfs.metrics.idxshapearea_circle_metric as cm  # .get_rowpatt_n_colpatt_from_dozensarray
+import fs.mathfs.metrics.idxshapearea_circle_metric as cm  # .get_col_n_row_1indices_from_dozensarray
 
 
 def is_pair_column_simmetric(d1, d2, simmsoma=11):
@@ -23,8 +23,8 @@ def is_pair_column_simmetric(d1, d2, simmsoma=11):
   1 simm 10 | 2 simm 9 | 3 simm 8 | 4 simm 7 |  4 simm 6
   Example: d1=1, d2=10 (both are at row 1 and 1 is column-mirrored, so to say, at 10)
   """
-  rid1, cid1 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(d1)
-  rid2, cid2 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(d2)
+  rid1, cid1 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(d1)
+  rid2, cid2 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(d2)
   # both dozens should be at the row
   if rid1 != rid2:
     return False
@@ -39,8 +39,8 @@ def is_pair_row_simmetric(d1, d2, simmsoma=7):
   Example: d1=1, d2=51 (both are at column 1 and 1 is row-mirrored, so to say, at 51
   """
 
-  rid1, cid1 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(d1)
-  rid2, cid2 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(d2)
+  rid1, cid1 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(d1)
+  rid2, cid2 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(d2)
   # both dozens should be at the column
   if cid1 != cid2:
     return False
@@ -73,8 +73,8 @@ class Simmetrics:
   def __init__(self, d1, d2):
     self.d1 = d1
     self.d2 = d2
-    self.rid1, self.cid1 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(self.d1)
-    self.rid2, self.cid2 = cm.extract_as_tupl_row1idx_n_col1idx_from_carddozen(self.d2)
+    self.rid1, self.cid1 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(self.d1)
+    self.rid2, self.cid2 = cm.extract_as_tupl_col1idx_n_row1idx_from_carddozen(self.d2)
 
   def is_pair_row_simmetric(self):
     if self.rid1 != self.rid2:
@@ -112,6 +112,14 @@ def count_row_simmetrics(cardarray):
         aritsimm += 1
   totalindex = rowsimm*10**2 + colsimm*10**1 + aritsimm
   return totalindex
+
+
+
+def combine_all_shapes():
+  """
+  combine_all_shapes()
+  """
+  pass
 
 
 def adhoctest():

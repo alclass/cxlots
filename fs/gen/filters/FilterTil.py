@@ -361,7 +361,7 @@ def geraSixtilStrusAndPatterns():
   return patter
 
 
-class JogoExt(Sena.Jogo):
+class JogoExt(Sena.ShapeAreaCircleCalculator):
   '''
   What's the purpose of the class extension?
   Line example:
@@ -375,16 +375,16 @@ class JogoExt(Sena.Jogo):
   def __init__(self, nDoJogo=None, jogo=None):
     if jogo == None:
       if nDoJogo == None:
-        Sena.Jogo.__init__(self, -1)
+        Sena.ShapeAreaCircleCalculator.__init__(self, -1)
         return
       else:
         jogo = jogosPool.getJogo(nDoJogo)
         # if it continues to be None, return
         if jogo == None:
-          Sena.Jogo.__init__(self, nDoJogo)
+          Sena.ShapeAreaCircleCalculator.__init__(self, nDoJogo)
           return
     # if control flow gets here, parameter nDoJogo will be ignored but obviously getSeqNum() will equal it
-    Sena.Jogo.__init__(self, jogo.getSeqNum())
+    Sena.ShapeAreaCircleCalculator.__init__(self, jogo.getSeqNum())
     self.setDezenas(jogo.getDezenas())
     ##print self.getDezenas()
     if len(self.dezenas) > 6:

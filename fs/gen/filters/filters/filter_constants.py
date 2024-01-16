@@ -887,7 +887,7 @@ def convertApostasFileToJogoList(filePath):
         continue
     if len(dezenas) == 6:
       c += 1
-      jogo = Sena.Jogo(-c)
+      jogo = Sena.ShapeAreaCircleCalculator(-c)
       jogo.setDezenas(dezenas)
       jogoList.append(jogo)
   return jogoList

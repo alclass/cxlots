@@ -1,41 +1,44 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import sys
+#!/usr/bin/env python3
+"""
+
 #import os
-#import random
 #import shutil
 #import time
+"""
+import random
+import sys
+PRIMES_TILL_60 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59]
 
-PRIMES_TILL_60 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59] 
 
-def randomSet(n):
-  dezenasToCombine = []
+def random_set(n):
+  dezenas_to_combine = []
   for i in range(n):
-    goAhead = False
-    while not goAhead:
+    go_ahead = False
+    while not go_ahead:
       d = random.randint(1,60)
-      if d not in dezenasToCombine:
-        dezenasToCombine.append(d)
-        goAhead = True
-  dezenasToCombine.sort()
-  return dezenasToCombine
+      if d not in dezenas_to_combine:
+        dezenas_to_combine.append(d)
+        go_ahead = True
+  dezenas_to_combine.sort()
+  return dezenas_to_combine
 
-def xRandomDezenas():
+def x_random_dezenas():
   #dezenas = [1,2,3,4,5,6,7]
   #dezenas = range(1,16)
-  dezenasToCombine = randomSet(20)
-  comb6Conv(dezenasToCombine)
+  dezenas_to_combine = random_set(20)
+  comb6Conv(dezenas_to_combine)
 
-def d60MinusXLastJogos(nOfLastJogosToNotConsider=2):
-  nOfLastJogo = Sena.getNOfLastJogo(); dezenasToStrip = []
-  for i in range(nOfLastJogosToNotConsider):
-    nOfJogo = nOfLastJogo - i
+
+def d60_minus_x_last_jogos(n_of_last_jogos_to_not_consider=2):
+  n_of_last_jogo = Sena.getNOfLastJogo(); dezenas_to_strip = []
+  for i in range(n_of_last_jogos_to_not_consider):
+    nOfJogo = n_of_last_jogo - i
     jogo = Sena.jogosPool.getJogo(nOfJogo)
-    dezenasToStrip += jogo.getDezenas()
+    dezenas_to_strip += jogo.getDezenas()
   setWithStripped2Jogos = []
   d60=range(1,61)
   for d in d60:
-    if d in dezenasToStrip:
+    if d in dezenas_to_strip:
       continue
     setWithStripped2Jogos.append(d)
   return setWithStripped2Jogos
@@ -47,7 +50,7 @@ OneMillion = 10 ** 6
 passing = 1; nOfFailPass = 0; nOfPass = 0
 def runCombinations(startAt, endAt, nOfLastJogosToNotConsider=2):
   print ' [runCombinations()] with the following data:'
-  setWithStripped2Jogos = d60MinusXLastJogos(nOfLastJogosToNotConsider)
+  setWithStripped2Jogos = d60_minus_x_last_jogos(nOfLastJogosToNotConsider)
   print 'Dezenas a combinar: ', setWithStripped2Jogos
   tam = len(setWithStripped2Jogos)
   nDeComb = comb(tam, 6)
@@ -59,7 +62,7 @@ def runCombinations(startAt, endAt, nOfLastJogosToNotConsider=2):
   combObj.run()
 
 def runCombinationsWithD60Minus():
-  setWithStripped2Jogos = d60MinusXLastJogos()
+  setWithStripped2Jogos = d60_minus_x_last_jogos()
   d60MinusSize = len(setWithStripped2Jogos); c = 0; allDrawns = []
   for i in range(11):
     hasPassed = False
@@ -71,7 +74,7 @@ def runCombinationsWithD60Minus():
         if d not in dezenas:
           dezenas.append(d)
       c += 1
-      jogo = Sena.Jogo(-c)
+      jogo = Sena.ShapeAreaCircleCalculator(-c)
       dezenas.sort()
       jogo.setDezenas(dezenas)
       tuple2 = filters.passThruFilters(jogo)

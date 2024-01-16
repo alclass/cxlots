@@ -238,7 +238,7 @@ def seeConsecutives(lgiObj, tipoJogo):
   jogo = lgiObj.first(); c=0
   print 'Please, wait ::', tipoJogo,'nOfCombines =' #, lgiObj.nOfCombines
   while jogo:
-    if type(jogo) == CLClasses.Jogo:
+    if type(jogo) == CLClasses.ShapeAreaCircleCalculator:
       jogo = jogo.jogo
     consec = funcs.calc_consec(jogo)
     #print jogo, consec

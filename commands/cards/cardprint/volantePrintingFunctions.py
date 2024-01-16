@@ -158,7 +158,7 @@ def aproveitaCartoesJaImpressosSemCoincComUltJogo():
 
 
 def testAcertosThruJogos3(dezenasSorteadas, nDoConcursoSorteado, minNOfAcertosForPrint=1):
-  jogoSorteado = Sena.Jogo(0)
+  jogoSorteado = Sena.ShapeAreaCircleCalculator(0)
   jogoSorteado.setDezenas(dezenasSorteadas)
   checkAcertosThruJogos(jogoSorteado, nDoConcursoSorteado, minNOfAcertosForPrint)
 
@@ -166,7 +166,7 @@ def testAcertosThruJogos2(dezenasSorteadas, nDoConcursoSorteado, nOfChain=2):
   '''
   This will compare with the larger files
   '''
-  jogoSorteado = Sena.Jogo(0)
+  jogoSorteado = Sena.ShapeAreaCircleCalculator(0)
   jogoSorteado.setDezenas(dezenasSorteadas)
   filenameApostasIn = '../Apostas/CombinationsChain-level-%d-%d.txt' %(nOfChain, nDoConcursoSorteado)
   print 'testAcertosThruJogos2 against file:', filenameApostasIn
@@ -224,7 +224,7 @@ def sorteadasThruAllFilters(getLastJogoFromDB=False):
   dezenasList = line.split()[:6]
   dezenasSorteadas = map(int, dezenasList)
   nDoConcursoSorteado = Sena.getNOfLastJogo() + 1
-  jogoSorteado = Sena.Jogo(nDoConcursoSorteado)
+  jogoSorteado = Sena.ShapeAreaCircleCalculator(nDoConcursoSorteado)
   jogoSorteado.setDezenas(dezenasSorteadas)
   print 'Verificando se jogo nº', nDoConcursoSorteado, dezenasSorteadas, 'passa pelos filtros:'
   respList = filters.passThruAllFilters(jogoSorteado)
@@ -333,7 +333,7 @@ def almostManualJogo(freqOrderSets):
   apostasFile = open(apostasFilename, 'w')
   for dezenas in combs:
     c += 1
-    jogo = Sena.Jogo(-c)
+    jogo = Sena.ShapeAreaCircleCalculator(-c)
     jogo.setDezenas(dezenas)
     #print 'filter', jogo,
     respBool, code = filters.passThruFilters(jogo)
@@ -574,13 +574,13 @@ def compareTheTwoApostasFilesIni():
 import combinador
 def testDezenasDeOuro():
   '''
-  This method calls randomSet and then calls 
+  This method calls random_set and then calls
   percentualDeJogosComUmaDasSeguintesDezenas(dList)
   (Based on the idea of 'dezenas de ouro' (too general to have any appeal!)
   '''
   dListOrig = [5,7,13,14,16,25,28,29,37,38,43,44,53,54,60]
   #dList = [1,4,6,12,17,24,28,29,37,38,43,44,53,54,60]
-  dList = combinador.randomSet(15); coinc = 0
+  dList = combinador.random_set(15); coinc = 0
   for d in dList:
     if d in dListOrig:
       coinc += 1

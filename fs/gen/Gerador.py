@@ -223,14 +223,14 @@ class DznOrUnitPatt(object):
     return outStr
 
 
-class Gerador(CLClasses.Jogo):
+class Gerador(CLClasses.ShapeAreaCircleCalculator):
 
   excludeQuantLinColPatt = ['16', '23', '32', '42', '52', '61', '62', '63']
   attrs = ['nMaxOfSimpleRepeatDzn','nMaxOfSimpleRepeatUnit']
   attrsSet = []
 
   def __init__(self, jogo, standard2LetterName='MS'):
-    CLClasses.Jogo.__init__(self, jogo, standard2LetterName)
+    CLClasses.ShapeAreaCircleCalculator.__init__(self, jogo, standard2LetterName)
     # order is not important, because a chosen jogo can be rearranged
     # the seqRepeat is not being checked, but simpleRepeat is
     self.JogoInOrderPatt = JogoInOrderPatt(self.jogo)
@@ -273,7 +273,7 @@ class Gerador(CLClasses.Jogo):
         
 
 def testGerador():
-  jogoObj = CLClasses.Jogo([41, 5, 4, 52, 30, 33])
+  jogoObj = CLClasses.ShapeAreaCircleCalculator([41, 5, 4, 52, 30, 33])
   ger = Gerador(jogoObj)
   
 class Gerador2(object):

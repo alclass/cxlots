@@ -303,7 +303,6 @@ def comb_arrange(intpartition):
   return permute_n(intpartition)
 
 
-
 class RCombiner:
   """
   fs.mathfs.combinatorics.combinatoric_algorithms.RCombiner

@@ -370,7 +370,7 @@ def doCombinations(nOfNextConc=Sena.getNOfLastJogo()+1):
         dCopy.sort()
         for j in range(6):
           line += '%s ' %(str(dCopy[j]).zfill(2))
-        jogo = Sena.Jogo(-c)
+        jogo = Sena.ShapeAreaCircleCalculator(-c)
         jogo.setDezenas(dCopy)
         hg2Pattern = jogo.getHg2Pattern()
         ok = False
@@ -412,7 +412,7 @@ def chainLevel1to2(nOfNextConc=Sena.getNOfLastJogo()+1):
       line = inFile.readline()
       continue
     c += 1
-    jogo = Sena.Jogo(-c)
+    jogo = Sena.ShapeAreaCircleCalculator(-c)
     jogo.setDezenas(dezenas)
     tuple2 = filters.passThruFilters(jogo)
     hasPassed = tuple2[0]
@@ -485,7 +485,7 @@ def chainLevel2toApostas(nOfNextConc=Sena.getNOfLastJogo()+1, nOfCoincIn=3):
       line = inFile.readline()
       continue
     c += 1
-    jogo = Sena.Jogo(-c)
+    jogo = Sena.ShapeAreaCircleCalculator(-c)
     jogo.setDezenas(dezenas)
     allJogos.append(jogo)
     line = inFile.readline()
@@ -692,7 +692,7 @@ def checkApostasFileThruFilters():
     dezenas = volantePrintingFunctions.transformLineToDezenasList(line)
     if dezenas != None:
       c+=1
-      jogo = Sena.Jogo(-c)
+      jogo = Sena.ShapeAreaCircleCalculator(-c)
       jogo.setDezenas(dezenas)
       resp, cod = filters.passThruFilters(jogo)
       dezenasStrList = map(tmpF, dezenas)

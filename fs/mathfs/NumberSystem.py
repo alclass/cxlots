@@ -1,13 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import time, sys
-#import numpy
-'''
+#!/usr/bin/env python3
+"""
+fs/mathfs/NumberSystem.py
+
 algo
-'''
+#import numpy
+"""
+import time, sys
 
 def convert_positive_dec_int_to_base_recurse(n, base, strdigits=''):
-  '''
+  """
   This is a recursive function that transform decimal, positive integers, into a number of a different base
   Its entrance point, for checking input values, is function convert_positive_dec_int_to_base(n, base=2) 
   Eg. 
@@ -20,7 +21,7 @@ def convert_positive_dec_int_to_base_recurse(n, base, strdigits=''):
   f(1, 6) returns '1'
   f(6, 6) returns '10'
   f(7, 6) returns '11'
-  '''
+  """
   divided = n / base 
   remainder = n % base
   strdigits = str(remainder) + strdigits
@@ -35,40 +36,18 @@ def convert_positive_dec_int_to_base_recurse(n, base, strdigits=''):
 
 
 def convert_positive_dec_int_to_base(n, base=2):
-  '''
+  """
   This function is the entrance point for the recursive function:
     convert_positive_dec_int_to_base_recurse(n, base, strdigits='') 
   Its aim is to convert a positive integer base 10 to a number of a different base
   The __doc__ of the recursive called function contains examples.
-  '''
+  """
   if n < 0:
-    error_msg = 'Cannot convert negative integers/numbers. Number passed = %d' %n
-    raise ValueError, error_msg
+    errmsg = 'Cannot convert negative integers/numbers. Number passed = %d' %n
+    raise ValueError(errmsg)
   return convert_positive_dec_int_to_base_recurse(n, base)
 
-def test_convert_positive_dec_int_to_base(n, base, strdigits=''):
-  f = convert_positive_dec_int_to_base
-  returned = f(1024, 2) # returns '10000000000' (which is 1024 written on base 2)
-  expected = '10000000000'
-  assert returned == expected
-  returned = f(210, 5) # returns '1320' (which 210 written on base 5)
-  expected = '1320'
-  assert returned == expected
-  returned = f(210, 6) # returns '550'
-  expected = '550'
-  assert returned == expected
-  returned = f(0, 6) # returns '0'
-  expected = '0'
-  assert returned == expected
-  returned = f(1, 6) # returns '1'
-  expected = '1'
-  assert returned == expected
-  returned = f(6, 6) # returns '10'
-  expected = '10'
-  assert returned == expected
-  returned = f(7, 6) # returns '11'
-  expected = '11'
-  assert returned == expected
+
 
 class Mixer:
   '''
@@ -246,26 +225,8 @@ def adhoc_test():
     array = ns.previous()
   total = ns.get_total()
   print 'total', total, c 
-  
 
-import unittest
-class MyTest(unittest.TestCase):
-
-  def test_1(self):
-    pass
-
-def look_up_cli_params_for_tests_or_processing():
-  for arg in sys.argv:
-    if arg.startswith('-t'):
-      adhoc_test()
-    elif arg.startswith('-u'):
-      # unittest complains if argument is available, so remove it from sys.argv
-      del sys.argv[1]
-      unittest.main()
-    elif arg.startswith('-p'):
-      pass
-      # process()
 
 
 if __name__ == '__main__':
-  look_up_cli_params_for_tests_or_processing()
+  pass

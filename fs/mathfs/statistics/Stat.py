@@ -234,7 +234,7 @@ class Stat(object):
     So consec[i] :: i from 0 to nDeDezenas - 1
     '''
 
-      currentJogoObj = CLClasses.Jogo(jogo, self.jogosObj.standard2LetterName)
+      currentJogoObj = CLClasses.ShapeAreaCircleCalculator(jogo, self.jogosObj.standard2LetterName)
       jogoMenorAMaior = currentJogoObj.jogo
       self.consecEnc = funcs.calc_consec(jogoMenorAMaior)
 
@@ -266,7 +266,7 @@ class Stat(object):
       self.lgiDist = 0
       if i > 0:
         lgi = currentJogoObj.get_lgi()
-        jogoObjAnt = CLClasses.Jogo(jogos[i-1], self.jogosObj.standard2LetterName)
+        jogoObjAnt = CLClasses.ShapeAreaCircleCalculator(jogos[i - 1], self.jogosObj.standard2LetterName)
         lgiAnt = jogoObjAnt.get_lgi()
         self.lgiDist = lgi - lgiAnt
 

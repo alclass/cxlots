@@ -269,7 +269,7 @@ class TilPatternsChoice(CLClasses.Base):
     pass
 
   def choose(self, jogo):
-    jogoObj = CLClasses.Jogo(jogo, self.standard2LetterName)
+    jogoObj = CLClasses.ShapeAreaCircleCalculator(jogo, self.standard2LetterName)
     tilPattern = jogoObj.getTilPattern(self.tilN)
     print 'tilPattern', tilPattern
 
@@ -309,7 +309,7 @@ def seeSoma():
     nDoConc += 1
     print nDoConc, 
     jogoCharOrig = attrDict['jogoCharOrig']
-    jogoObj = CLClasses.Jogo(jogoCharOrig, 'ms')
+    jogoObj = CLClasses.ShapeAreaCircleCalculator(jogoCharOrig, 'ms')
     jogo = jogoObj.jogo # jogoAsEntered
     print pprint.number_list_to_str_commaless(jogo, 2),
 
