@@ -70,6 +70,9 @@ class DecrescentCombiner:
       return
     return self.recurs_combine_n_make_sumsets()
 
+  def process(self):
+    return self.recurs_combine_n_make_sumsets()
+
   def __str__(self):
     outstr = f"""DecrescentCombiner object
     upto={self.upto} nslots={self.nslots} startint={self.startint}
