@@ -245,26 +245,61 @@ def random_permutation(perm):
     perm[j] = k
 
 
+class DecrescentCombiner:
+  def __init__(self, startint=3, nslots=5, upto=6):
+    self.startint, self.nslots, self.upto = startint, nslots, upto
+    self.combs = []
+    self.ongoingcomb = [self.startint]
 
+  @property
+  def soma(self):
+    return sum(self.ongoingcomb)
 
-def get_combine_sumsets2(leftmost, upto=6, slots=5, comb=None, combs=None):
-  combs = [] if combs is None else combs
-  if len(combs) == 0:
-    combs = [[leftmost]]
-    comb = combs[-1]
-  if sum(comb) > upto:
-    return get_combine_sumsets2(leftmost-1, upto, slots, comb, combs)
-  elif sum(comb) == upto:
-    combs.append(copy.copy(comb))
-    if len(comb) > 1:
-      comb.pop()
-    leftmost = comb[-1]
-    return get_combine_sumsets2(leftmost-1, upto, slots, comb, combs)
-  # elif sum(comb) < upto:
-  comb.append(leftmost)
-  if len(comb) > slots:
-    return combs
-  return get_combine_sumsets2(leftmost, upto, slots, comb, combs)
+  def move_to_leftplace_n_diminish_1(self):
+    if len(self.ongoingcomb) < 1:
+      return False
+    self.ongoingcomb.pop()  # last digit was stripped out
+    if len(self.ongoingcomb) < 1:
+      return False
+    leftdigit = self.ongoingcomb[-1]
+    if leftdigit < 2:
+      return self.move_to_leftplace_n_diminish_1()
+    leftdigit -= 1
+    self.ongoingcomb[-1] = leftdigit
+    return True
+
+  def diminish_1_on_last_pos_n_leftpropagate_if_needed(self):
+    ondigit = self.ongoingcomb[-1]
+    if ondigit < 2:
+      return self.move_to_leftplace_n_diminish_1()
+    ondigit -= 1
+    self.ongoingcomb[-1] = ondigit
+    return True
+
+  def recurs_combine_n_make_sumsets(self):
+    if self.soma >= self.upto:
+      if self.soma == self.upto:
+        self.combs.append(copy.copy(self.ongoingcomb))
+      boolret = self.diminish_1_on_last_pos_n_leftpropagate_if_needed()
+      if not boolret:
+        return
+      return self.recurs_combine_n_make_sumsets()
+    # self.soma < self.upto:
+    # duplicate digit and recurse
+    ondigit = self.ongoingcomb[-1]
+    if len(self.combs) == self.nslots + 1:  # cannot grow larger at this point, but can move left
+      boolret = self.diminish_1_on_last_pos_n_leftpropagate_if_needed()
+      if not boolret:
+        return
+    self.ongoingcomb.append(ondigit)
+    return self.recurs_combine_n_make_sumsets()
+
+  def __str__(self):
+    outstr = f"""DecrescentCombiner object
+    upto={self.upto} nslots={self.nslots} startint={self.startint}
+    {self.combs}
+    """
+    return outstr
 
 
 def get_combine_sumsets(guide=3, upto=6, stack=None, results=None):
@@ -591,12 +626,16 @@ def adhoc_test5():
   n_combs = combine_n_c_by_c(20, 5)
   print('ca.combine_n_c_by_c(70, 7)', n_combs)
   Returns:
-  """
   guide = 3
   results = get_combine_sumsets(guide, upto=6)
   print('guideint', guide, 'results', results)
   results = get_combine_sumsets2(leftmost=guide, upto=6, slots=3)
   print('guide', guide, 'results', results)
+  """
+  cmber = DecrescentCombiner(startint=3, nslots=6, upto=6)
+  cmber.recurs_combine_n_make_sumsets()
+  print(cmber)
+
 
 if __name__ == '__main__':
   """

@@ -114,7 +114,6 @@ def count_row_simmetrics(cardarray):
   return totalindex
 
 
-
 def combine_all_shapes():
   """
   combine_all_shapes()
