@@ -17,7 +17,7 @@ The second detail is that the elements into sets are organized decrescently.
 # import numpy, time, sys
 import copy
 import fs.mathfs.combinatorics.decrescent_combiner as dc  # dc.DecrescentCombiner
-
+import fs.mathfs.combinatorics.hanoi_tower_piecemover as pm  # .HanoiTowerPieceMover
 
 class Grafter:
 
@@ -65,8 +65,8 @@ class PartitionsHanoiTowerCombiner:
     self.pos = self.gapsize - 1
     self.idx = -1
     self.gap_ranges_tuplelist = []
-    self.countdict = {}
-    self.grafted_combs = []
+    # self.countdict = {}
+    # self.grafted_combs = []
     self.allcombs = []
     self.partition_combs = []
     self.ongo_gapset = []
@@ -81,14 +81,12 @@ class PartitionsHanoiTowerCombiner:
     This implementation has max_sum limited to 9
     Returns:
 
+    self.soma_diminished is adjusted before getting here
     """
     self.ongo_gapset = [0] * self.gapsize
-    self.pos = 0
-    self.soma_diminished = self.partition_digits_sum
-    self.ongo_gapset[self.pos] = self.soma_diminished
+    self.ongo_gapset[0] = self.soma_diminished
     self.idx += 1
     self.partition_combs = [copy.copy(self.ongo_gapset)]
-    self.soma_diminished = self.soma
 
   @property
   def soma(self):
@@ -102,39 +100,79 @@ class PartitionsHanoiTowerCombiner:
       return True
     return False
 
-  def move_one_from_one_pin_to_the_next(self, pinsrc, pintrg=None):
-    if self.ongo_gapset[pinsrc] == 0:
+  def move_one_from_one_pin_to_the_next(self, pos):
+    """
+    This function is not itself recursive, but it's called by
+      move_pieces_within_hanoitower() which is itself recursive.
+    This function, at each call, moves one quantity from a left position
+      to a rightone.
+    Examples:
+        [4, 0], [3, 1], [2, 2], [1, 3], [0, 4]
+        Each move will happen by one singular call here.
+        The sequence above represents 4 pieces being moved from the leftmost
+          pin to the rightmost one in the manner of a Hanoi Tower.
+        Its set is like a Hanoi Tower itself. 4 pieces moves one by one to its target.
+    """
+    # source index cannot be outside array
+    if pos > len(self.ongo_gapset) - 1:
+      # stop recursion
       return False
-    pintrg = pinsrc+1 if pintrg is None else pintrg
-    if self.ongo_gapset[pintrg] > 0 and pintrg < len(self.ongo_gapset) - 1:
-      return self.move_one_from_one_pin_to_the_next(pinsrc, pintrg)
-    if self.ongo_gapset[pintrg] > self.soma_diminished:
+    # if its value is 0, there is nothing to move rightward
+    if self.ongo_gapset[pos] == 0:
+      # move position rightward and recheck if there's still something to move
       return False
-    self.ongo_gapset[pinsrc] -= 1
-    self.ongo_gapset[pintrg] += 1
+    # if pintrg is not given, it's the subsequent of pinscr
+    nextpos = pos + 1
+    # target index cannot be outside array
+    if nextpos > len(self.ongo_gapset) - 1:
+      # stop recursion
+      return False
+    # if target slot has already received something before, move on rightward
+    if self.ongo_gapset[nextpos] > 0 and nextpos < len(self.ongo_gapset) - 1:
+      if self.ongo_gapset[pos] == 0:
+        return False
+      return True
+    # target slot cannot be greater than the limiting value (soma_diminished)
+    nextslot = self.ongo_gapset[nextpos]
+    if nextslot > self.soma_diminished:
+      # stop recursion
+      return False
+    # it seems alright for moving one quantity left to right
+    self.ongo_gapset[pos] -= 1
+    self.ongo_gapset[nextpos] += 1
+    # quantities motion happened, return True from here
+    # move_pieces_within_hanoitower() will get back to it as returns falls to it
+    self.pos = pos
     return True
 
   def add_gapset(self):
     self.idx += 1
     self.partition_combs.append(copy.copy(self.ongo_gapset))
 
-  def move_pieces_within_hanoitower(self, pinpos=0):
-    if pinpos < len(self.ongo_gapset) and self.ongo_gapset[pinpos] > 0:
-      if pinpos < len(self.ongo_gapset) - 1:
-        boolres = self.move_one_from_one_pin_to_the_next(pinpos)
-        if boolres:
-          self.add_gapset()
+  def move_pieces_within_hanoitower(self, pos=None):
+    """
+    if self.pos > len(self.ongo_gapset) - 1:
+      return
+    """
+    pos = 0 if pos is None else pos
+    if pos > len(self.ongo_gapset) -1:
+      return
+    if self.ongo_gapset[pos] == 0:
+      if pos < len(self.ongo_gapset) - 1:
+        return self.move_pieces_within_hanoitower(pos+1)
+      else:
+        bootres = self.dimish_one_n_restart_hanoi()
+        if bootres:
+          # recurse have sum diminished by one
           return self.move_pieces_within_hanoitower()
-      # else:
-      #   return
-    if self.soma_diminished > 0:
-      self.soma_diminished -= 1
-      return self.move_pieces_within_hanoitower(pinpos + 1)
-    bootres = self.dimish_one_n_restart_hanoi()
-    if bootres:
-      self.pos = 0
-      return self.move_pieces_within_hanoitower()
-    return
+        else:
+          return
+    boolres = self.move_one_from_one_pin_to_the_next(pos)
+    if boolres:
+      self.add_gapset()
+    return self.move_pieces_within_hanoitower(pos+1)
+    # value at pos is == 0, ie nothing to move rightward
+    # sum has been diminished to 0, traversal process has ended
 
   def add_one_n_move_leftward_if_possible(self):
     previous_digit = self.ongo_gapset[self.pos]
@@ -146,19 +184,25 @@ class PartitionsHanoiTowerCombiner:
     self.ongo_gapset[self.pos] = previous_digit
     return self.move_pieces_within_hanoitower()
 
-
   def process(self):
     for self.partition_digits_sum in range(self.max_digits_sum, 0, -1):
       self.partition_combs = []
       self.add_first_gapset_to_partition()
-      self.move_pieces_within_hanoitower()
-      self.allcombs += copy.copy(self.partition_combs)
+      npieces = self.partition_digits_sum
+      mover = pm.HanoiTowerPieceMover(npieces=npieces, nslots=self.gapsize)
+      mover.process()
+      # self.move_pieces_within_hanoitower()
+      self.allcombs += copy.copy(mover.patterns)
 
 
 class ZeroesGraftAndCountsMixer:
 
   def __init__(self, max_digits_sum=3, gapsize=2):
+    self.max_digits_sum, self.gapsize = max_digits_sum, gapsize
     self.zeroes_graft_combs = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+    self.countdict = {}
+    self.gap_ranges_tuplelist = []
+    self.grafted_combs = []
 
   def mix(self):
     pass
@@ -178,27 +222,19 @@ class ZeroesGraftAndCountsMixer:
         trange = (prev_idx+1, idx-1)
         self.gap_ranges_tuplelist.append(trange)
 
-  def graft_zeroes(self, countdict):
+  def graft_zeroes(self):
     self.grafted_combs = []
     indices = self.countdict.keys()
     sorted(indices)
-    countlist = [self.countdict[i] for i in indices]
-    for comb in self.allcombs:
-      patt = ''.join(comb)
-      zeroes_str = '0' * nzeroes
-      trange = self.gap_ranges_tuplelist[i]
+    # countlist = [self.countdict[i] for i in indices]
+    out_str_combs = []
+    for comb in self.zeroes_graft_combs.allcombs:
+      # patt = ''.join(comb)
+      for i, nzeroes in enumerate(comb):
+        zeroes_str = '0' * nzeroes
+        # trange = self.gap_ranges_tuplelist[i]
+        out_str_combs.append(zeroes_str)
 
-
-def adhoc_test():
-  """
-  comb = [4, 2]
-  print(f'calling Grafter(comb={comb}))
-  grafter = Grafter(comb=comb, upto=6)
-  grafter.get_graft_combs_w_nzeroes()
-  """
-  distror = PartitionsHanoiTowerCombiner(max_digits_sum=4, gapsize=3)
-  distror.process()
-  print(distror.allcombs)
 
 
 def show_evol():
@@ -221,7 +257,54 @@ def show_evol():
   print(s)
 
 
+def adhoc_test():
+  """
+  comb = [4, 2]
+  print(f'calling Grafter(comb={comb}))
+  grafter = Grafter(comb=comb, upto=6)
+  grafter.get_graft_combs_w_nzeroes()
+  """
+  max_digits_sum, gapsize = 3, 2
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  max_digits_sum, gapsize = 2, 1
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  max_digits_sum, gapsize = 4, 1
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  max_digits_sum, gapsize = 4, 2
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  max_digits_sum, gapsize = 1, 2
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  max_digits_sum, gapsize = 4, 3
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+
+
+def adhoc_test2():
+  """
+  max_digits_sum, gapsize = 1, 3
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+  """
+  max_digits_sum, gapsize = 3, 4
+  distror = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
+  distror.process()
+  print(max_digits_sum, gapsize, 'res =>:', distror.allcombs)
+
+
 if __name__ == '__main__':
   """
-  """
   adhoc_test()
+  """
+  adhoc_test2()
