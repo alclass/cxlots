@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
 """
+@See also description below for a historical vision of this metric.
+
+At this version, this metric becomes somewhat simplified.
+The metric is a 2-D integer tuple that represents the sum of distances in x's and y's.
+Let us see an example: suppose dozens = (4, 12, 23, 33, 45, 51)
+The corresponding points are: ((4, 1), (2,2), (3,3), (3, 4), (5,5), (1, 6))
+  There will be an x-point with a minimal integer and also a minimum y-point.
+    The x part of the metric is the sum of all x-distances to this minimum x.
+    The y part of the metric is the sum of all y-distances to this minimum x.
+The calculation is the following:
+Points (1, 6) [dozen 51] contains the minimum x, ie x=1
+Point (4, 1) [dozen 4] contains the minimum y, ie y=1
+  The x-distances are: (4-1, 2-1, 3-1, 3-1. 5-1, 1-1)
+  ie (3, 1, 2, 2, 4, 0) and its sum 12
+  The y-distances are: (1-1, 2-1, 3-1, 4-1, 5-1, 6-1)
+  ie (0, 1, 2, 3, 4, 5) and its sum 15
+The result is (12, 15)
+==============================
+Below is the (outdated) description of the metric's former version.
+That former version was flawed in the sense that the metric itself
+  coincided, but in a somewhat different way, the with the row and column patterns.
+
 The graphshape metric in here is conventioned, ie there's a particular algorithm for it.
 Being 'conventioned', the algorithm here is homemade, though we're not certain if
   it's also known for other problems.
@@ -142,6 +164,37 @@ def trans_dozens_to_upper_leftward_points(dozens):
   return xs, ys
 
 
+
+def calc_graphshape_metric_w_cardgame(dozens):
+  """
+
+  The explanation of the graphshape metric may be seen by an example:
+
+  Suppose dozens = (4, 12, 23, 33, 45, 51)
+  Their corresponding points are: ((4, 1), (2,2), (3,3), (3, 4), (5,5), (1, 6))
+    There will be an x-point with a minimal integer and also a minimum y-point.
+      The x part of the metric is the sum of all x-distances to this minimum x.
+      The y part of the metric is the sum of all y-distances to this minimum x.
+  The calculation is the following:
+  Point (1, 6) [dozen 51] contains the minimum x, ie x=1
+  Point (4, 1) [dozen 4] contains the minimum y, ie y=1
+    The x-distances are: (4-1, 2-1, 3-1, 3-1. 5-1, 1-1)
+      ie (3, 1, 2, 2, 4, 0) and its sum 12
+    The y-distances are: (1-1, 2-1, 3-1, 4-1, 5-1, 6-1)
+      ie (0, 1, 2, 3, 4, 5) and its sum 15
+  The result is then (12, 15) ie the x-distances sum and the y-distances sum
+  """
+  points = trans_dozens_to_points(dozens)
+  xs = list(map(lambda e: e[0], points))
+  ys = list(map(lambda e: e[1], points))
+  min_x = min(xs)
+  min_y = min(ys)
+  xdistances = [x - min_x for x in xs]
+  ydistances = [y - min_y for y in ys]
+  metric_tuple = sum(xdistances), sum(ydistances)
+  return metric_tuple
+
+
 class GraphShapeFinder:
 
 
@@ -176,6 +229,11 @@ def adhoc_test():
   points = trans_dozens_to_points(dozens)
   print('dozens', dozens, 'points', points)
   reduce_dozens_upper_leftward(dozens)
+  metric_tuple = calc_graphshape_metric_w_cardgame(dozens)
+  print('metric_tuple', metric_tuple)
+  dozens = (4, 12, 23, 33, 45, 51)
+  metric_tuple = calc_graphshape_metric_w_cardgame(dozens)
+  print('metric_tuple', metric_tuple)
 
 def adhoc_test2():
   # arr = [1, 2, 3, 1, 2, 4]
