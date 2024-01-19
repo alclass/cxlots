@@ -17,7 +17,7 @@ The second detail is that the elements into sets are organized decrescently.
 # import numpy, time, sys
 import copy
 import fs.mathfs.combinatorics.decrescent_combiner as dc  # dc.DecrescentCombiner
-import fs.mathfs.combinatorics.hanoi_tower_piecemover as pm  # .HanoiTowerPieceMover
+import fs.mathfs.combinatorics.hanoi_like_tower_piecemover as pm  # .HanoiTowerPieceMover
 
 class Grafter:
 
@@ -189,52 +189,10 @@ class PartitionsHanoiTowerCombiner:
       self.partition_combs = []
       self.add_first_gapset_to_partition()
       npieces = self.partition_digits_sum
-      mover = pm.HanoiTowerPieceMover(npieces=npieces, nslots=self.gapsize)
+      mover = pm.HanoiLikeTowerPieceMover(npieces=npieces, nslots=self.gapsize)
       mover.process()
       # self.move_pieces_within_hanoitower()
-      self.allcombs += copy.copy(mover.patterns)
-
-
-class ZeroesGraftAndCountsMixer:
-
-  def __init__(self, max_digits_sum=3, gapsize=2):
-    self.max_digits_sum, self.gapsize = max_digits_sum, gapsize
-    self.zeroes_graft_combs = PartitionsHanoiTowerCombiner(max_digits_sum=max_digits_sum, gapsize=gapsize)
-    self.countdict = {}
-    self.gap_ranges_tuplelist = []
-    self.grafted_combs = []
-
-  def mix(self):
-    pass
-
-  def determine_graft_ranges(self, countdict):
-    self.countdict = countdict
-    indices = self.countdict.keys()
-    sorted(indices)
-    prev_idx = -1
-    self.gap_ranges_tuplelist = []
-    while len(indices) > 0:
-      idx = indices.pop()
-      if prev_idx < 0:
-        prev_idx = idx
-        continue
-      if idx - prev_idx > 1:
-        trange = (prev_idx+1, idx-1)
-        self.gap_ranges_tuplelist.append(trange)
-
-  def graft_zeroes(self):
-    self.grafted_combs = []
-    indices = self.countdict.keys()
-    sorted(indices)
-    # countlist = [self.countdict[i] for i in indices]
-    out_str_combs = []
-    for comb in self.zeroes_graft_combs.allcombs:
-      # patt = ''.join(comb)
-      for i, nzeroes in enumerate(comb):
-        zeroes_str = '0' * nzeroes
-        # trange = self.gap_ranges_tuplelist[i]
-        out_str_combs.append(zeroes_str)
-
+      self.allcombs += copy.copy(mover.traversal_combinations)
 
 
 def show_evol():
