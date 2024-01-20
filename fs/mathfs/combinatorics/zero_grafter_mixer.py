@@ -141,6 +141,6 @@ def adhoc_test():
 
 if __name__ == '__main__':
   """
-  adhoc_test()
+  list_dist_xysum_metric_thry_ms_history()
   """
   adhoc_test()

@@ -21,7 +21,7 @@ All possible shapes are:
 
 """
 import unittest
-import fs.mathfs.metrics.idxshapearea_circle_metric as cm  # .extract_as_tupl_col1idx_n_row1idx_from_carddozen
+import fs.mathfs.metrics.museum.idxshapearea_circle_metric as cm  # .extract_as_tupl_col1idx_n_row1idx_from_carddozen
 
 
 class TestShapeMetric(unittest.TestCase):

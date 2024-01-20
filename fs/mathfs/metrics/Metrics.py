@@ -273,7 +273,7 @@ def testMetrics01():
   pass
 
 def adhoc_test():
-  print 'Running adhoc_test()'
+  print 'Running list_dist_xysum_metric_thry_ms_history()'
   #HistFreqUpdater()
 
 

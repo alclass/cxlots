@@ -51,7 +51,7 @@ def get_sample_jogos():
 def adhoc_test():
   jogos = get_sample_jogos()
   tilfilter = TilFilter(jogos)
-  print 'adhoc_test()'
+  print 'list_dist_xysum_metric_thry_ms_history()'
   #1
   til_r = TilR(5, 6)
   til_r.set_slots_values('02220')

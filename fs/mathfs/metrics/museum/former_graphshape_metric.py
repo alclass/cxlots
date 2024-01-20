@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 """
-@See also description below for a historical vision of this metric.
+fs/mathfs/metrics/museum/former_graphshape_metric.py
+@see also fs/mathfs/metrics/distance_xs_ys_sums_metric.py
 
-At this version, this metric becomes somewhat simplified.
-The metric is a 2-D integer tuple that represents the sum of distances in x's and y's.
-Let us see an example: suppose dozens = (4, 12, 23, 33, 45, 51)
-The corresponding points are: ((4, 1), (2,2), (3,3), (3, 4), (5,5), (1, 6))
-  There will be an x-point with a minimal integer and also a minimum y-point.
-    The x part of the metric is the sum of all x-distances to this minimum x.
-    The y part of the metric is the sum of all y-distances to this minimum x.
-The calculation is the following:
-Points (1, 6) [dozen 51] contains the minimum x, ie x=1
-Point (4, 1) [dozen 4] contains the minimum y, ie y=1
-  The x-distances are: (4-1, 2-1, 3-1, 3-1. 5-1, 1-1)
-  ie (3, 1, 2, 2, 4, 0) and its sum 12
-  The y-distances are: (1-1, 2-1, 3-1, 4-1, 5-1, 6-1)
-  ie (0, 1, 2, 3, 4, 5) and its sum 15
-The result is (12, 15)
-==============================
 Below is the (outdated) description of the metric's former version.
 That former version was flawed in the sense that the metric itself
   coincided, but in a somewhat different way, the with the row and column patterns.
@@ -29,7 +14,7 @@ Being 'conventioned', the algorithm here is homemade, though we're not certain i
 An example may explain this metric (and the algorithm that calculates it.
 Suppuse the following (arbitrary MS) set of dozens: (1, 4, 12, 23, 45, 51)
 
-Step 1 -> Establish point (1, 1) or dozen '01' as origin and reference point (or refpoint)
+Step 1 -> Establish point (1, 1) or a dozen '01' as origin and reference point (or refpoint)
 Step 2 -> all dozens (6 in MS), in ascending order, are compared to the refpoint
 Example:
   e1 dozen 01 (which coincide to refpoint) has distance (0, 0), ie it's the refpoint proper
@@ -62,11 +47,12 @@ Thus, the resulting tuple is dxs, dys = (1245, 5670)
       the first number 1245 is sort of visualizable from cardgame,
       but the second one, 5670, is not, due to it being a base7 number written in base10.
       (@see also module "number_system" for more info on convertion functions to and from number systems.)
+
 """
 import math
 
 
-def from_arr_to_lgi(arr=None, base=10):
+def from_arraydigits_to_base_n_number(arr=None, base=10):
   """
   Though y (rows) needs only 6 digits, the inverse operation, afterwards,
    would not know which divider comes first
@@ -89,7 +75,7 @@ def from_arr_to_lgi(arr=None, base=10):
   return soma
 
 
-def from_lgi_to_arr(total_or_remainder=None, arr=None, expo=None, base=10):
+def from_number_in_base_n_to_arraydigits(total_or_remainder=None, arr=None, expo=None, base=10):
   """
   if expo % 2 == 0:
     base = 10
@@ -109,7 +95,7 @@ def from_lgi_to_arr(total_or_remainder=None, arr=None, expo=None, base=10):
   backdigit = total_or_remainder // divider
   remainder = total_or_remainder % divider
   arr.append(backdigit)
-  return from_lgi_to_arr(remainder, arr=arr, expo=expo-1)
+  return from_number_in_base_n_to_arraydigits(remainder, arr=arr, expo=expo - 1)
 
 
 def extract_x_y_from_dozen_intval(intval):
@@ -134,10 +120,8 @@ def trans_dozens_to_upper_leftward_points2(dozens):
   print(xs_n_ys)
   return xs_n_ys
 
-def trans_dozens_to_points(dozens):
-  xs_n_ys = list(map(lambda e: extract_x_y_from_dozen_intval(e), dozens))
-  print(xs_n_ys)
-  return xs_n_ys
+
+
 
 
 def reduce_dozens_upper_leftward(dozens):
@@ -164,10 +148,8 @@ def trans_dozens_to_upper_leftward_points(dozens):
   return xs, ys
 
 
-
 def calc_graphshape_metric_w_cardgame(dozens):
   """
-
   The explanation of the graphshape metric may be seen by an example:
 
   Suppose dozens = (4, 12, 23, 33, 45, 51)
@@ -197,13 +179,13 @@ def calc_graphshape_metric_w_cardgame(dozens):
 
 class GraphShapeFinder:
 
-
   def __init__(self, drawn_ord_dozens):
     self.drawn_ord_dozens = drawn_ord_dozens
     pass
 
   def process(self):
     pass
+
 
 def adhoc_test():
   """
@@ -238,14 +220,14 @@ def adhoc_test():
 def adhoc_test2():
   # arr = [1, 2, 3, 1, 2, 4]
   arr = [2, 1]
-  soma = from_arr_to_lgi(arr)
+  soma = from_arraydigits_to_base_n_number(arr)
   print(arr, soma)
-  arr = from_lgi_to_arr(total_or_remainder=soma, arr=None)
+  arr = from_number_in_base_n_to_arraydigits(total_or_remainder=soma, arr=None)
   print('back', soma, arr)
   arr = [2, 5, 3]
-  soma = from_arr_to_lgi(arr)
+  soma = from_arraydigits_to_base_n_number(arr)
   print(arr, soma)
-  arr = from_lgi_to_arr(total_or_remainder=soma, arr=None)
+  arr = from_number_in_base_n_to_arraydigits(total_or_remainder=soma, arr=None)
   print('back', soma, arr)
 
 

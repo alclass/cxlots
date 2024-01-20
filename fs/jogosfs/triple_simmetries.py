@@ -15,7 +15,7 @@
         01 <=> 10 arithmetic simmetric
       Adding up, the triplesimmetry is '121'
 """
-import fs.mathfs.metrics.idxshapearea_circle_metric as cm  # .get_col_n_row_1indices_from_dozensarray
+import fs.mathfs.metrics.museum.idxshapearea_circle_metric as cm  # .get_col_n_row_1indices_from_dozensarray
 
 
 def is_pair_column_simmetric(d1, d2, simmsoma=11):

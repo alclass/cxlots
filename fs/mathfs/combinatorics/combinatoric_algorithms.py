@@ -597,7 +597,7 @@ def adhoc_test():
       return adhoc_tests_show()
     n_test = int(sys.argv[2])
     print('Executing test', n_test)
-    funcname = 'adhoc_test%d()' % n_test
+    funcname = 'list_dist_xysum_metric_thry_ms_history%d()' % n_test
     exec(funcname)
     return
   except (IndexError, ValueError):

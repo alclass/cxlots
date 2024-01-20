@@ -285,7 +285,7 @@ def adhoc_test2():
 def adhoc_test():
   try:
     n_test = int(sys.argv[2])
-    funcname = 'adhoc_test%d()' %n_test
+    funcname = 'list_dist_xysum_metric_thry_ms_history%d()' %n_test
     exec(funcname)
     return
   except IndexError: # in case sys.argv is less than < 3
