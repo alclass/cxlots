@@ -189,7 +189,7 @@ def extract_frequencies_in_order(p_dict):
   return freqs
 
 def adhoc_test():
-  print 'Running list_dist_xysum_metric_thry_ms_history()'
+  print 'Running list_dist_xysum_metric_thru_ms_history()'
   DistanceAllOccurrred()
   #print 'dao.distances', dao.distances
 

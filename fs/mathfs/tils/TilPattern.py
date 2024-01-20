@@ -190,7 +190,7 @@ def get_tilallpatterns(tildefiner):
 
 
 def adhoc_test():
-  print 'list_dist_xysum_metric_thry_ms_history()'
+  print 'list_dist_xysum_metric_thru_ms_history()'
   tilpattern = TilPattern(5, 6)
   tilpattern.set_wpattern('02220')
   print 'tilpattern', tilpattern

@@ -147,7 +147,7 @@ def get_only_instance_of_tilallpatternsSingleton():
 
 
 def adhoc_test():
-  print 'list_dist_xysum_metric_thry_ms_history()'
+  print 'list_dist_xysum_metric_thru_ms_history()'
   tilproducer = TilProducer(12, 6); c=0
   while 1:
     tilpattern = tilproducer.wnext()
@@ -161,7 +161,7 @@ def adhoc_test():
   print 'print size', tilproducer.total_combinations
 
 def adhoc_test2():
-  print 'list_dist_xysum_metric_thry_ms_history()'
+  print 'list_dist_xysum_metric_thru_ms_history()'
   tilproducer = TilProducer(5, 6); c=0
   while 1:
     tilpattern = tilproducer.next()

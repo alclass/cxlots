@@ -96,7 +96,7 @@ def adhoc_test():
   NO_FUNCTION_CALLED = False
   try:
     n_test = int(sys.argv[2])
-    adhocfuncname = 'list_dist_xysum_metric_thry_ms_history%d()' %n_test
+    adhocfuncname = 'list_dist_xysum_metric_thru_ms_history%d()' %n_test
     exec(adhocfuncname)
   except ValueError:
     NO_FUNCTION_CALLED = True

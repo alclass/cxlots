@@ -125,7 +125,7 @@ def update_histograms(distsum_xs_ys, histogram_x, histogram_y):
     histogram_y[ys_sum] = 1
 
 
-def list_dist_xysum_metric_thry_ms_history():
+def list_dist_xysum_metric_thru_ms_history():
   # t1
   dozens = (4, 12, 23, 33, 45, 51)
   summer = MetricDistanceXsYsSummer(dozens)
@@ -174,4 +174,4 @@ if __name__ == '__main__':
   """
   adhoc_test()
   """
-  list_dist_xysum_metric_thry_ms_history()
+  list_dist_xysum_metric_thru_ms_history()
