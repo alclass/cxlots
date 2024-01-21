@@ -1,30 +1,33 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+"""
 
-a=1
+"""
 import Sena
 import combinador
+a=1
 
 jogosPool = Sena.JogosPool()
-nOfLastJogoParam=Sena.getNOfLastJogo()
+n_of_last_jogo_param=Sena.getNOfLastJogo()
 
-def passaQuantOfJogosWithMax(maxRepeatInTheRun, quantOfJogosWithThisMax):
-  if maxRepeatInTheRun == 3:
-    if quantOfJogosWithThisMax > 17:
+
+def passa_quant_of_jogos_with_max(max_repeat_in_the_run, quant_of_jogos_with_this_max):
+  if max_repeat_in_the_run == 3:
+    if quant_of_jogos_with_this_max > 17:
       return False
-  elif maxRepeatInTheRun == 4:
-    if quantOfJogosWithThisMax > 3:
+  elif max_repeat_in_the_run == 4:
+    if quant_of_jogos_with_this_max > 3:
       return False
   return True
 
-def analyzeParImparEtAl():
-  filePath = '../Dados/fileVariacaoParImpar.txt'
-  fileIn = open(filePath)
-  line = fileIn.readline()
-  rem5Dict = {}; rem3Dict = {}; parParImparImparDict = {}
+
+def analyze_par_impar_et_al():
+  file_path = '../Dados/fileVariacaoParImpar.txt'
+  file_in = open(file_path)
+  line = file_in.readline()
+  rem5_dict, rem3_dict, par_par_impar_impar_dict = {}, {}, {}
   while line:
     if line[0]=='#':
-      line = fileIn.readline()
+      line = file_in.readline()
       continue
     if line[-1] == '\n':
       line = line[:-1]
@@ -35,150 +38,160 @@ def analyzeParImparEtAl():
       if len(pp) >= 4:
         remainders5 = pp[-1]
         try:
-          rem5Dict[remainders5]+=1
+          rem5_dict[remainders5]+=1
         except KeyError:
-          rem5Dict[remainders5]=1
+          rem5_dict[remainders5]=1
         remainders3 = pp[-2]
         try:
-          rem3Dict[remainders3]+=1
+          rem3_dict[remainders3]+=1
         except KeyError:
-          rem3Dict[remainders3]=1
-        parParImparImpar = pp[-3]
-        strNOfPares =  pp[-4]
-        parParImparImpar = strNOfPares + parParImparImpar
+          rem3_dict[remainders3]=1
+        par_par_impar_impar = pp[-3]
+        str_n_of_pares =  pp[-4]
+        par_par_impar_impar = str_n_of_pares + par_par_impar_impar
         try:
-          parParImparImparDict[parParImparImpar]+=1
+          par_par_impar_impar_dict[par_par_impar_impar]+=1
         except KeyError:
-          parParImparImparDict[parParImparImpar]=1
-    line=fileIn.readline()
+          par_par_impar_impar_dict[par_par_impar_impar]=1
+    line=file_in.readline()
 
-  filenameOut = '../Dados/analyzeVarParImpar.txt'; nOfLines = 0
-  print 'Going to write file',  filenameOut 
-  fileOut = open(filenameOut, 'w')
-  rem5List = rem5Dict.keys()
-  rem5List.sort(); total = 0
-  line = 'Remainders of 5 (rem5Dict):'
-  nOfLines += 1; fileOut.write(line + '\n')
-  for remainderPatt in rem5List:
-    quant = rem5Dict[remainderPatt]
+
+def verify_file(rem5_dict):
+  filename_out = '../Dados/analyzeVarParImpar.txt'
+  n_of_lines = 0
+  print('Going to write file',  filename_out)
+  file_out = open(filename_out, 'w')
+  rem5_list = rem5_dict.keys()
+  rem5_list.sort()
+  total = 0
+  line = 'Remainders of 5 (rem5_dict):'
+  n_of_lines += 1; file_out.write(line + '\n')
+  for remainder_patt in rem5_list:
+    quant = rem5_dict[remainder_patt]
     total += quant
-    line = '%s q=%d' %(remainderPatt, quant)
-    nOfLines += 1; fileOut.write(line + '\n')
-  line = 'quantOfPatterns = %d, total = %d, nOfLines = %d' %(len(rem5List), total, nOfLines)
-  nOfLines += 1; fileOut.write(line + '\n')
-  rem3List = rem3Dict.keys()
-  rem3List.sort(); total = 0
-  line = 'Remainders of 3 (rem3Dict):'
-  nOfLines += 1; fileOut.write(line + '\n')
-  for remainderPatt in rem3List:
-    quant = rem3Dict[remainderPatt]
+    line = '%s q=%d' %(remainder_patt, quant)
+    n_of_lines += 1; file_out.write(line + '\n')
+  line = 'quantOfPatterns = %d, total = %d, n_of_lines = %d' %(len(rem5_list), total, n_of_lines)
+  n_of_lines += 1; file_out.write(line + '\n')
+  rem3_list = rem3_dict.keys()
+  rem3_list.sort(); total = 0
+  line = 'Remainders of 3 (rem3_dict):'
+  n_of_lines += 1; file_out.write(line + '\n')
+  for remainder_patt in rem3_list:
+    quant = rem3_dict[remainder_patt]
     total += quant
-    line = '%s q=%d' %(remainderPatt, quant)
-    nOfLines += 1; fileOut.write(line + '\n')
-  line = 'quantOfPatterns = %d, total = %d, nOfLines = %d' %(len(rem3List), total, nOfLines)
-  nOfLines += 1; fileOut.write(line + '\n')
-  parParImparImparList = parParImparImparDict.keys()
-  parParImparImparList.sort(); total = 0
-  line = 'parParImparImparDict:'
-  nOfLines += 1; fileOut.write(line + '\n')
-  for pPIIPattern in parParImparImparList:
-    quant = parParImparImparDict[pPIIPattern]
+    line = '%s q=%d' %(remainder_patt, quant)
+    n_of_lines += 1; file_out.write(line + '\n')
+  line = 'quantOfPatterns = %d, total = %d, n_of_lines = %d' %(len(rem3_list), total, n_of_lines)
+  n_of_lines += 1; file_out.write(line + '\n')
+  par_par_impar_impar_list = par_par_impar_impar_dict.keys()
+  par_par_impar_impar_list.sort(); total = 0
+  line = 'par_par_impar_impar_dict:'
+  n_of_lines += 1; file_out.write(line + '\n')
+  for pPIIPattern in par_par_impar_impar_list:
+    quant = par_par_impar_impar_dict[pPIIPattern]
     total += quant
     line = '%s q=%d' %(pPIIPattern, quant)
-    nOfLines += 1; fileOut.write(line + '\n')
-  line = 'quantOfPatterns = %d, total = %d, nOfLines = %d' %(len(parParImparImparList), total, nOfLines)
-  nOfLines += 1; fileOut.write(line + '\n')
+    n_of_lines += 1; file_out.write(line + '\n')
+  line = 'quantOfPatterns = %d, total = %d, n_of_lines = %d' %(len(par_par_impar_impar_list), total, n_of_lines)
+  n_of_lines += 1; file_out.write(line + '\n')
   line = '# OK, that is all for now folks.'
-  nOfLines += 1; fileOut.write(line + '\n')
-  fileOut.close()
-  print nOfLines, 'lines recorded.'  
-  
-def genDepthOfDezenas():
-  '''
+  n_of_lines += 1; file_out.write(line + '\n')
+  file_out.close()
+  print(n_of_lines, 'lines recorded.')
+
+
+def gen_depth_of_dezenas1():
+  """
   This method organizes the following info:
   dezn quant sixtil últ.dist.ocorrida dist.média dist.mín dist.máx
   últ.dist.ocorrida means the number of concursos passed between two appearances of the same dezena
   The method accounts for all occurrences of each dezena, and then it calculates the mín, máx and média of these "distances".
-  '''  
-
-  nOfOccursDict={}; maxDistBetweenOccursDict={}; minDistBetweenOccursDict={}
-  ultDistBetweenOccursDict={}; posOfOccurDict={}; distsOfOccurDict={}; mediaDistBetweenOccursDict={}
-  maxDoMax = 0
-  minDoMax = 1000
-  for d in range(1,61):
-    nOfOccursDict[d]=0
-    maxDistBetweenOccursDict[d]=0
-    minDistBetweenOccursDict[d]=1000
-    ultDistBetweenOccursDict[d]=0
-    posOfOccurDict[d] = 0
-    distsOfOccurDict[d] = []
+  """
+  n_of_occurs_dict, max_dist_between_occurs_dict, min_dist_between_occurs_dict = {}, {}, {}
+  ult_dist_between_occurs_dict, pos_of_occur_dict, dists_of_occur_dict = {}, {}, {}
+  max_do_max = 0
+  min_do_max = 1000
+  for d in range(1, 61):
+    n_of_occurs_dict[d]=0
+    max_dist_between_occurs_dict[d] = 0
+    min_dist_between_occurs_dict[d] = 1000
+    ult_dist_between_occurs_dict[d] = 0
+    pos_of_occur_dict[d] = 0
+    dists_of_occur_dict[d] = []
   # traverse all concursos
-  for nOfJogo in range(1, Sena.getNOfLastJogo() + 1):
-    jogo = Sena.jogosPool.getJogo(nOfJogo)
+  for n_of_jogo in range(1, Sena.getNOfLastJogo() + 1):
+    jogo = Sena.jogosPool.getJogo(n_of_jogo)
     dezenas = jogo.getDezenas()
     for d in dezenas:
-      nOfOccursDict[d] += 1
-      if posOfOccurDict[d] > 0:
-        ultDistBetweenOccursDict[d] = nOfJogo - posOfOccurDict[d]
-        distsOfOccurDict[d].append(ultDistBetweenOccursDict[d])
-      posOfOccurDict[d] = nOfJogo
-      if ultDistBetweenOccursDict[d] > 0:
-        if ultDistBetweenOccursDict[d] > maxDistBetweenOccursDict[d]:
-          maxDistBetweenOccursDict[d] = ultDistBetweenOccursDict[d]
-        if ultDistBetweenOccursDict[d] < minDistBetweenOccursDict[d]:
-          minDistBetweenOccursDict[d] = ultDistBetweenOccursDict[d]
+      n_of_occurs_dict[d] += 1
+      if pos_of_occur_dict[d] > 0:
+        ult_dist_between_occurs_dict[d] = n_of_jogo - pos_of_occur_dict[d]
+        dists_of_occur_dict[d].append(ult_dist_between_occurs_dict[d])
+      pos_of_occur_dict[d] = n_of_jogo
+      if ult_dist_between_occurs_dict[d] > 0:
+        if ult_dist_between_occurs_dict[d] > max_dist_between_occurs_dict[d]:
+          max_dist_between_occurs_dict[d] = ult_dist_between_occurs_dict[d]
+        if ult_dist_between_occurs_dict[d] < min_dist_between_occurs_dict[d]:
+          min_dist_between_occurs_dict[d] = ult_dist_between_occurs_dict[d]
 
-  filenameOut = '../Dados/analyzeVarDezenasDepth.txt'; nOfLines = 0
-  print 'Going to write file',  filenameOut 
-  fileOut = open(filenameOut, 'w')
+def gen_depth_of_dezenas2():
+  filename_out = '../Dados/analyzeVarDezenasDepth.txt'
+  n_of_lines = 0
+  print('Going to write file',  filename_out)
+  file_out = open(filename_out, 'w')
   line = '# Stats for Dezenas Depth.'
-  nOfLines += 1; fileOut.write(line + '\n')
-  fileOut.write(line + '\n')
+  n_of_lines += 1; file_out.write(line + '\n')
+  file_out.write(line + '\n')
   medias = []
-  for d in range(1,61):
-    if maxDistBetweenOccursDict[d] > maxDoMax:
-      maxDoMax = maxDistBetweenOccursDict[d]  
-    if maxDistBetweenOccursDict[d] < minDoMax:
-      minDoMax = maxDistBetweenOccursDict[d]  
+  for d in range(1, 61):
+    if max_dist_between_occurs_dict[d] > max_do_max:
+      max_do_max = max_dist_between_occurs_dict[d]
+    if max_dist_between_occurs_dict[d] < min_do_max:
+      min_do_max = max_dist_between_occurs_dict[d]
     soma = 0
-    for dist in distsOfOccurDict[d]:
+    for dist in dists_of_occur_dict[d]:
       soma += dist 
-    mediaDistBetweenOccursDict[d] = soma / (0.0 + len(distsOfOccurDict[d]))
-    nOfOccurs = nOfOccursDict[d]
-    ult = ultDistBetweenOccursDict[d]
-    pos = posOfOccurDict[d]
-    #min = minDistBetweenOccursDict[d]
-    max = maxDistBetweenOccursDict[d]
+    mediaDistBetweenOccursDict[d] = soma / (0.0 + len(dists_of_occur_dict[d]))
+    nOfOccurs = n_of_occurs_dict[d]
+    ult = ult_dist_between_occurs_dict[d]
+    pos = pos_of_occur_dict[d]
+    #min = min_dist_between_occurs_dict[d]
+    max = max_dist_between_occurs_dict[d]
     med = mediaDistBetweenOccursDict[d]
     medias.append(med)
     line = '%d %3d x%3d u=%2d m=%2d a=%g' %(d, pos, nOfOccurs, ult, max, med)
-    nOfLines += 1; fileOut.write(line + '\n')
-  mediasNA = numpy.array(medias)
-  mediaDaMedia = mediasNA.sum() / (0.0 + len(mediasNA))
-  dpDaMedia = mediasNA.std()
-  minDaMedia = mediasNA.min()
-  maxDaMedia = mediasNA.max()
-  line = 'mediaDaMedia %g  dpDaMedia %g \n minDaMedia %g   maxDaMedia %g' %(mediaDaMedia, dpDaMedia, minDaMedia, maxDaMedia)
-  nOfLines += 2; fileOut.write(line + '\n')
-  line = 'minDoMax %d     maxDoMax %d' %(minDoMax, maxDoMax)
-  nOfLines += 1; fileOut.write(line + '\n')
-  line = '# OK, that is all for now folks (nOfLines=%d).' %(nOfLines)
-  nOfLines += 1; fileOut.write(line + '\n')
-  fileOut.close()
-  print nOfLines, 'lines recorded.'  
+    n_of_lines += 1; file_out.write(line + '\n')
+  medias_na = numpy.array(medias)
+  media_da_media = medias_na.sum() / (0.0 + len(medias_na))
+  dp_da_media = medias_na.std()
+  min_da_media = medias_na.min()
+  max_da_media = medias_na.max()
+  line = ('media_da_media %g  dp_da_media %g \n min_da_media %g   max_da_media %g' %
+         (media_da_media, dp_da_media, min_da_media, max_da_media))
+  n_of_lines += 2
+  file_out.write(line + '\n')
+  line = 'min_do_max %d     max_do_max %d' %(min_do_max, max_do_max)
+  n_of_lines += 1; file_out.write(line + '\n')
+  line = '# OK, that is all for now folks (n_of_lines=%d).' %(n_of_lines)
+  n_of_lines += 1; file_out.write(line + '\n')
+  file_out.close()
+  print(n_of_lines, 'lines recorded.')
 
-def getDesvioPadraoMinMax(jogo, nOfLastJogo=nOfLastJogoParam):
-  '''
+
+def get_desvio_padrao_min_max(jogo, n_of_last_jogo=n_of_last_jogo_param):
+  """
   returns (dpMin, dpMax)
-  '''
+
+  """
   # rule 1: looks at the immediate previous one
   difs = []
   for i in range(1,51):
-    jogoComp = jogosPool.getJogo(nOfLastJogo - i)
-    #print 'jogoComp', jogoComp
-    dp, difComp = atSt.calcDesvioPadraoDas6(jogo, jogoComp)
-    #print 'dp, difComp', dp, difComp
-    difs.append(difComp)
+    jogo_comp = jogosPool.getJogo(n_of_last_jogo - i)
+    #print 'jogo_comp', jogo_comp
+    dp, dif_comp = atSt.calcDesvioPadraoDas6(jogo, jogo_comp)
+    #print 'dp, dif_comp', dp, dif_comp
+    difs.append(dif_comp)
   difNA = numpy.array(difs)
   difMin = difNA.min() 
   difMax = difNA.max()
@@ -187,102 +200,107 @@ def getDesvioPadraoMinMax(jogo, nOfLastJogo=nOfLastJogoParam):
   #print 'dpMin, dpMax',  dpMin, dpMax
   return dpMin, dpMax
 
-def isToExcludeSomeParImpar(nDeRefBackwardJogo=Sena.getNOfLastJogo()):
-  '''
+
+def is_to_exclude_some_par_impar(n_de_ref_backward_jogo=Sena.getNOfLastJogo()):
+  """
   Data Stru. => list with excluded number of evens eg [0, 2, 6]
-  '''
-  excludeList = [0,6] # 0 nºs pares e 6 nºs pares
-  jogoComp = Sena.jogosPool.getJogo(nDeRefBackwardJogo)
-  nDePares = jogoComp.getNDePares()
-  #print 'nDeRefBackwardJogo', nDeRefBackwardJogo, jogoComp, 'nDePares', nDePares 
-  if nDePares in [0,6]:
-    return excludeList 
-  if nDePares == 5:
-    excludeList.append(nDePares)
-    return excludeList 
-  if nDePares == 1:
-    excludeList.append(nDePares)
-    return excludeList
+
+  """
+  exclude_list = [0,6] # 0 nºs pares e 6 nºs pares
+  jogo_comp = Sena.jogosPool.getJogo(n_de_ref_backward_jogo)
+  n_de_pares = jogo_comp.getNDePares()
+  #print 'nDeRefBackwardJogo', nDeRefBackwardJogo, jogo_comp, 'n_de_pares', n_de_pares
+  if n_de_pares in [0,6]:
+    return exclude_list
+  if n_de_pares == 5:
+    exclude_list.append(n_de_pares)
+    return exclude_list
+  if n_de_pares == 1:
+    exclude_list.append(n_de_pares)
+    return exclude_list
   acc = {}
   acc[2] = 0; acc[3] = 0; acc[4] = 0
   # logically, the if below is not needed, but code may change in the future (the way it is is for clearness) 
-  if nDePares in [2,3,4]:
-    acc[nDePares] += 1
+  if n_de_pares in [2,3,4]:
+    acc[n_de_pares] += 1
   for i in range(1,4): # go backwards 4 jogosfs (3 here + 1 above)
-    backwardJogo = Sena.jogosPool.getJogo(nDeRefBackwardJogo-i)
-    nDePares = backwardJogo.getNDePares()
-    #print backwardJogo, 'nDePares', nDePares 
-    if nDePares < 2 or nDePares > 4:
+    backwardJogo = Sena.jogosPool.getJogo(n_de_ref_backward_jogo - i)
+    n_de_pares = backwardJogo.getNDePares()
+    #print backwardJogo, 'n_de_pares', n_de_pares
+    if n_de_pares < 2 or n_de_pares > 4:
       continue
-    acc[nDePares] += 1
+    acc[n_de_pares] += 1
   for i in range(2,5):
     if acc[i] == 4:
-      excludeList.append(i) 
-      return excludeList
-  return excludeList
+      exclude_list.append(i)
+      return exclude_list
+  return exclude_list
 
-def getNDeParesMinMax(nOfLastJogo=nOfLastJogoParam):
-  '''
-  returns (ndpMin, ndpMax)
-  '''
-  paresComp = [];     ndpMin = 0;     ndpMax = 6
+
+def get_n_de_pares_min_max(n_of_last_jogo=n_of_last_jogo_param):
+  """
+  returns (ndp_min, ndp_max)
+
+  """
+  paresComp = [];     ndp_min = 0;     ndp_max = 6
   for i in range(1,20):
-    jogoComp = jogosPool.getJogo(nOfLastJogo - i)
+    jogoComp = jogosPool.getJogo(n_of_last_jogo - i)
     paresComp.append(jogoComp.getNDePares())
     
   if 0 in paresComp: # least frequent, come first in if
-    ndpMin = 1
+    ndp_min = 1
   elif 1 in paresComp:
-    ndpMin = 2
+    ndp_min = 2
   if 6 in paresComp: # least frequent, come first in if
-    ndpMax = 5
+    ndp_max = 5
   elif 5 in paresComp:
-    ndpMax = 4
- # print 'ndpMin, ndpMax',  ndpMin, ndpMax
-  return ndpMin, ndpMax
+    ndp_max = 4
+ # print 'ndp_min, ndp_max',  ndp_min, ndp_max
+  return ndp_min, ndp_max
 
-def organizeSixtils(dezenaHistG):
-  '''
+
+def organize_sixtils(dezena_hist_g):
+  """
     Note:  There were Quartils in previous development, now they are Sixtils
-  '''
+  """
   # fine, let's organize the Sixtils
-  dezenas = dezenaHistG.keys()
-  dezenas.sort(); dezenasQuant = []
+  dezenas = dezena_hist_g.keys()
+  dezenas.sort()
+  dezenasQuant = []
   for dezena in dezenas:
-    dezenasQuant.append(dezenaHistG[dezena])
-  dezenasQuantNA = numpy.array(dezenasQuant)
-  dezenasQuantNA.sort()
-  sup = dezenasQuantNA.max() #dezenasQuantNA[59]
-  inf = dezenasQuantNA.min() #dezenasQuantNA[0]
-  dist = sup - inf; desloca = 0
+    dezenasQuant.append(dezena_hist_g[dezena])
+  dezenas_quant_na = numpy.array(dezenasQuant)
+  dezenas_quant_na.sort()
+  sup = dezenas_quant_na.max() #dezenas_quant_na[59]
+  inf = dezenas_quant_na.min() #dezenas_quant_na[0]
+  dist = sup - inf
+  desloca = 0
   while dist % 6 != 0:
     dist -= 1
     desloca += 1
-  sexto = dist / 6; points = []; points.append(inf-1); pos = inf + desloca; sixtils = []; sixtils.append([])
+  sexto = dist / 6
+  points = []
+  points.append(inf-1)
+  pos = inf + desloca
+  sixtils = []
+  sixtils.append([])
   #for i in range(1,7):
   # CORRECT HERE
   posSextos = map(pos + sexto, range(1,7))
   points.append(pos)
   sixtils.append([]*6)
-  #print 'len(dezenasQuantNA)', len(dezenasQuantNA)
+  #print 'len(dezenas_quant_na)', len(dezenas_quant_na)
   #print 'len(points)', len(points) 
   for dezena in range(1, 61):
-    quant = dezenaHistG[dezena]
+    quant = dezena_hist_g[dezena]
     for j in range(1,7):  # quartis[0] is not used!
       if quant > points[j-1] and quant <= points[j]:
         sixtils[j].append(dezena)
   return sixtils
 
-'''
 
-# LOST FRAGMENT
 
-dezenaHistG = {}; jaFeitoSixtil = 1
-for dezena in range(1, 61):
-  dezenaHistG[dezena] = 0
-'''
-
-def generateSixtilsIterative(ateJogoN):
+def generate_sixtils_iterative(ateJogoN):
   global dezenaHistG, jaFeitoSixtil
   if jaFeitoSixtil == ateJogoN:
     return dezenaHistG 
@@ -292,29 +310,31 @@ def generateSixtilsIterative(ateJogoN):
     for dezena in dezenas:
       dezenaHistG[dezena] += 1
   jaFeitoSixtil = ateJogoN
-  sixtils = organizeSixtils(dezenaHistG)
+  sixtils = organize_sixtils(dezenaHistG)
   #print ' [in analyzer] sixtils', sixtils
   return sixtils 
 
 sixtilsGenerated = False; sixtils = []
+
 def generateSixtils():
   global sixtilsGenerated, sixtils
   if sixtilsGenerated:
     return sixtils
-  dezenaHistG = atSt.obtemHistGDas60()
-  sixtils = organizeSixtils(dezenaHistG)
+  dezena_hist_g = atSt.obtemHistGDas60()
+  sixtils = organize_sixtils(dezena_hist_g)
   if type(sixtils[0]) == type([]):
     sixtilsGenerated = True
   return sixtils 
 
-def getSomaDesceOuSobe(jogo, nOfLastJogo=nOfLastJogoParam):
+
+def get_soma_desce_ou_sobe(jogo, n_of_last_jogo=n_of_last_jogo_param):
   '''
   returns True if sobe (boolean)
   '''
   difs = []
   soma = jogo.soma()
   for i in range(1,4):
-    jogoComp = jogosPool.getJogo(nOfLastJogo - i)
+    jogoComp = jogosPool.getJogo(n_of_last_jogo - i)
     somaComp = jogoComp.soma()
     difs.append(soma - somaComp)
     soma = somaComp
@@ -330,17 +350,17 @@ def getSomaDesceOuSobe(jogo, nOfLastJogo=nOfLastJogoParam):
     return False
   return None
 
-def getLinColDataStru():
-  '''
+def get_lin_col_data_stru():
+  """
   returns d1d2DataStru
     relative to filtro LINHAS x COLUNAS
 
   Data Structure
   Inner histogram eg 0:1 1:1 2:1 4:1 5:2    1:1 4:1 6:2 7:1 8:1
-  
+
   The d1d2DataStru:
   * dezena abaixo e o dígito da esquerda
-  (dezena-0, repetMin, repetMax)   
+  (dezena-0, repetMin, repetMax)
   (dezena-1, repetMin, repetMax)
   ...
   (dezena-5, repetMin, repetMax)
@@ -351,15 +371,16 @@ def getLinColDataStru():
   ...
   (unidade-9, repetMin, repetMax)
 
-  '''
+  """
   pass
   return None
 
-def getNDeIguaisJogoAnt():
-  '''
+def get_n_de_iguais_jogo_ant():
+  """
   returns iguaisAntStru
-  '''
+  """
   pass
+
 
 def getHistogramaEvolutivoStru():
   '''
@@ -749,7 +770,7 @@ def testGenerateSixtils():
   for nDoJogo in range(101, nDoLastJogo):
     jogo = jogosPool.getJogo(nDoJogo)
     print jogo,
-    sixtils = generateSixtilsIterative(nDoJogo - 1) 
+    sixtils = generate_sixtils_iterative(nDoJogo - 1)
     dezenas = jogo.getDezenas(); acc = []
     for i in range(7):
       acc.append(0)

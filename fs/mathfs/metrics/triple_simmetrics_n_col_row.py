@@ -375,6 +375,6 @@ def adhoc_test2():
 if __name__ == '__main__':
   """
   adhoc_test()
-  list_triplesimmetrics_thru_ms_history()
+  list_triple_even_metrics_thru_ms_history()
   """
   adhoc_test2()

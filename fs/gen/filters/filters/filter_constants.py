@@ -681,7 +681,7 @@ FILT_REPEAT_COM_DEZENA_DO_JOGOREF = 56
 
   if maxRepeatInTheRun < minImposedRepeat:
       return False, FILT_REPEAT_MENOR_Q_MIN_IMPOSED_OCCURRED
-  resp = repeatContr.passaQuantOfJogosWithMax(maxRepeatInTheRun, quantOfJogosWithThisMax)
+  resp = repeatContr.passa_quant_of_jogos_with_max(maxRepeatInTheRun, quantOfJogosWithThisMax)
   #print 'maxRepeatInTheRun, quantOfJogosWithThisMax', maxRepeatInTheRun, quantOfJogosWithThisMax, 'resp', resp 
   if not resp:
     return False, FILT_ULTRAPASSA_QUANT_OF_JOGOS_WITH_MAX_REPEAT

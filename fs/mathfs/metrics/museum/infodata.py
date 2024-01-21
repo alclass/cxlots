@@ -1,23 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
- infodata
-'''
+"""
+"""
+def roll_n_acertos():
+  nsDeAcertos = range(11,16); lfProbs = {}
+  for nDeAcerto in nsDeAcertos:
+    lfProbs[nDeAcerto] = ic.comb(25, nDeAcerto)
 
-'''nsDeAcertos = range(11,16); lfProbs = {}
-for nDeAcerto in nsDeAcertos:
-  lfProbs[nDeAcerto] = ic.comb(25,nDeAcerto)
-'''
+  lfProbs = {15:3268760, 14:21791, 13:691, 12:59, 11:11}
 
-lfProbs = {15:3268760, 14:21791, 13:691, 12:59, 11:11}
+  lmProb20 = 11372635
+  lmProbs = {20:lmProb20, 19:352551, 18:24235, 17:2776,16:472,0:lmProb20}
 
-lmProb20 = 11372635
-lmProbs = {20:lmProb20, 19:352551, 18:24235, 17:2776,16:472,0:lmProb20}
+  nsDeAcertos = range(4,7); msProbs = {}
+  for nDeAcerto in nsDeAcertos:
+    msProbs[nDeAcerto] = ic.comb(60,nDeAcerto)
 
-'''nsDeAcertos = range(4,7); msProbs = {}
-for nDeAcerto in nsDeAcertos:
-  msProbs[nDeAcerto] = ic.comb(60,nDeAcerto)
-'''
 msProbs = {6:50063860, 5:154518, 4:2332}
 
 lfComoJogar = '''A Lotofácil é o jogo certo para você que gosta de apostar e, principalmente, ganhar. Com apenas R$ 1, 25, você marca 15 números entre os 25 disponíveis no volante. E fatura o prêmio se acertar 11, 12, 13, 14 ou 15 números. São muitas chances de ganhar.
