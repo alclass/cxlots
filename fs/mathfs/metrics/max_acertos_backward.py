@@ -19,9 +19,16 @@ The six coordinates (submetrics sm) are:
   sm6 the first depth, within 6, to maxacertos above, having 1 digits
 
 Example 'metric': 411530722, ie
-  4115 => the maxacertos 4, up to 500 depth, at depth 115
-  405 => the maxacertos 3, up to 20 depth, happening at depth 7 (07)
-  22 => the maxacertos 2, up to 2 depth, happening at depth 2
+====================================
+    4115 => the maxacertos 4, up to depth 600, at depth 115
+    405 => the maxacertos 3, up to 20 depth 60, happening at depth 7 (07)
+    22 => the maxacertos 2, up to 2 depth 6, happening at depth 2
+
+Motivation for the triple 6, 60, 600
+====================================
+The choice was due to an empirical observation that showed,
+  at this 'spreading', each maxacerto, for a higher depth,
+  was probably greater than its counterpart for a lower depth.
 
 This metrics starts at conc=601, so it does not exist for the first 600 concs.
 (At the time of this writing, nconc = 2764.)
@@ -29,12 +36,17 @@ This metrics starts at conc=601, so it does not exist for the first 600 concs.
 
 """
 import math
-
 import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
 LAST_DOWNWARD_LIMIT_600 = 600
 
 
 class TripleBackwardMaxAcertos:
+  """
+  Example 'metric': 411530722, ie
+    4115 => the maxacertos 4, up to depth 600, at depth 115
+    405 => the maxacertos 3, up to 20 depth 60, happening at depth 7 (07)
+    22 => the maxacertos 2, up to 2 depth 6, happening at depth 2
+  """
 
   BACKWARD_DEPTH_CONC_SIZES = [6, 60, LAST_DOWNWARD_LIMIT_600]
 
