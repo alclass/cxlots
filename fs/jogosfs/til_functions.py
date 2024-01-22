@@ -10,7 +10,7 @@ import fs.mathfs.combinatorics.combinatoric_algorithms as combinatorics
 def sum_digits(pattern):
   """
   This function sums a sequence of numbers in a string or
-    an iterator from which int(element) is possible
+    in an iterator from which int(element) is possible
   From the context of cxlots, its function is to sum up
     the digits in a pattern string
 

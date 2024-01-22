@@ -9,15 +9,15 @@ This class may be explained by an example:
     [[3, 3], [3, 2, 1], [3, 1, 1, 1], [2, 2, 2], [2, 2, 1, 1], [2, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]]
 
 The purpose is to form integer sets whose members added up to 'upto'. In the example, upto=6,
-  ie, each the elements of each set sums up to 6.
+  ie, the elements of each combination set sums up to 6.
 The second detail is that the elements into sets are organized decrescently.
 
-
-"""
 # import numpy, time, sys
+"""
 import copy
 import fs.mathfs.combinatorics.decrescent_combiner as dc  # dc.DecrescentCombiner
 import fs.mathfs.combinatorics.hanoi_like_tower_piecemover as pm  # .HanoiTowerPieceMover
+
 
 class Grafter:
 

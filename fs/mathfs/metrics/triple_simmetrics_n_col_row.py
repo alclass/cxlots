@@ -112,7 +112,7 @@ CURIOSITY:
 """
 import copy
 import math
-import commands.show.list_ms_history as lh  # lh.get_ms_asc_history_as_list
+import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
 
 
 class TripleSimmetricCalculator:
@@ -325,7 +325,7 @@ def calc_number_simmetric_for_range_1_m(n, upto=60):
 
 
 def list_triplesimmetrics_thru_ms_history():
-  ms_asc_history_list = lh.get_ms_asc_history_as_list()
+  ms_asc_history_list = lh.get_ms_history_as_list_with_cardgames_in_ord_sor()
   histogram_triplestr_dict = {}
   for nconc, dozens in enumerate(ms_asc_history_list):
     trisimmobj = TripleSimmetricCalculator(dozens)  # , enable_inspector=False (the default)
@@ -374,7 +374,7 @@ def adhoc_test2():
 
 if __name__ == '__main__':
   """
-  adhoc_test()
+  adhoctest()
   list_triple_even_metrics_thru_ms_history()
   """
   adhoc_test2()

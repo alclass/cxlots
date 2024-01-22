@@ -43,19 +43,67 @@ max sum xs (9*5=45) 45 sum max ys (5*5=25) 25
 min for both x & y is 0 (zero)
 """
 import math
-import commands.show.list_ms_history as lh  # lh.get_ms_asc_history_as_list
+import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
 
 
-def extract_x_y_from_dozen_intval(intval):
-  dozendigit = math.floor((intval-1)/10) + 1
-  colweight = intval % 10
-  colweight = colweight if colweight > 0 else 10
-  x, y = colweight, dozendigit
-  return x, y
+class MetricDistanceXsYsSummer:
+
+  def __init__(self, dozens):
+    self.ord_dozens = sorted(dozens)
+    self._distsum_xs_ys_tuple = None
+    self.has_been_processed = False
+    self.process()
+
+  @property
+  def distsum_xs_ys_tuple(self):
+    if not self.has_been_processed:
+      self.process()
+    return self._distsum_xs_ys_tuple
+
+  def get_metric_datum(self):
+    """
+    The metric comes out as a tuple dist_xs_ys=(xdist, ydist)
+    For storing it in db, it's transformed into a commasep_str
+    """
+    datum = str(self._distsum_xs_ys_tuple)
+    for char_to_remove in [' ', '(', ')']:
+      datum = datum.replace(char_to_remove, '')
+    return datum
+
+  def process(self):
+    self._distsum_xs_ys_tuple = calc_distance_xs_ys_sums_metric_f_cardgame(self.ord_dozens)
+    self.has_been_processed = True
+
+  def __str__(self):
+    outstr = f"MetricDistanceXsYsSummer cardgame={self.ord_dozens} sum_x_y={self.distsum_xs_ys_tuple}"
+    return outstr
+
+
+def extract_xcol_yrow_from_dozen_intval(intval, maxcol=10):
+  """
+  Extracts xcol, ycol from a dozen_intval
+
+  Example:
+    15 is xcol=5 and yrow=2
+  This function does not limit rows, but limits column-size
+  """
+  dozendigit = math.floor((intval-1)/maxcol) + 1
+  unitdigit = intval % maxcol
+  colval = unitdigit if unitdigit > 0 else maxcol
+  xcol, yrow = colval, dozendigit
+  return xcol, yrow
+
+
+def extract_xcol_yrow_from_dozen_intval_10columns(intval):
+  return extract_xcol_yrow_from_dozen_intval(intval, maxcol=10)
+
+
+def recompose_dozen_from_xcol_yrow_10columns(xcol, yrow):
+  return (yrow-1)*10 + xcol
 
 
 def trans_dozens_to_points(dozens):
-  xs_n_ys = list(map(lambda e: extract_x_y_from_dozen_intval(e), dozens))
+  xs_n_ys = list(map(lambda e: extract_xcol_yrow_from_dozen_intval_10columns(e), dozens))
   return xs_n_ys
 
 
@@ -97,21 +145,6 @@ def calc_distance_xs_ys_sums_metric_f_cardgame(dozens):
   return dist_sum_xs_ys_tuple
 
 
-class MetricDistanceXsYsSummer:
-
-  def __init__(self, dozens):
-    self.ord_dozens = sorted(dozens)
-    self.distsum_xs_ys_tuple = None
-    self.process()
-
-  def process(self):
-    self.distsum_xs_ys_tuple = calc_distance_xs_ys_sums_metric_f_cardgame(self.ord_dozens)
-
-  def __str__(self):
-    outstr = f"MetricDistanceXsYsSummer cardgame={self.ord_dozens} sum_x_y={self.distsum_xs_ys_tuple}"
-    return outstr
-
-
 def update_histograms(distsum_xs_ys, histogram_x, histogram_y):
   xs_sum = distsum_xs_ys[0]
   ys_sum = distsum_xs_ys[1]
@@ -125,7 +158,7 @@ def update_histograms(distsum_xs_ys, histogram_x, histogram_y):
     histogram_y[ys_sum] = 1
 
 
-def list_dist_xysum_metric_thru_ms_history():
+def adhoctest3():
   # t1
   dozens = (4, 12, 23, 33, 45, 51)
   summer = MetricDistanceXsYsSummer(dozens)
@@ -134,14 +167,21 @@ def list_dist_xysum_metric_thru_ms_history():
   dozens = (10, 38, 11, 23, 45, 52)
   summer = MetricDistanceXsYsSummer(dozens)
   print(summer)
-  ms_asc_history_list = lh.get_ms_asc_history_as_list()
+
+
+def list_dist_xysum_metric_thru_ms_history():
+  ms_asc_history_list = lh.get_ms_history_as_list_with_cardgames_in_ord_sor()
   histogram_x, histogram_y = {}, {}
+  upto = 5
   for i, dozens in enumerate(ms_asc_history_list):
     nconc = i + 1
+    if i > upto:
+      break
     summer = MetricDistanceXsYsSummer(dozens)
     distsum_xs_ys = summer.distsum_xs_ys_tuple
+    metric = summer.get_metric_datum()
     update_histograms(distsum_xs_ys, histogram_x, histogram_y)
-    scrmsg = f"nconc={nconc} | dist_xs_ys={distsum_xs_ys} | {dozens}"
+    scrmsg = f"nconc={nconc} | dist_xs_ys={distsum_xs_ys} | {dozens} | metric = {metric}"
     print(scrmsg)
   histogram_x = dict(sorted(histogram_x.items(), key=lambda e: e[1]))
   histogram_y = dict(sorted(histogram_y.items(), key=lambda e: e[1]))
@@ -154,9 +194,9 @@ def adhoc_test2():
   """
   """
   dozens = (1, 4, 12, 23, 45, 51)
-  rx, ry = extract_x_y_from_dozen_intval(dozens[0])
+  rx, ry = extract_xcol_yrow_from_dozen_intval_10columns(dozens[0])
   for dozen in dozens[1:]:
-    x, y = extract_x_y_from_dozen_intval(dozen)
+    x, y = extract_xcol_yrow_from_dozen_intval_10columns(dozen)
     point = x, y
     refpoint = rx, ry
     dist_sum, dx, dy = calc_dist_as_dxdysum_dx_dy_to_refpoint(point, refpoint)
@@ -172,6 +212,6 @@ def adhoc_test():
 
 if __name__ == '__main__':
   """
-  adhoc_test()
+  adhoctest()
   """
   list_dist_xysum_metric_thru_ms_history()

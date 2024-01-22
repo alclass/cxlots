@@ -30,13 +30,13 @@ This metrics starts at conc=601, so it does not exist for the first 600 concs.
 """
 import math
 
-import commands.show.list_ms_history as lh  # lh.get_ms_asc_history_as_list
-DOWNWARD_600_LIMIT = 600
+import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
+LAST_DOWNWARD_LIMIT_600 = 600
 
 
 class TripleBackwardMaxAcertos:
 
-  BACKWARD_DEPTH_CONC_SIZES = [6, 60, DOWNWARD_600_LIMIT]
+  BACKWARD_DEPTH_CONC_SIZES = [6, 60, LAST_DOWNWARD_LIMIT_600]
 
   def __init__(self, nconc, ms_asc_history_list):
     self.nconc = nconc
@@ -136,16 +136,15 @@ def compare_maxacertos_from_nconc_down_to(nconc, ms_asc_history_list, backward_d
   return result_maxacs_n_nconccompared
 
 
-def list_max_acertos_from_top_concs_downward():
+def list_max_acertos_from_top_concs_downward(down_to_nconc=None):
   histogram_triplemax = {}
-  ms_asc_history_list = lh.get_ms_asc_history_as_list()
+  ms_asc_history_list = lh.get_ms_history_as_list_with_cardgames_in_ord_sor()
   histogram_conc_n_maxhistacertos_dict = {}
   coinc_quants = [tupl[1] for tupl in histogram_conc_n_maxhistacertos_dict.items()]
   total_coincs = sum(coinc_quants)
   downward_start_from = len(ms_asc_history_list) - 1
-  # downto = downward_start_from - 20
-  downto = DOWNWARD_600_LIMIT - 1
-  for downward_idx in range(downward_start_from, downto, -1):
+  down_to = LAST_DOWNWARD_LIMIT_600 - 1 if down_to_nconc is None else down_to_nconc - 1
+  for downward_idx in range(downward_start_from, down_to, -1):
     nconc = downward_idx + 1
     triplemax_obj = TripleBackwardMaxAcertos(nconc, ms_asc_history_list)
     print(triplemax_obj)
@@ -169,13 +168,25 @@ def adhoctest2():
 
 
 def process():
-  pass
+  down_to_nconc = None
+  total_concs = lh.count_total_concs_in_ms_history_db()
+  scrmsg = f"Total concs in ms history = {total_concs}"
+  print(scrmsg)
+  if total_concs and total_concs > LAST_DOWNWARD_LIMIT_600 + 5:
+    down_to_nconc = total_concs - 5
+  if down_to_nconc is not None:
+    list_max_acertos_from_top_concs_downward(down_to_nconc)
+  else:
+    scrmsg = (f"It could not process maxacertos due to possible database missing:"
+              f" total_concs = {total_concs} and downward limit = {LAST_DOWNWARD_LIMIT_600}")
+    print(scrmsg)
 
 
 if __name__ == '__main__':
   """
   adhoctest()
-  process()
   adhoctest2()
+  adhoctest()
   """
-  list_max_acertos_from_top_concs_downward()
+  process()
+

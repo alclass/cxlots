@@ -84,7 +84,7 @@ def m4():
     lgi = random.randint(0,c25to15)
     randomLgis.append(lgi)
     print 'lgi', lgi
-    bytes = binDec.packByteInt(lgi, nOfBytes)
+    bytes = binDec.pack_byte_int(lgi, nOfBytes)
     for byte in bytes:
       #print 'byte', byte
       fileobj.write(chr(byte))
@@ -126,16 +126,16 @@ def m6():
 def m7():
   ip = binDec.IntPacker(3)
   fileobj = open('tmp.bin', 'wb')
-  ip.setFileObj(fileobj) # readMode is defaulted to False
+  ip.set_file_obj(fileobj) # readMode is defaulted to False
   for i in range(5):
     lgi = random.randint(0,c25to15)
     print i, 'lgi', lgi
-    ip.setNumber(lgi)
+    ip.set_number(lgi)
     ip.write()
 
   fileobj.close()
   fileobj = open('tmp.bin', 'rb')
-  ip.setFileObj(fileobj, True) # readMode now
+  ip.set_file_obj(fileobj, True) # readMode now
   for i in range(5):
     number = ip.read()
     print i,'number', number

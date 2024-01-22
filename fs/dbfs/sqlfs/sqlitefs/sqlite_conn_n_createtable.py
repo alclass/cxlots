@@ -2,6 +2,27 @@
 """
 fs/dbfs/datafilefs/from_wks/from_excel_to_db_dozens_in_drawn_order.py
 
+There 18 metrics as of the time of this writing. These are:
+
+    soma INT,
+    media_mult100 INT,
+    dsvpdr_mult100 INT,
+    n_consecutivos INT,
+    n_8_adjacent INT,
+    n_immed_repeats INT,
+    up_same_down_seq INT,
+    resto5patt INT,
+    resto12patt_b12_to_b10 INT,
+    quadrantpatt INT,
+    colpatt INT,
+    rowpatt INT,
+    triple_maxacertos_w_depths INT,
+    triple_pares_dpares_n_prct INT,
+    triplesimm_num_col_row INT,
+    xs_ys_distsum_commasep TEXT,
+    dzs_repeatdepth_commasep TEXT,
+    dzs_acc_hstgrm_commasep TEXT,
+
 import fs.jogosfs.jogos_functions as jf
 import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # get_pandas_df_from_ms_history_excelfile
 import fs.jogosfs.jogos_metrics as jm
@@ -30,7 +51,7 @@ def create_table_if_not_exists():
     n_consecutivos INT,
     n_8_adjacent INT,
     n_immed_repeats INT,
-    binary_up_down_6vector INT,
+    up_same_down_seq INT,
     resto5patt INT,
     resto12patt_b12_to_b10 INT,
     quadrantpatt INT,

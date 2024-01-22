@@ -12,7 +12,7 @@ This metric is composed of three 'submetrics' (sm), they are:
 
 """
 import math
-import commands.show.list_ms_history as lh  # lh.get_ms_asc_history_as_list
+import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
 
 
 class EvenNumberTripleMetricCalculator:
@@ -34,6 +34,9 @@ class EvenNumberTripleMetricCalculator:
       if self.has_processed:
         self._tripleeven = self.n_pares * 1000 + self.n_even_leftdigits * 100 + self.percent_as_int_evensum_by_total
     return self._tripleeven
+
+  def get_metric_datum(self):
+    return self.tripleeven
 
   def verify_repeats_n_raises_exception_if_any(self):
     if len(set(self.intlist)) != self.listsize:
@@ -127,7 +130,7 @@ def calc_n_pares_from_intlist_w_size_n_unique(intlist, listsize=6):
 
 
 def list_triple_even_metrics_thru_ms_history():
-  ms_asc_history_list = lh.get_ms_asc_history_as_list()
+  ms_asc_history_list = lh.get_ms_history_as_list_with_cardgames_in_ord_sor()
   histogram_tripleeven_dict = {}
   for nconc, dozens in enumerate(ms_asc_history_list):
     triple_even_obj = EvenNumberTripleMetricCalculator(dozens)  # , enable_inspector=False (the default)
@@ -173,6 +176,6 @@ if __name__ == '__main__':
   """
   adhoctest()
   process()
-  adhoctest2()
-  """
   list_triple_even_metrics_thru_ms_history()
+  """
+  adhoctest2()

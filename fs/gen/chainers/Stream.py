@@ -81,15 +81,15 @@ class Stream(Filtre.Filtre):
         sigla = self.jogosObj.sqlTable
         ultimoNDoConc = len(self.jogosObj.getJogos())
         filename = getInBinFilename()
-    nOfBytesForPacker = self.jogosObj.getNOfBytesForPacker()
+    nOfBytesForPacker = self.jogosObj.get_n_of_bytes_for_packer()
     self.inStream     = binDec.IntPacker(nOfBytesForPacker)
     inFile            = open(filename, 'rb')
     self.inBinFilename = filename
-    self.inStream.setFileObj(inFile, True)
+    self.inStream.set_file_obj(inFile, True)
     self.inStreamType = STREAM_BINFILE
 
   def setStreamOutBinFile(self, filename=None):
-    nOfBytesForPacker = self.jogosObj.getNOfBytesForPacker()
+    nOfBytesForPacker = self.jogosObj.get_n_of_bytes_for_packer()
     self.outStream    = binDec.IntPacker(nOfBytesForPacker)
     if filename == None:
       sigla = self.jogosObj.sqlTable
@@ -97,7 +97,7 @@ class Stream(Filtre.Filtre):
       filename = getOutBinFilename(sigla, ultimoNDoConc)
     self.outBinFilename = filename
     outFile             = open(filename, 'wb')
-    self.outStream.setFileObj(outFile, False)
+    self.outStream.set_file_obj(outFile, False)
     self.outStreamType = STREAM_BINFILE
 
   def setStreamOutTxtFile(self, filename):

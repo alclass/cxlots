@@ -50,32 +50,46 @@ def convert_positive_dec_int_to_base(n, base=2):
 
 
 class Mixer:
-  '''
+  """
   This call, though it's here, it's not doing anything yet
-  '''
-  def __init__(self, sumUpTo, expandUpTo):
-    self.sumUpTo    = sumUpTo
-    self.expandUpTo = expandUpTo
+
+  """
+  def __init__(self, sum_up_to, expand_up_to):
+    self.sum_up_to    = sum_up_to
+    self.expand_up_to = expand_up_to
+    self.elems = None
+
   def process(self):
-    self.elems=[self.sumUpTo]
-  def recur(self, at, runningSet=[]):
-    if at==0:
+    self.elems = [self.sum_up_to]
+
+
+  def recur(self, at, running_set=None):
+    running_set = [] if running_set is None else running_set
+    if at == 0:
       return
-    runningSet.append(at)
-    missing=self.sumUpTo-at
+    running_set.append(at)
+    missing= self.sum_up_to - at
     if missing == 1:
-      runningSet.append(1)
+      running_set.append(1)
       #return elem
 
 class NumberSystem(object):
-  '''
-  This call models a number system. It's useful for some needs of the system.
-    Eg. a combination sequence such as 0001, ..., 1234, ... , 4321, ..., 4444 works a base-4 system set 
-  '''
-  def __init__(self, arraySize, base):
-    self.arraySize = arraySize # same as n_slots
-    self.base      = base # number base
-    self.values    = self.digits_zeroed() # do not use move_to_first() here because child classes use an extra attribute that's not here (self.first)
+  """
+  This class models a number system. It's useful for some needs of this system.
+    E.g.
+      a combination sequence such as 0001, ..., 1234, ... , 4321, ..., 4444
+      works as a base-5 system set
+  """
+
+  def __init__(self, array_size, base):
+    """
+
+    """
+    self.arraySize = array_size # same as n_slots
+    self.base = base # number base
+    # do not use move_to_first() here because child classes use an extra attribute that's not here (self.first)
+    self.values = self.digits_zeroed()
+    self.max_sum = None
 
   def get_total(self):
     return self.base ** self.arraySize 
@@ -84,10 +98,11 @@ class NumberSystem(object):
     return [0]*self.arraySize
 
   def who_is_first(self):
-    '''
+    """
     This method is the one that will be implemented by child classes, move_to_first() and get_first() depend on this one
       and, these two, are not to reimplement on child classes
-    '''
+
+    """
     return self.digits_zeroed()
 
   def move_to_first(self):
@@ -108,13 +123,13 @@ class NumberSystem(object):
     return self.values
 
   def form_strdigits(self):
-    if self.values == None:
+    if self.values is None:
       return None
     strdigits = ''.join(map(str, self.values)) 
     return strdigits
 
   def add_one(self, pos=None):
-    if pos == None:
+    if pos is None:
       pos = len(self.values) - 1
     if pos == -1:
       self.values = None
@@ -126,7 +141,7 @@ class NumberSystem(object):
       return self.add_one(pos-1) # ie, vai um
 
   def subtract_one(self, pos=None):
-    if pos == None:
+    if pos is None:
       # jump to the right-most digit
       pos = len(self.values) - 1
     if pos == 0 and self.values[pos] == 0:
@@ -140,7 +155,7 @@ class NumberSystem(object):
     self.values[pos] -= 1
 
   def do_next(self):
-    if self.values != None:
+    if self.values is not None:
       self.add_one()
 
   def next(self):
@@ -148,62 +163,68 @@ class NumberSystem(object):
     return self.values
 
   def do_previous(self):
-    if self.values != None:
+    if self.values is not None:
       self.subtract_one()
 
   def previous(self):
     self.do_previous()
     return self.values
 
-  def findArraysSummingTo(self, shouldSumTo=None):
-    if not shouldSumTo:
-      shouldSumTo = self.base
-    if shouldSumTo > self.maxSum:
-      print 'shouldSumTo', shouldSumTo, 'is greater than maxSum', self.maxSum
+  def find_arrays_summing_to(self, should_sum_to=None):
+    if not should_sum_to:
+      should_sum_to = self.base
+    if should_sum_to > self.max_sum:
+      print('shouldSumTo', should_sum_to, 'is greater than maxSum', self.max_sum)
     # backup current values array
-    valuesCopied = list(self.values)
+    values_copied = list(self.values)
     # reset values
     self.values      = [0]*self.arraySize
     # c=0
-    arraysFound = []
+    arrays_found = []
     while 1:
       if not self.somaUm():
         break
-      if sum(self.values) == shouldSumTo:
+      if sum(self.values) == should_sum_to:
         # c+=1
         # print c, self.values
-        arraysFound.append(list(self.values))
+        arrays_found.append(list(self.values))
     # restore previous values array
-    self.values = list(valuesCopied)
-    return arraysFound
+    self.values = list(values_copied)
+    return arrays_found
+
 
 class RemaindersComb(NumberSystem):
-  '''
+  """
   Class RemaindersComb inherits from class NumberSystem
-  '''
-  def __init__(self, arraySize, base, shouldSumTo=None):
-    NumberSystem.__init__(self, arraySize, base)
-    self.arraysFound = self.findArraysSummingTo(shouldSumTo)
+
+  """
+
+  def __init__(self, array_size, base, shouldSumTo=None):
+    NumberSystem.__init__(self, array_size, base)
+    self.arraysFound = self.find_arrays_summing_to(shouldSumTo)
   def index(self, combArray):
     return self.arraysFound.index(combArray)
 
-def testRemaindersComb():
+
+def test_remainders_comb():
   # arraySize = 3 # remainders of 3
   base =  6 # ie, 6 dezenas
-  remaindersOf = [2,3,4,5,6] #,7,8] #,12,15]
-  for r in remaindersOf:
+  remainders_of = [2, 3, 4, 5, 6]  # ,7,8] #,12,15]
+  for r in remainders_of:
     rc = RemaindersComb(r, base)
     af = rc.arraysFound; c=0
-    print r, len(af)
+    print(r, len(af))
     for elem in af:
       c+=1
-      print c, elem
+      print(c, elem)
+
 
 def test_numberbaseconvertion(n, base):
-  print 'n =', n, '; base =', base
+  print('n =', n, '; base =', base)
   f = NS.convert_positive_dec_int_to_base
   strdigits = f(n, base)
-  print strdigits
+  print(strdigits)
+
 
 def adhoc_test2():
   f = test_numberbaseconvertion

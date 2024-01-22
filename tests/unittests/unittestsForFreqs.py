@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
     freqAtEachConcurso = fm.FrequenciesThruConcursos()
     for i in range(1, n_concs_total+1):
       shouldBeSum = 6 * i
-      self.assertEqual(freqAtEachConcurso.sumUpTo(i), shouldBeSum)
+      self.assertEqual(freqAtEachConcurso.sum_up_to(i), shouldBeSum)
 
   def test_initializeFreqDict(self):
     '''

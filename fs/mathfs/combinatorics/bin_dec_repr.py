@@ -1,23 +1,117 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+"""
 
+"""
 import math, time, sys  # for timing purposes
-#import math
-
 from cardprint import pprint
 
+class IntPacker(object):
+  """
+  This class helps read and write integers (from 0 up to 2 ** nOfBytes - 1)
+    from and to binary files.
 
-def getNOfBytesForPacker(nOfCombs):
-  exponent = math.log(nOfCombs) / math.log(2)
-  expInt = int(exponent)
-  if exponent > expInt:
-    expInt+=1
-  nOfBytes = expInt / 8
-  if expInt > 8*nOfBytes:
-    nOfBytes += 1
-  return nOfBytes
+  The orginal purpose was to keep lgi's numbers.  Each lgi, as it's known,
+    represents a jogo-combination.
 
-def packByteInt(number, nOfBytes):
+  """
+  def __init__(self, nOfBytes):
+    self.n_of_bytes = nOfBytes
+    self.maxInt   = 2 ** (nOfBytes*8) - 1
+    self.offset    = 0 # offset is a byte index, readIndex, also an index, is offset * 3
+    self.readIndex = 0 # readIndex is incremented 1 at each read()
+    self.number   = None
+    self.byteList = None
+    self.file_obj  = None
+
+  def set_number(self, number):
+    if number > self.maxInt:
+      raise ValueError, 'number %d is greater than maxInt %d.' %(number, self.maxInt)
+    self.number   = number
+    #print 'self.pack_to_bytes()', self.number
+    self.pack_to_bytes()
+
+  def set_byte_list(self, byte_list):
+    if len(byte_list) > self.n_of_bytes:
+      raise ValueError, 'byteList %s has more than %d (nOfBytes)' %(byte_list, self.n_of_bytes)
+    self.byteList = byte_list
+    self.unpack_from_bytes()
+
+  def pack_to_bytes(self):
+    if not self.number:
+      raise ValueError, 'self.number is missing.'
+    self.byteList = pack_byte_int(self.number, self.n_of_bytes)
+    #print 'pack_to_bytes(self):', self.byteList
+
+  def unpack_from_bytes(self):
+    if not self.byteList:
+      errmsg = 'self.byteList is missing.'
+      raise ValueError(errmsg)
+    self.number = unpack_byte_int(self.byteList, self.n_of_bytes)
+
+  def set_file_obj(self, file_obj, read_mode=False):
+    if read_mode:
+      self.read_mode  = True
+      self.write_mode = False
+    else:
+      self.read_mode  = False
+      self.write_mode = True
+    self.file_obj = file_obj
+
+  def write(self, number=None):
+    if self.read_mode:
+      errmsg = 'cannot write in read mode.'
+      raise TypeError(errmsg)
+    if number is not None:
+      self.set_number(number)
+    if not self.byteList:
+      errmsg = 'byteList has not been set.'
+      raise TypeError(errmsg)
+    for byte in self.byteList:
+      self.file_obj.write(byte)
+
+  def first(self):
+    self.offset = 0
+    self.file_obj.seek(self.offset)
+    self.read()
+
+  def read(self):
+    if self.write_mode:
+      errmsg = 'cannot read in write mode.'
+      raise TypeError(errmsg)
+    if not self.file_obj:
+      errmsg = 'fileObj has not been set.'
+      raise TypeError(errmsg)
+    self.byteList = []
+    chrs = self.file_obj.read(self.n_of_bytes) # read nOfBytes bytes
+    if not chrs:
+      return None
+    self.offset += self.n_of_bytes
+    self.readIndex += 1
+    for ch in chrs:
+      self.byteList.append(ch)
+      #print self.byteList,
+    self.unpack_from_bytes()
+    return self.number
+
+  def next(self):
+    return self.read()
+
+  def close(self):
+    self.file_obj.close()
+
+
+def get_n_of_bytes_for_packer(n_of_combs):
+  exponent = math.log(n_of_combs) / math.log(2)
+  exp_int = int(exponent)
+  if exponent > exp_int:
+    exp_int+=1
+  n_of_bytes = exp_int / 8
+  if exp_int > 8*n_of_bytes:
+    n_of_bytes += 1
+  return n_of_bytes
+
+
+def pack_byte_int(number, n_of_bytes):
   '''
   The purpose and this method (and the next, for unpacking) 
     is to allow the formation of 
@@ -39,132 +133,46 @@ def packByteInt(number, nOfBytes):
 
   '''
   if number < 0:
-    raise ValueError, 'Only unsigned int numbers are allowed.'
-  maxUnsignedIntHere = 2**(nOfBytes*8) - 1
-  if number > maxUnsignedIntHere:
-    raise ValueError, 'number is greater than maxUnsignedIntHere.'
-
-  #mask = getMask(nOfBytes)
-  bytes = [0] * nOfBytes; mask = 255
-  for i in range(nOfBytes):
+    errmsg = 'Only unsigned int numbers are allowed.'
+    raise ValueError(errmsg)
+  max_unsigned_int_here = 2 ** (n_of_bytes * 8) - 1
+  if number > max_unsigned_int_here:
+    errmsg = 'number is greater than max_unsigned_int_here.'
+    raise ValueError(errmsg)
+  #mask = get_mask(nOfBytes)
+  bytes = [0] * n_of_bytes; mask = 255
+  for i in range(n_of_bytes):
     chunk = number & mask
     mask = mask << 8 # from 11111111 to 1111111100000000 and so
-    shiftLeft = 8*i
-    chunk = chunk >> shiftLeft
+    shift_left = 8*i
+    chunk = chunk >> shift_left
     bytes[i] = chr(chunk)
   return bytes
 
-def unpackByteInt(byteList, nOfBytes):
-  if len(byteList) > nOfBytes:
-    raise ValueError, 'number is greater than maxUnsignedIntHere.'
-  c=0; outNumber = 0
-  for i in range(len(byteList)):
-    subNumber = ord(byteList[i])
-    shiftLeft = 8*i
-    subNumber= subNumber<< shiftLeft
-    outNumber += subNumber
-  return outNumber
 
-def getMask(nOfBytes):
-  '''
+def unpack_byte_int(byteList, nOfBytes):
+  if len(byteList) > nOfBytes:
+    errmsg = 'number is greater than maxUnsignedIntHere.'
+    raise ValueError(errmsg)
+  c, out_number = 0, 0
+  for i in range(len(byteList)):
+    sub_number = ord(byteList[i])
+    shift_left = 8*i
+    sub_number= sub_number<< shift_left
+    out_number += sub_number
+  return out_number
+
+
+def get_mask(n_of_bytes):
+  """
   This function is not used anymore, left here for reference purposes
-  '''
-  mask = [0] * nOfBytes
+  """
+  mask = [0] * n_of_bytes
   mask[0] = 255 # ie 2**8 - 1
-  for i in range(1, nOfBytes):
+  for i in range(1, n_of_bytes):
     mask[i] = mask[i-1] << 8
 
 
-class IntPacker(object):
-  '''
-  This class helps read and write integers (from 0 up to 2 ** nOfBytes - 1)
-    from and to binary files.
-
-  The orginal purpose was to keep lgi's numbers.  Each lgi, as it's known,
-    represents a jogo-combination.
-  '''
-  def __init__(self, nOfBytes):
-    self.nOfBytes = nOfBytes
-    self.maxInt   = 2 ** (nOfBytes*8) - 1
-    self.offset    = 0 # offset is a byte index, readIndex, also an index, is offset * 3
-    self.readIndex = 0 # readIndex is incremented 1 at each read()
-    self.number   = None
-    self.byteList = None
-    self.fileObj  = None
-
-  def setNumber(self, number):
-    if number > self.maxInt:
-      raise ValueError, 'number %d is greater than maxInt %d.' %(number, self.maxInt)
-    self.number   = number
-    #print 'self.packToBytes()', self.number   
-    self.packToBytes()
-
-  def setByteList(self, byteList):
-    if len(byteList) > self.nOfBytes:
-      raise ValueError, 'byteList %s has more than %d (nOfBytes)' %(byteList, self.nOfBytes)
-    self.byteList = byteList
-    self.unpackFromBytes()
-
-  def packToBytes(self):
-    if not self.number:
-      raise ValueError, 'self.number is missing.'
-    self.byteList = packByteInt(self.number, self.nOfBytes)
-    #print 'packToBytes(self):', self.byteList 
-
-  def unpackFromBytes(self):
-    if not self.byteList:
-      raise ValueError, 'self.byteList is missing.'
-    self.number = unpackByteInt(self.byteList, self.nOfBytes)
-
-  def setFileObj(self, fileObj, readMode=False):
-    if readMode:
-      self.readMode  = True
-      self.writeMode = False
-    else:
-      self.readMode  = False
-      self.writeMode = True
-    self.fileObj = fileObj
-
-  def write(self, number=None):
-    if self.readMode:
-      raise TypeError, 'cannot write in read mode.'
-    if number <> None:
-      self.setNumber(number)
-    if not self.byteList:
-      raise TypeError, 'byteList has not been set.'
-    for byte in self.byteList:
-      self.fileObj.write(byte)
-
-  def first(self):
-    self.offset = 0
-    self.fileObj.seek(self.offset)
-    self.read()
-
-  def read(self):
-    if self.writeMode:
-      raise TypeError, 'cannot read in write mode.'
-    if not self.fileObj:
-      raise TypeError, 'fileObj has not been set.'
-    #print 'read(self) offset = ', self.offset
-    # print '* read(self) readIndex = ', self.readIndex
-    self.byteList = []
-    #self.fileObj.seek(self.offset)
-    chrs = self.fileObj.read(self.nOfBytes) # read nOfBytes bytes
-    if not chrs:
-      return None 
-    self.offset += self.nOfBytes
-    self.readIndex += 1
-    for chr in chrs:
-      self.byteList.append(chr)
-      #print self.byteList,
-    self.unpackFromBytes()
-    return self.number
-
-  def next(self):
-    return self.read()
-
-  def close(self):
-    self.fileObj.close()
 
 
 def minNOfBits(n):

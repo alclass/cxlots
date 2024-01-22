@@ -71,7 +71,7 @@ class Base(object):
 
   def getNOfBytesForPacker(self):
     nOfCombs = self.getNDeCombs()
-    return binDec.getNOfBytesForPacker(nOfCombs)
+    return binDec.get_n_of_bytes_for_packer(nOfCombs)
 
   def getNOfBits(self):
     return binDec.minNOfBits(self.totalDeDezenasNoVolante)

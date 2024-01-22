@@ -1,67 +1,31 @@
 #!/usr/bin/env python3
 """
+fs/mathfs/metrics/graphshape_metric.py
+
 @See also description below for a historical vision of this metric.
 
-At this version, this metric becomes somewhat simplified.
+  At this version, this metric has become somewhat simplified.
 The metric is a 2-D integer tuple that represents the sum of distances in x's and y's.
+
 Let us see an example: suppose dozens = (4, 12, 23, 33, 45, 51)
-The corresponding points are: ((4, 1), (2,2), (3,3), (3, 4), (5,5), (1, 6))
-  There will be an x-point with a minimal integer and also a minimum y-point.
+The corresponding (col=x, row=y) points are: ((4, 1), (2,2), (3,3), (3, 4), (5,5), (1, 6))
+  There will be a point P with a minimal x integer and also a minimum y integer.
     The x part of the metric is the sum of all x-distances to this minimum x.
     The y part of the metric is the sum of all y-distances to this minimum x.
 The calculation is the following:
-Points (1, 6) [dozen 51] contains the minimum x, ie x=1
-Point (4, 1) [dozen 4] contains the minimum y, ie y=1
-  The x-distances are: (4-1, 2-1, 3-1, 3-1. 5-1, 1-1)
+In the cardgame above:
+  Point (1, 6) [dozen 51] contains the minimum x, which is 1, ie x=1
+  Point (4, 1) [dozen 4] contains the minimum y, which is 1, ie y=1
+
+The x-distances are: (4-1, 2-1, 3-1, 3-1. 5-1, 1-1)
   ie (3, 1, 2, 2, 4, 0) and its sum 12
-  The y-distances are: (1-1, 2-1, 3-1, 4-1, 5-1, 6-1)
+The y-distances are: (1-1, 2-1, 3-1, 4-1, 5-1, 6-1)
   ie (0, 1, 2, 3, 4, 5) and its sum 15
 The result is (12, 15)
+
 ==============================
-Below is the (outdated) description of the metric's former version.
-That former version was flawed in the sense that the metric itself
-  coincided, but in a somewhat different way, the with the row and column patterns.
-
-The graphshape metric in here is conventioned, ie there's a particular algorithm for it.
-Being 'conventioned', the algorithm here is homemade, though we're not certain if
-  it's also known for other problems.
-
-An example may explain this metric (and the algorithm that calculates it.
-Suppuse the following (arbitrary MS) set of dozens: (1, 4, 12, 23, 45, 51)
-
-Step 1 -> Establish point (1, 1) or dozen '01' as origin and reference point (or refpoint)
-Step 2 -> all dozens (6 in MS), in ascending order, are compared to the refpoint
-Example:
-  e1 dozen 01 (which coincide to refpoint) has distance (0, 0), ie it's the refpoint proper
-  e2 dozen 35 (which is point (4, 5)) has distance (3, 4), ie the coordinates subtracted by 1
-  e2 similarly dozen 25 (which is point (1, 5)) has distance (0, 4)
-
-With the 2 steps above, the metric can be formed (calculated)
-
-The metric is a 2-D integer tuple.
-  The first integer is a number representing the x-distances
-  The second integer is a number representing the y-distances
-
-The number is base-10 for the x-distances
-The number is base-6 (written in base-10) for the y-distances
-
-Let's again see an example: dozens = (1, 4, 12, 23, 45, 51)
-The corresponding points are: ((1,1), (1,4), (2,2), (3,3), (5,5), (6,1))
-The distance array to the refpoint above-mentioned are:
-    ((1-1,1-1), (1-1,4-1), (2-1,2-1), (3-1,3-1), (5-1,5-1), (6-1,1-1))
-ie  ((0,0), (0,3), (1,1), (2,2), (4,4), (5,0))
-Separating the axes, we have:
-dxs = [0, 0, 1, 2, 4, 5] making up base10 number 1245
-dys = [0, 3, 1, 2, 4, 0] making up in base7 summation 3*6**1+1*6**2+2*6**3+4*6**4
-Thus, the resulting tuple is dxs, dys = (1245, 5670)
-
-  In a nutshell,
-    cardgame (1, 4, 12, 23, 45, 51)
-      has graph metric as (1245, 5670)
-    Curiosity:
-      the first number 1245 is sort of visualizable from cardgame,
-      but the second one, 5670, is not, due to it being a base7 number written in base10.
-      (@see also module "number_system" for more info on convertion functions to and from number systems.)
+@see also fs/mathfs/metrics/museum/former_graphshape_metric.py
+  for a description of the metric's former version.
 """
 import math
 
@@ -134,6 +98,7 @@ def trans_dozens_to_upper_leftward_points2(dozens):
   print(xs_n_ys)
   return xs_n_ys
 
+
 def trans_dozens_to_points(dozens):
   xs_n_ys = list(map(lambda e: extract_x_y_from_dozen_intval(e), dozens))
   print(xs_n_ys)
@@ -162,7 +127,6 @@ def trans_dozens_to_upper_leftward_points(dozens):
 
   print('min x min y', max_x, max_y)
   return xs, ys
-
 
 
 def calc_graphshape_metric_w_cardgame(dozens):
@@ -197,10 +161,15 @@ def calc_graphshape_metric_w_cardgame(dozens):
 
 class GraphShapeFinder:
 
+  def __init__(self, ord_sor_dozens):
+    self.ord_sor_dozens = ord_sor_dozens
+    self._asc_ord_dozens = None
 
-  def __init__(self, drawn_ord_dozens):
-    self.drawn_ord_dozens = drawn_ord_dozens
-    pass
+  @property
+  def asc_ord_dozens(self):
+    if self._asc_ord_dozens is None:
+      self._asc_ord_dozens = sorted(self.ord_sor_dozens)
+    return self._asc_ord_dozens
 
   def process(self):
     pass
