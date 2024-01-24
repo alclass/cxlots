@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
 fs/mathfs/metrics/immed_repeats_freqs_histograms.py
-  Contains class ImmediateRepeatsCounter that produces an
-  array with the conc-depth
+  Contains classes DepthRepeatsCounter & ImmediateRepeatsCounter
+
+  c1 classes DepthRepeatsCounter produces an array with the conc-depth
+  c2 classes ImmediateRepeatsCounter produces a 5-component related to repeats down to 3 past concs
+
+TO-DO: include in class "MSHistorySlider exception raising when asking a non-existing nconc
 """
 import commands.show.list_ms_history as lh  # lh.MSHistorySlider
 N_DOZENS_IN_CARDGAME = 6
@@ -10,7 +14,10 @@ MAX_DIGITS_IMMED_REPEATS = 2
 DIVIDER_FOR_IMMED_REPEATS = 10 ** MAX_DIGITS_IMMED_REPEATS
 
 
-class ImmediateRepeatsCounter:
+
+
+
+class DepthRepeatsCounter:
   """
   This metric is a "history" metric, ie, it depends on the historical values.
 
@@ -28,6 +35,7 @@ class ImmediateRepeatsCounter:
     self.hist_slider = ms_history_slider
     self.treat_nconc_n_history_or_default()
     self._curr_intlist_sor_ord = None
+    self._current_intlist_asc_ord = None
     self.repeat_depth_list = []  # it's assumed that cardgame is in sor ord
     self._repeat_depth_str = None
     self._repeat_depth_int = None
@@ -54,10 +62,10 @@ class ImmediateRepeatsCounter:
     return self._curr_intlist_sor_ord
 
   @property
-  def current_intlist_in_asc_ord(self):
-    if self._curr_intlist_sor_ord is None:
-      self._curr_intlist_sor_ord = sorted(self.current_intlist_in_sor_ord)
-    return self._curr_intlist_sor_ord
+  def current_intlist_asc_ord(self):
+    if self._current_intlist_asc_ord is None:
+      self._current_intlist_asc_ord = sorted(self.current_intlist_in_sor_ord)
+    return self._current_intlist_asc_ord
 
   @property
   def repeat_depth_int(self):
@@ -129,6 +137,130 @@ class ImmediateRepeatsCounter:
     return outstr
 
 
+class ImmediateRepeatsCounter:
+  """
+
+
+  This metric is a composed one. The composition is '32123', ie, the submeetrics are:
+
+  1st digit (3):  tells how many dozens in top conc repeated triply, ie, repeated in the last 3 concs;
+  2nd digit (2):  tells how many dozens in top conc repeated doubly, ie, repeated in the last 2 concs;
+  3rd digit (1):  tells how many dozens in top conc repeated once, ie, repeated in the last conc;
+  4th digit (2):  tells how many dozens in top conc repeated in the second before last conc;
+  4th digit (3):  tells how many dozens in top conc repeated in the third before last conc;
+  """
+  N_DOWNWARD_OF_LAST_ONES = 3
+  def __init__(self, nconc=None, ms_history_slider=None):
+    self.nconc = nconc
+    self.hist_slider = ms_history_slider
+    self.treat_nconc_n_history_or_default()
+    self._curr_intlist_sor_ord = None
+    self._current_intlist_asc_ord = None
+    self.n_dzs_triple_repeated_at_the_3_last = None
+    self.n_dzs_double_repeated_at_the_2_last = None
+    self.n_dzs_repeated_at_1st_last = None
+    self.n_dzs_repeated_at_2nd_last = None
+    self.n_dzs_repeated_at_3rd_last = None
+    self._immed_repeats_ci = None
+    self.has_been_processed = False
+    self.process()
+
+  def treat_nconc_n_history_or_default(self):
+    """
+    Notice hist_slider depends on lh.MSHistorySlider()
+      being able to supply the specific data from the database.
+
+    At the time of writing, this piece does not raise an exception
+      in case hist_slider is unable to supply data.
+    """
+    if self.hist_slider is None:
+      self.hist_slider = lh.MSHistorySlider()
+    if self.nconc is None:
+      self.nconc = self.hist_slider.get_most_recent_nconc()
+
+  @property
+  def current_intlist_in_sor_ord(self):
+    if self._curr_intlist_sor_ord is None:
+      self._curr_intlist_sor_ord = self.hist_slider.get_in_sor_ord(self.nconc)
+    return self._curr_intlist_sor_ord
+
+  @property
+  def current_intlist_asc_ord(self):
+    if self._current_intlist_asc_ord is None:
+      self._current_intlist_asc_ord = sorted(self.current_intlist_in_sor_ord)
+    return self._current_intlist_asc_ord
+
+  def compose_immed_repeats_ci(self):
+    multiplicands_in_pop_order = [
+      self.n_dzs_triple_repeated_at_the_3_last,
+      self.n_dzs_double_repeated_at_the_2_last,
+      self.n_dzs_repeated_at_1st_last,
+      self.n_dzs_repeated_at_2nd_last,
+      self.n_dzs_repeated_at_3rd_last,
+    ]
+    soma, exponent = 0, 5  # the first exponent will be 5-1=4
+    while len(multiplicands_in_pop_order) > 0:
+      multiplicand = multiplicands_in_pop_order.pop()
+      exponent -= 1
+      base_raised_to_expo = 10 ** exponent
+      soma += multiplicand * base_raised_to_expo
+    self._immed_repeats_ci = soma
+
+  @property
+  def immed_repeats_ci(self):
+    if self._immed_repeats_ci is None:
+      if not self.has_been_processed:
+        self.process()
+    return self._immed_repeats_ci
+
+  def get_metric_datum(self):
+    return self.immed_repeats_ci
+
+
+  def sweep_immed_repeats_down_to_specified_concs(self):
+    l3_triple_repeated_dozens = []
+    l2_double_repeated_dozens = []
+    l1_repeated_dozens = []
+    l2_repeated_dozens = []
+    l3_repeated_dozens = []
+    self.n_dzs_repeated_at_1st_last = 0
+    self.n_dzs_double_repeated_at_the_2_last = 0
+    self.n_dzs_triple_repeated_at_the_3_last = 0
+    self.n_dzs_repeated_at_2nd_last = 0
+    self.n_dzs_repeated_at_3rd_last = 0
+    l1_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-1)
+    for d in self.current_intlist_in_sor_ord:
+      if d in l1_previous_cardgame:
+        l1_repeated_dozens.append(d)
+    l2_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-2)
+    for d in self.current_intlist_in_sor_ord:
+      if d in l2_previous_cardgame:
+        l2_repeated_dozens.append(d)
+        if d in l1_previous_cardgame:
+          l2_double_repeated_dozens.append(d)
+    l3_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-3)
+    for d in self.current_intlist_in_sor_ord:
+      if d in l3_previous_cardgame:
+        l3_repeated_dozens.append(d)
+        if d in l1_previous_cardgame and d in l2_repeated_dozens:
+          l3_triple_repeated_dozens.append(d)
+    self.n_dzs_triple_repeated_at_the_3_last = len(l3_triple_repeated_dozens)
+    self.n_dzs_double_repeated_at_the_2_last = len(l2_double_repeated_dozens)
+    self.n_dzs_repeated_at_1st_last = len(l1_repeated_dozens)
+    self.n_dzs_repeated_at_2nd_last = len(l2_repeated_dozens)
+    self.n_dzs_repeated_at_3rd_last = len(l3_repeated_dozens)
+    self.compose_immed_repeats_ci()
+
+  def process(self):
+    self.sweep_immed_repeats_down_to_specified_concs()
+    self.has_been_processed = False
+
+  def __str__(self):
+    outstr = (f"Immediate Repeats {self.nconc} | {self.current_intlist_asc_ord} |"
+              f" repeatpatt={self.get_metric_datum()} | immed_reps={self.immed_repeats_ci}")
+    return outstr
+
+
 def recover_immed_repeats_from_intpatt(intpatt, immed_repeats=None):
   """
   Decomposes the n parcels of the immediate repeats of a cardgame
@@ -159,11 +291,13 @@ def recover_immed_repeats_from_intpatt(intpatt, immed_repeats=None):
 
 
 def adhoctest():
-  pass
+  for nconc in range(2500, 2400, -1):
+    irc = ImmediateRepeatsCounter(nconc)
+    print(irc)
 
 
 def process():
-  repeatcounter = ImmediateRepeatsCounter()
+  repeatcounter = DepthRepeatsCounter()
   print(repeatcounter)
   repeats_int = 40507091019
   recovered_list = recover_immed_repeats_from_intpatt(repeats_int)

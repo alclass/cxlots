@@ -39,7 +39,9 @@ class MSHistorySlider:
   def get_in_sor_ord(self, trg_nconc):
     idx = trg_nconc - 1
     if idx > self.size - 1:
-      return None
+      errmsg = f'MS nconc {trg_nconc} non-existing.'
+      raise ValueError(errmsg)
+      # return None  # previously it returned None
     return tuple(self.ms_asc_history_as_sor_ord_cardgames[idx])
 
   def get_in_asc_ord(self, trg_nconc):
