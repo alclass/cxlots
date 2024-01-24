@@ -52,7 +52,7 @@ def create_table_if_not_exists():
     n_8_adjacent INT,
     n_immed_repeats INT,
     up_same_down_seq INT,
-    resto5patt INT,
+    remainder5patt INT,
     resto12patt_b12_to_b10 INT,
     quadrantpatt INT,
     colpatt INT,
@@ -63,6 +63,7 @@ def create_table_if_not_exists():
     xs_ys_distsum_commasep TEXT,
     dzs_repeatdepth_commasep TEXT,
     dzs_acc_hstgrm_commasep TEXT, 
+    dzs_pctils_hstgrm TEXT, 
     created_at DATETIME,
     modified_at DATETIME
   );

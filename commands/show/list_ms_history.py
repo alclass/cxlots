@@ -11,11 +11,17 @@ import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # .get_sqlite_c
 class MSHistorySlider:
 
   def __init__(self):
-    self.ms_desc_history_w_sor_ord_cardgames = get_ms_history_as_list_with_cardgames_in_ord_sor()
+    self.ms_asc_history_as_sor_ord_cardgames = get_ms_history_as_list_with_cardgames_in_ord_sor()
 
   @property
   def size(self):
-    return len(self.ms_desc_history_w_sor_ord_cardgames)
+    return len(self.ms_asc_history_as_sor_ord_cardgames)
+
+  def get_asc_history_as_sor_ord_cardgames(self):
+    return self.ms_asc_history_as_sor_ord_cardgames
+
+  def get_desc_history_as_sor_ord_cardgames(self):
+    return list(reversed(self.ms_asc_history_as_sor_ord_cardgames))
 
   def get_most_recent_nconc(self):
     """
@@ -34,7 +40,7 @@ class MSHistorySlider:
     idx = trg_nconc - 1
     if idx > self.size - 1:
       return None
-    return tuple(self.ms_desc_history_w_sor_ord_cardgames[idx])
+    return tuple(self.ms_asc_history_as_sor_ord_cardgames[idx])
 
   def get_in_asc_ord(self, trg_nconc):
     intlist = self.get_in_sor_ord(trg_nconc)

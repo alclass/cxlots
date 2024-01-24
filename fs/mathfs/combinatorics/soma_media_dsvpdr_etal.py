@@ -9,7 +9,7 @@ This module contains calculation for the following metrics:
     completed m5 n_8_adjacent INT,
     completed m6 n_immed_repeats INT,
     completed m7 up_same_down_seq INT,
-    completed m8 resto5patt INT,
+    completed m8 remainder5patt INT,
     completed m9 resto12patt_b12_to_b10 INT,
     completed m10 quadrantpatt INT,
 
@@ -228,7 +228,6 @@ class EightAdjacentSurroundingNumberFinder:
     self.gather_the_8_surrounding_ints()
 
   def __str__(self):
-    pdict = self.surrounding_dict
     outstr = f"""intval={self.intval} surrounding_ints={self.surrounding_ints}
     {self.surrounding_dict}"""
     return outstr
@@ -332,7 +331,7 @@ def one():
     n_8_adjacent INT,
     n_immed_repeats INT,
     down_same_up_array INT,
-    resto5patt INT,
+    remainder5patt INT,
     resto12patt_b12_to_b10 INT,
     quadrantpatt INT,
   """
@@ -415,7 +414,6 @@ def calc_resto5patt_from_intlist(intlist):
 def calc_quadrantpattern_from_intlist_n_maxcol_maxrow(intlist, maxcol=10, maxrow=6):
   col_mid_to_left = maxcol // 2
   row_mid_to_up = maxrow // 2
-  quadrant = None
   quadrant_list = []
   for d in intlist:
     xcol, yrow = ds.extract_xcol_yrow_from_dozen_intval(d, maxcol)
@@ -469,12 +467,11 @@ def list_metrics_soma_media_dp_consec_etc_thru_ms_history(nrecords=5):
     m5 n_8_adjacent INT,
     (depends on history) m6 n_immed_repeats INT,
     m7 up_same_down_seq INT,
-    m8 resto5patt INT,
+    m8 remainder5patt INT,
     m9 resto12patt_b12_to_b10 INT,
     m10 quadrantpatt INT,
   """
   ms_asc_history_list = lh.get_ms_history_as_list_with_cardgames_in_ord_sor()
-  histogram_up_same_down, histogram_8_adjacent = {}, {}
   downto = len(ms_asc_history_list) - nrecords
   for i in range(len(ms_asc_history_list)-1, downto, -1):
     nconc = i + 1

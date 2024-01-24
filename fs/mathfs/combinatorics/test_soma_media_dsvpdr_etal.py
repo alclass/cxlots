@@ -22,7 +22,7 @@ class TestCase1(unittest.TestCase):
         {'east': 36, 'west': 34, 'south': 45, 'north': 25,
          'southeast': 46, 'southwest': 44, 'northeast': 26, 'northwest': 24}
 
-    The first method below has test for the default 10x6 cardmatrix, having 10 columns and 6 rows.
+    The first method below has tests for the default 10x6 cardmatrix, having 10 columns and 6 rows.
     The second method in continuation tests under a different 2D cardmatrix size.
     """
     # t1 the top-leftmost edge

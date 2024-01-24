@@ -162,10 +162,6 @@ def adhoctest():
   pass
 
 
-def adhoctest2():
-  pass
-
-
 def process():
   repeatcounter = ImmediateRepeatsCounter()
   print(repeatcounter)
@@ -176,7 +172,7 @@ def process():
 
 if __name__ == '__main__':
   """
-  adhoctest()
   adhoctest2()
   """
   process()
+  adhoctest()
