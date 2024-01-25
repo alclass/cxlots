@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 fs/mathfs/combinatorics/IndicesCombiner.py
-  Contains the class IndicesCombiner that models a combinadic object (@see ref @wikipedia below)
+  Contains the class IndicesCombiner that models a combinadic object
+  (@see ref @wikipedia below)
 
 Ref.: http://en.wikipedia.org/wiki/Combinadic
   combinadics Module
@@ -9,7 +10,7 @@ Ref.: http://en.wikipedia.org/wiki/Combinadic
 import copy
 import sys
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
-import fs.mathfs.combinatorics.IndicesCombiner_functions as icf  # icf.project_last_combinationlist
+import fs.mathfs.combinatorics.IndicesCombiner_functions as ICf  # ICf.project_last_combinationlist
 
 
 class IndicesCombiner(object):
@@ -112,7 +113,8 @@ class IndicesCombiner(object):
       overlap = True
     if not overlap:
       if n_elements + 2 < n_slots:
-        errmsg = 'Inconsistent IndicesCombiner upLimit(=%d) must be at least size(=%d) - 1 when overlap=False ' %(up_limit, n_slots)
+        errmsg = ('Inconsistent IndicesCombiner upLimit(=%d) must be at least size(=%d) - 1 when overlap=False '
+                  % (n_elements, n_slots))
         raise ValueError(errmsg)
     self.overlap = overlap
     if i_array_in == [0] and n_slots > 1:
@@ -467,7 +469,7 @@ class IndicesCombiner(object):
     When the last one is current, a None will be returned
     """
     if not self.overlap:
-      self.i_array = icf.add_one(self.i_array, up_limit=self.up_limit)
+      self.i_array = ICf.add_one(self.i_array, up_limit=self.up_limit)
       return self.i_array
     # check before first element
     if self.i_array is not None and self.i_array == [-1] * self.n_slots:

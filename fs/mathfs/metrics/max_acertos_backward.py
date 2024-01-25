@@ -101,6 +101,9 @@ class TripleBackwardMaxAcertos:
         self._triplemaxacertos = int(tmpstr)
     return self._triplemaxacertos
 
+  def get_metric_datum(self):
+    return self.triplemaxacertos_int
+
   @property
   def triplemaxacertos_str(self):
     try:

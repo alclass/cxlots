@@ -14,9 +14,6 @@ MAX_DIGITS_IMMED_REPEATS = 2
 DIVIDER_FOR_IMMED_REPEATS = 10 ** MAX_DIGITS_IMMED_REPEATS
 
 
-
-
-
 class DepthRepeatsCounter:
   """
   This metric is a "history" metric, ie, it depends on the historical values.
@@ -150,6 +147,7 @@ class ImmediateRepeatsCounter:
   4th digit (3):  tells how many dozens in top conc repeated in the third before last conc;
   """
   N_DOWNWARD_OF_LAST_ONES = 3
+
   def __init__(self, nconc=None, ms_history_slider=None):
     self.nconc = nconc
     self.hist_slider = ms_history_slider
@@ -161,6 +159,12 @@ class ImmediateRepeatsCounter:
     self.n_dzs_repeated_at_1st_last = None
     self.n_dzs_repeated_at_2nd_last = None
     self.n_dzs_repeated_at_3rd_last = None
+    # the lists below are for 'inspection' purposes, ie for helping debug if needed
+    self.l3_triple_repeated_dozens = []
+    self.l2_double_repeated_dozens = []
+    self.l1_repeated_dozens = []
+    self.l2_repeated_dozens = []
+    self.l3_repeated_dozens = []
     self._immed_repeats_ci = None
     self.has_been_processed = False
     self.process()
@@ -192,11 +196,11 @@ class ImmediateRepeatsCounter:
 
   def compose_immed_repeats_ci(self):
     multiplicands_in_pop_order = [
-      self.n_dzs_triple_repeated_at_the_3_last,
-      self.n_dzs_double_repeated_at_the_2_last,
-      self.n_dzs_repeated_at_1st_last,
-      self.n_dzs_repeated_at_2nd_last,
-      self.n_dzs_repeated_at_3rd_last,
+      self.n_dzs_triple_repeated_at_the_3_last,  # 1 (ie 10**0)
+      self.n_dzs_double_repeated_at_the_2_last,  # 10 (ie 10**1)
+      self.n_dzs_repeated_at_3rd_last,  # 100 (ie 10**2)
+      self.n_dzs_repeated_at_2nd_last,  # 1000 (ie 10**3)
+      self.n_dzs_repeated_at_1st_last,  # 10000 (ie 10**4)
     ]
     soma, exponent = 0, 5  # the first exponent will be 5-1=4
     while len(multiplicands_in_pop_order) > 0:
@@ -208,6 +212,14 @@ class ImmediateRepeatsCounter:
 
   @property
   def immed_repeats_ci(self):
+    """
+    The metric is an int composed of 5 numbers 'encoded' in a larger whole number (integer)
+      n_dzs_repeated_at_1st_last,  # 10000 (ie 10**4)
+      n_dzs_repeated_at_2nd_last,  # 1000 (ie 10**3)
+      n_dzs_repeated_at_3rd_last,  # 100 (ie 10**2)
+      n_dzs_double_repeated_at_the_2_last,  # 10 (ie 10**1)
+      n_dzs_triple_repeated_at_the_3_last,  # 1 (ie 10**0)
+    """
     if self._immed_repeats_ci is None:
       if not self.has_been_processed:
         self.process()
@@ -216,13 +228,12 @@ class ImmediateRepeatsCounter:
   def get_metric_datum(self):
     return self.immed_repeats_ci
 
-
   def sweep_immed_repeats_down_to_specified_concs(self):
-    l3_triple_repeated_dozens = []
-    l2_double_repeated_dozens = []
-    l1_repeated_dozens = []
-    l2_repeated_dozens = []
-    l3_repeated_dozens = []
+    self.l3_triple_repeated_dozens = []
+    self.l2_double_repeated_dozens = []
+    self.l1_repeated_dozens = []
+    self.l2_repeated_dozens = []
+    self.l3_repeated_dozens = []
     self.n_dzs_repeated_at_1st_last = 0
     self.n_dzs_double_repeated_at_the_2_last = 0
     self.n_dzs_triple_repeated_at_the_3_last = 0
@@ -231,24 +242,24 @@ class ImmediateRepeatsCounter:
     l1_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-1)
     for d in self.current_intlist_in_sor_ord:
       if d in l1_previous_cardgame:
-        l1_repeated_dozens.append(d)
+        self.l1_repeated_dozens.append(d)
     l2_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-2)
     for d in self.current_intlist_in_sor_ord:
       if d in l2_previous_cardgame:
-        l2_repeated_dozens.append(d)
+        self.l2_repeated_dozens.append(d)
         if d in l1_previous_cardgame:
-          l2_double_repeated_dozens.append(d)
+          self.l2_double_repeated_dozens.append(d)
     l3_previous_cardgame = self.hist_slider.get_in_sor_ord(self.nconc-3)
     for d in self.current_intlist_in_sor_ord:
       if d in l3_previous_cardgame:
-        l3_repeated_dozens.append(d)
-        if d in l1_previous_cardgame and d in l2_repeated_dozens:
-          l3_triple_repeated_dozens.append(d)
-    self.n_dzs_triple_repeated_at_the_3_last = len(l3_triple_repeated_dozens)
-    self.n_dzs_double_repeated_at_the_2_last = len(l2_double_repeated_dozens)
-    self.n_dzs_repeated_at_1st_last = len(l1_repeated_dozens)
-    self.n_dzs_repeated_at_2nd_last = len(l2_repeated_dozens)
-    self.n_dzs_repeated_at_3rd_last = len(l3_repeated_dozens)
+        self.l3_repeated_dozens.append(d)
+        if d in l1_previous_cardgame and d in l2_previous_cardgame:
+          self.l3_triple_repeated_dozens.append(d)
+    self.n_dzs_triple_repeated_at_the_3_last = len(self.l3_triple_repeated_dozens)
+    self.n_dzs_double_repeated_at_the_2_last = len(self.l2_double_repeated_dozens)
+    self.n_dzs_repeated_at_1st_last = len(self.l1_repeated_dozens)
+    self.n_dzs_repeated_at_2nd_last = len(self.l2_repeated_dozens)
+    self.n_dzs_repeated_at_3rd_last = len(self.l3_repeated_dozens)
     self.compose_immed_repeats_ci()
 
   def process(self):
@@ -258,6 +269,8 @@ class ImmediateRepeatsCounter:
   def __str__(self):
     outstr = (f"Immediate Repeats {self.nconc} | {self.current_intlist_asc_ord} |"
               f" repeatpatt={self.get_metric_datum()} | immed_reps={self.immed_repeats_ci}")
+    outstr += f"""l3 triple  {self.l3_triple_repeated_dozens} l2 double {self.l2_double_repeated_dozens}
+    l1 {self.l1_repeated_dozens} l2 {self.l2_repeated_dozens} l3 {self.l3_repeated_dozens}"""
     return outstr
 
 

@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """
-fs/mathfs/combinatorics/lexicographicalindices.py
+fs/mathfs/combinatorics/lexicographical_indices.py
   Contains class LgiCombiner and other related classes and functions
 """
 import random
 import sys
-import IndicesCombiner as iCmb # for the comb(n, m) function
-SUBINDO  = 2
+import fs.mathfs.combinatorics.IndicesCombiner as iCmb  # for the comb(n, m) function
+SUBINDO = 2
 DESCENDO = 1
-counter = 0 # global
+counter = 0  # global
 
 
 class Lexico:
 
   def __init__(self):
     self.counter = 0
+
 
 def check_up_amount_in_array_carried(carried_array, lgi):
   size = len(carried_array); soma = 0
@@ -26,13 +27,16 @@ def check_up_amount_in_array_carried(carried_array, lgi):
     errmsg = 'checkUpAmountInCarriedArray() ==>> soma (=%d) não igual a lgi (=%d) %s' %(soma, lgi, str(carried_array))
     raise ValueError(errmsg)
 
+
 def transform_comb_in_lgi(comb_array, n_of_elems):
   lc = LgiCombiner(n_of_elems - 1, -1, comb_array)
   return lc.get_lgi()
 
+
 def transform_lgi_in_comb(n_of_elems, size, lgi):
   lc = LgiCombiner(n_of_elems - 1, size)
   return lc.move_to(lgi)
+
 
 class LgiCombiner(object):
   """
@@ -62,10 +66,11 @@ class LgiCombiner(object):
   because
     c(19,6)+c(15,5)+c(13,4)+c(11,3)+c(5,2)+c(4,1) = 31029
 
-  It also finds the other way around, ie:
+  It can also be gotten the other way around, ie:
   fInv([19,15,13,11,5,4]) = 31029
 
-  Operationally, the movesTo() is the first (direct) function, the get_lgi() is the second (inverse) function
+  Operationally, the movesTo() is the first (direct) function,
+    the get_lgi() is the second (inverse) function
 
   Steps for that example:
 
@@ -98,8 +103,6 @@ class LgiCombiner(object):
   (*) get_first_given() explanation
   when iArrayIn is passed with a consistent array
   get_first_given() returns that array
-
-
 
   Error Handling
   ==============
@@ -140,7 +143,6 @@ class LgiCombiner(object):
     File "./comb.py", line 80, in __init__
       raise ValueError, msg
   ValueError: Inconsistent IndicesCombiner upLimit(=1) must be at least size(=4) - 1 when overlap=False
-
   """
 
   def __init__(self, up_limit=0, size=1, i_array_in=None):
@@ -150,26 +152,26 @@ class LgiCombiner(object):
       up_limit = 0
     self.up_limit = up_limit
     # yet to be checked True
-    self.still_first  = False
+    self.still_first = False
     i_array_in = [0] if i_array_in is None else i_array_in
     if i_array_in == [0] and size > 1:
       self.i_array = range(size - 1, -1, -1)
-      self.still_first  = True
+      self.still_first = True
     else:
       self.i_array = list(i_array_in)
       if self.i_array == range(size - 1, -1, -1):
         self.still_first = True
     self.size = len(self.i_array)
     self.check_array_consistency()
-    self.nOfCombines = iCmb.comb(self.up_limit + 1, self.size)
-    self.iArrayGiven = list(self.i_array)
+    self.n_of_combines = iCmb.IndicesCombiner(self.up_limit + 1, self.size)
+    self.i_array_given = list(self.i_array)
 
   def check_array_consistency(self):
     """
     Checks the consistency of iArray
     Examples of inconsistent arrays:
-    valid ==>> [2,1,0], [100,1,0]
-    invalid ==>> [0,0,0], [3,2,2]
+      valid ==>> [2,1,0], [100,1,0]
+      invalid ==>> [0,0,0], [3,2,2]
     """
     for i in range(self.size-1):
       if self.i_array[i] <= self.i_array[i + 1]:
@@ -177,7 +179,7 @@ class LgiCombiner(object):
         raise ValueError(errmsg)
 
   def output_i_array(self, sort_it, is_zeroless):
-    i_array = list(self.i_array) # hard copy
+    i_array = list(self.i_array)  # hard-copy it
     if sort_it:
       i_array.sort()
     if is_zeroless:
@@ -194,7 +196,7 @@ class LgiCombiner(object):
   def get_lgi(self):
     lgi = 0
     for i in range(self.size):
-      value =  self.i_array[i]
+      value = self.i_array[i]
       pos_inv = self.size - i
       lgi += iCmb.comb(value, pos_inv)
     return lgi
@@ -210,18 +212,18 @@ class LgiCombiner(object):
     return self.output_i_array(sort_it, is_zeroless)
 
   def first_given(self):
-    '''
+    """
     Returns the get_first_given or restartAt array but does not change current position
     To change it, use position_to_first_given()
-    '''
-    return list(self.iArrayGiven) # output a hard-copy of it so that it (the reference) is not changed outside
+    """
+    return list(self.i_array_given) # output a hard-copy of it so that it (the reference) is not changed outside
 
   def position_to_first_given(self):
     """
     Returns the get_first_given/restartAt array changing current position to it
     @see also get_first_given()
     """
-    self.i_array = list(self.iArrayGiven)
+    self.i_array = list(self.i_array_given)
 
   def last(self, sort_it=True, is_zeroless=True):
     """
@@ -234,14 +236,14 @@ class LgiCombiner(object):
     return self.output_i_array(sort_it, is_zeroless)
 
   def move_to(self, lgi=0, sort_it=True, is_zeroless=True):
-    if lgi<=0:
-      if lgi==0:
+    if lgi <= 0:
+      if lgi == 0:
         return self.first()
       return None
-    max_index = self.nOfCombines - 1
+    max_index = self.n_of_combines - 1
     # print 'max_index', max_index
     if lgi >= max_index:
-      if lgi==max_index:
+      if lgi == max_index:
         return self.last()
       return None
     # initializing array_carried
@@ -251,23 +253,21 @@ class LgiCombiner(object):
     # if it got here, there are at least 3 elements, hence there's a midpoint
     point_inf = self.size - 1 - 0
     point_sup = self.up_limit
-    pos      = 0
+    pos = 0
     self.i_array = self.approach(lgi, point_inf, point_sup, pos, array_carried)
     return self.output_i_array(sort_it, is_zeroless)
 
   def approach(self, lgi, point_inf, point_sup, pos, array_carried, amount=0):
     """
     global counter
-
     """
     if pos == self.size:
-      errmsg = (
-      """  Well, failed to get the LG Index. 
+      errmsg = ("""  Well, failed to get the LG Index. 
       Reason: pos surpasses all available slots. (pos=%d, size=%d, pointInf=%d, pointSup=%d)
       """ % (pos, self.size, point_inf, point_sup))
       print(errmsg)
       sys.exit(0)
-      #raise ValueError, msg
+      # raise ValueError(errmsg)
     point_mid = point_inf + (point_sup - point_inf) / 2
     pos_inv = self.size - pos
     parcel = iCmb.comb(point_mid, pos_inv)
@@ -276,11 +276,10 @@ class LgiCombiner(object):
     amount_compare_sup = amount + parcel_sup
     parcel_inf = iCmb.comb(point_inf, pos_inv)
     amount_compare_inf = amount + parcel_inf
-
-    #msg = 'i=%d inf=%d/%d mid=%d/%d sup=%d/%d pos=%d %s press [ENTER]' %(lgi, pointInf, amount_compare_inf, point_mid, amount_compare, pointSup, amount_compare_sup, pos, str(arrayCarried))
-    #ans=raw_input(msg)
-    #counter+=1 # global
-    #print counter, msg
+    # msg = 'i=%d inf=%d/%d mid=%d/%d sup=%d/%d pos=%d %s press [ENTER]' %(lgi, pointInf, amount_compare_inf, point_mid, amount_compare, pointSup, amount_compare_sup, pos, str(arrayCarried))
+    # ans=raw_input(msg)
+    # counter+=1 # global
+    # print counter, msg
     if amount_compare_sup < lgi:
       amount += parcel_sup
       array_carried[pos] = point_sup
@@ -289,13 +288,11 @@ class LgiCombiner(object):
       point_inf = self.size - 1 - pos
       point_sup = point_sup - 1 # limiteSup
       return self.approach(lgi, point_inf, point_sup, pos, array_carried, amount)
-
     if amount_compare_sup == lgi: # ok, game over
       array_carried[pos] = point_sup
       # check for consistency
       check_up_amount_in_array_carried(array_carried, lgi)
       return array_carried
-
     if amount_compare > lgi:
       # the following check avoids an infinite recursion and logically complements the desired functionality
       if point_mid >= point_sup-1 and parcel_inf < lgi:
@@ -333,35 +330,35 @@ class LgiCombiner(object):
 
   def previous2(self):
     """
-    Moves iArray to the its previous consistent position and returns the array
+    Moves iArray to its previous consistent position and returns the array
     When the first one is current, None will be returned
     """
     pos = self.size - 1
     if self.overlap:
-      return self.minusOneOverlap(pos)
+      return self.minus_one_overlap(pos)
     else:
-      return self.minusOneNonOverlap(pos)
+      return self.minus_one_nonoverlap(pos)
 
-  def ajustToTheRight(self, pos):
+  def ajust_to_the_right(self, pos):
     for i in range(pos, self.size-1):
       self.i_array[i + 1] = self.i_array[i] - 1
     self.check_array_consistency()
 
-  def subtractOne(self, pos=-1):
-    if pos==-1:
+  def subtract_one(self, pos=-1):
+    if pos == -1:
       pos = self.size - 1
-    leastAllowed = self.size - pos - 1
+    least_allowed = self.size - pos - 1
     if pos == 0:
-      if self.i_array[0] == leastAllowed:
+      if self.i_array[0] == least_allowed:
         return None
       self.i_array[0] -= 1
-      self.ajustToTheRight(0)
-      return 1 # self.iArray
-    if self.i_array[pos] == leastAllowed:
-      return self.subtractOne(pos-1)
-    self.i_array[pos]-=1
-    self.ajustToTheRight(pos)
-    return 1 # self.iArray
+      self.ajust_to_the_right(0)
+      return 1  # self.iArray
+    if self.i_array[pos] == least_allowed:
+      return self.subtract_one(pos - 1)
+    self.i_array[pos] -= 1
+    self.ajust_to_the_right(pos)
+    return 1  # self.iArray
 
   def add_one(self, pos=-1):
     """
@@ -371,19 +368,19 @@ class LgiCombiner(object):
     """
     if pos == 0:
       if self.i_array[0] == self.up_limit:
-        #print 'self.iArray', self.iArray
-        self.ajustToTheRight(0)
+        # print 'self.iArray', self.iArray
+        self.ajust_to_the_right(0)
         return None
       self.i_array[0] += 1
-      return 1  #self.iArray
-    if pos==-1:
+      return 1  # self.iArray
+    if pos == -1:
       pos = self.size - 1
     if self.i_array[pos]+1 == self.i_array[pos - 1]:
       least_allowed = self.size - pos - 1
       self.i_array[pos] = least_allowed
       return self.add_one(pos - 1)
     self.i_array[pos] += 1
-    return 1 # self.iArray
+    return 1  # self.iArray
 
   def next(self, quant=1, sort_it=True, is_zeroless=True):
     """
@@ -430,7 +427,7 @@ class LgiCombiner(object):
     """
     ret_val = None
     for i in range(quant):
-      ret_val = self.subtractOne()
+      ret_val = self.subtract_one()
     if not ret_val:
       return None
     return self.output_i_array(sort_it, is_zeroless)
@@ -443,163 +440,17 @@ class LgiCombiner(object):
     return out_str
 
 
-def test_indices_combiner(upLimit, size):
-  # signature IndsControl(upLimit=1, size=-1, overlap=True, iArrayIn=[])
-  ind_comb = LgiCombiner(upLimit, size, True)
-  c=0
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, True)' % (upLimit, size)
-  print(scrmsg)
-  s = ind_comb.first_given()
-  set_with_ol = []
-  while s:
-    c+=1
-    print(c, s)
-    set_with_ol.append(list(s))
-    s = ind_comb.next()
-  set_without_ol = []
-  ind_comb = LgiCombiner(upLimit, size, False)
-  c=0
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, False)' % (upLimit, size)
-  print(scrmsg)
-  s = ind_comb.first_given()
-  while s:
-    c+=1
-    print(c, s)
-    set_without_ol.append(list(s))
-    s = ind_comb.next()
-  c=0; notThere = 0
-  for w_ol in set_with_ol:
-    c+=1
-    print(c, w_ol,)
-    if w_ol in set_without_ol:
-      print(w_ol)
-    else:
-      notThere += 1
-      print(notThere)
-
-def pick_up_params():
-  params = []
-  up_limit = 5
-  size    = 3
-  for i in range(1, len(sys.argv)):
-    params.append(sys.argv[i].lower())
-  print('params', params)
-  if '-uplimit' in params:
-    index = params.index('-uplimit')
-    print('index -uplimit', index)
-    if index + 1 < len(params):
-      try:
-        up_limit = int(params[index + 1])
-      except ValueError:
-        pass
-  if '-size' in params:
-    index = params.index('-size')
-    if index + 1 < len(params):
-      try:
-        size = int(params[index + 1])
-      except ValueError:
-        pass
-  return up_limit, size
-
-def adhoctest_shift_left(up_limit, size):
-  ind_comb = LgiCombiner(up_limit, size, True, [2, 4, 5])
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
-  print(scrmsg)
-  print(ind_comb)
-  scrmsg = 'adhoctest_shift_left()', ind_comb.shiftLeft()
-  print(scrmsg)
-  for i in range(7):
-    next_i = ind_comb.next()
-  print('next_i 7', next_i)
-  print('adhoctest_shift_left()', ind_comb.shiftLeft())
-  ind_comb = LgiCombiner(7, -1, True, [0,6,6,7,7])
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
-  print(scrmsg)
-  print(ind_comb)
-  pos = 1
-  vaium = ind_comb.vaiUmInPlace(pos)
-  scrmsg = f'test pos={pos} vaium={vaium}'
-  print(scrmsg)
-  pos = 2
-  lshift = ind_comb.shiftLeft(pos)
-  scrmsg = f'test pos={pos} leftshift={lshift}'
-  print(scrmsg)
-  pos = 1
-  scrmsg = 'test vai um(%d)' % (pos), ind_comb.vaiUmInPlace(pos)
-  print(scrmsg)
-  print 'test vai um(%d)' %(pos), ind_comb.vaiUmInPlace(pos)
-  print 'test vai um(%d)' %(pos), ind_comb.vaiUmInPlace(pos)
-  print 'current', ind_comb.current()
-  print 'next_i', ind_comb.next()
-  
-def testPrevious(upLimit, size):
-  ic = IndicesCombinerLgi(upLimit, size)
-  print 'ic', ic
-  print 'ic.next()', ic.next()
-  print 'ic.previous()', ic.previous()
-  for i in range(36):
-    print i,'ic.next()', ic.next()
-  for i in range(36):
-    print i,'ic.previous()', ic.previous()
-
-def testGetByLgi(upLimit, size):
-  ic = LgiCombiner(upLimit, size)
-  print 'ic', ic
-  print 'ic.next()', ic.next()
-  print 'ic.previous()', ic.previous()
-  nOfComb = ic.nOfCombines
-  #sys.exit(0)
-  lgi = random.randint(0,nOfComb-1)
-  msg = 'ic.move_to(lgi=%d)' %(lgi)
-  #ans=raw_input(msg)
-  #lgi = 31029 #21208
-  #print 'ic.move_to(lgi=%d)' %(lgi), ic.move_to(lgi)
-  for i in range(3):
-    lgi = random.randint(0,nOfComb-1)
-    ic.move_to(lgi)
-    array = ic.currentSorted()
-    array1 = ic.currentSortedFrom1()
-    print i, 'ic.move_to(lgi=%d)' %(lgi), array, array1, 'lgi', ic.get_lgi()
-
-def testTransforms():
-  combArray = [14,10,5,1]; nOfElems = 20
-  lgi = transform_comb_in_lgi(combArray, nOfElems)
-  print 'lgi = transform_comb_in_lgi(combArray, nOfElems)', combArray, nOfElems, 'lgi', lgi
-  nOfElems = 20; size = 4; lgi = 7
-  combArray = transform_lgi_in_comb(nOfElems, size, lgi)
-  print 'comb = transform_lgi_in_comb(nOfElems, size, lgi)', nOfElems, size, lgi, 'comb', combArray
+def adhoctest():
+  lgi = LgiCombiner(up_limit=6, size=6)
+  print('n_of_combines', lgi.n_of_combines)
+  print('lgi', lgi)
 
 
-def test_get_item():
-  lgi_obj = LgiCombiner(59, 6)
-  c=0
-  for lgi in lgi_obj:
-    print(lgi)
-    c+=1
-    if c>7:
-      break
+def process():
+  pass
 
 
 if __name__ == '__main__':
-  pass
-  test_get_item()
-  '''
-  lgiObj = LgiCombiner(59, 6)
-  print lgiObj
-  print lgiObj.current(), lgiObj.get_lgi()
-  print lgiObj.next(), lgiObj.get_lgi()
-  print lgiObj.move_to(100), lgiObj.get_lgi()
-  print lgiObj.last(), lgiObj.get_lgi()
-  print 'comb.comb(60,6)', comb.comb(60,6)
-
-  nOfElems = 60
-  upLimit, size = nOfElems-1, 6 #pick_up_params()
-  print 'upLimit=%d :: size=%d ' %(upLimit, size)
-  #ans = raw_input('ok ? ')
-  #test_indices_combiner(upLimit, size)
-  #testIndsControl()
-  #adhoctest_shift_left(upLimit, size)
-  #adhoctest_previous(upLimit, size)
-  #testGetByLgi(upLimit, size)
-  testTransforms()
-  '''
+  """
+  """
+  adhoctest()

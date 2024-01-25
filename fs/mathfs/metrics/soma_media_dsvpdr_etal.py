@@ -458,6 +458,22 @@ def recover_remainders12_from_its_base10int(intval, remainders=None):
   return recover_remainders12_from_its_base10int(divided, remainders)
 
 
+def calc_column_n_row_str_patterns(intlist, maxcol=10, maxrow=6):
+  colpatt_dict = {c: 0 for c in range(1, maxcol+1)}
+  rowpatt_dict = {r: 0 for r in range(1, maxrow+1)}
+  for d in intlist:
+    xcol, yrow = ds.extract_xcol_yrow_from_dozen_intval(d, maxcol)
+    colpatt_dict[xcol] += 1
+    # at this version, let an exception be raised if yrow is greater than parameter 'maxrow'
+    rowpatt_dict[yrow] += 1
+  colpatt_dict = dict(sorted(colpatt_dict.items(), key=lambda e: e[0]))
+  rowpatt_dict = dict(sorted(rowpatt_dict.items(), key=lambda e: e[0]))
+  colpatt_str = ''.join(map(str, colpatt_dict.values()))
+  rowpatt_str = ''.join(map(str, rowpatt_dict.values()))
+  # colpatt_int, rowpatt_int = int(colpatt_str), int(rowpatt_str)
+  return colpatt_str, rowpatt_str
+
+
 def list_metrics_soma_media_dp_consec_etc_thru_ms_history(nrecords=5):
   """
     m1 soma INT,
@@ -490,10 +506,11 @@ def list_metrics_soma_media_dp_consec_etc_thru_ms_history(nrecords=5):
     r5patt = calc_resto5patt_from_intlist(dozens)
     r12patt = calc_resto12patt_as_a_base10int_from_intlist(dozens)
     quad = calc_quadrantpattern_from_intlist_n_maxcol_maxrow(dozen_ord_sor)
+    col_n_row_patts = calc_column_n_row_str_patterns(dozens)
     scrmsg = (
-      f"nconc={nconc} | {dozen_ord_sor} | s={soma} | md={med100} | dp={dp100}"
+      f"nconc={nconc} | {dozen_ord_sor} {dozens}| s={soma} | md={med100} | dp={dp100}"
       f" | consec={consec} | 8_adj={n_8_adjacent} | up0down={upsamedown_seq}"
-      f" {upsamedown_str} | r5={r5patt} | r12={r12patt} | quad={quad}"
+      f" {upsamedown_str} | r5={r5patt} | r12={r12patt} | quad={quad} | {col_n_row_patts}"
     )
     print(scrmsg)
 

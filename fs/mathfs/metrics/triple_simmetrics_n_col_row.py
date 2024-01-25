@@ -5,13 +5,13 @@ fs/mathfs/metrics/triple_simmetrics_n_col_row.py
 The "triple simmetrics" (field triplesimm_n_col_row in db [at least at the time of this writing])
   is composed of 3 submetrics (sm), so to say, they are:
 
-  sm1  the 'number' simmetric (its explanation below)
+  sm1  the 'modulo' simmetric (its explanation below)
   sm2  the 'column' simmetric (explanation below)
   sm3  the 'row' simmetric (definition below)
 
  => m1  the 'number' simmetric:
 
-  In MS (Megasena) the number simmetric is as follows:
+  In MS (Megasena) the mtx simmetric is as follows:
     60 is simmetric of 1 and viceversa
     59 is simmetric of 2 and viceversa
     58 is simmetric of 3 and viceversa
@@ -63,7 +63,7 @@ If it were chosen to use the base 4, the triplesimmetric number formation functi
 
 Example for the triplesimmetric as a metric-indicator:
   if the triplesimmetric is, for an example, '123', that says the following:
-    1 pair (2 numbers) is 'number simmetric'
+    1 pair (2 numbers) is 'modulo simmetric'
     2 pairs (4 numbers, 2 each) is 'column simmetric'
     3 pairs (6 numbers, 2 each) is 'row simmetric'
 
@@ -86,13 +86,13 @@ ex1 conc=2545 TripleSimmetricCalculator [34, 3, 48, 28, 23, 38] => tripsimm = '1
 CURIOSITY:
   in the conc 2545 above, in all 3 simm pairs, one element also belongs to another pair,
   these are:
-   23 belongs to NUMSIMMETRY and to ROWSIMMETRY
+   23 belongs to MODSIMMETRY and to ROWSIMMETRY
    28 belongs to COLSIMMETRY and to ROWSIMMETRY
-   38 belongs to COLSIMMETRY and to NUMSIMMETRY
+   38 belongs to COLSIMMETRY and to MODSIMMETRY
 
 Another triple simmetry in:
 ex2 2625 TripleSimmetricCalculator [16, 13, 9, 1, 59, 52] => tripsimm = '111'
-    111 | inspector = {'NUMSIMMETRY': [(9, 52)], 'COLSIMMETRY': [(9, 59)], 'ROWSIMMETRY': [(59, 52)]}
+    111 | inspector = {'MODSIMMETRY': [(9, 52)], 'COLSIMMETRY': [(9, 59)], 'ROWSIMMETRY': [(59, 52)]}
 
 An example with no simmetries:
 ex3 2627 TripleSimmetricCalculator [54, 32, 5, 53, 40, 14] => tripsimm = '000'
@@ -100,14 +100,14 @@ ex3 2627 TripleSimmetricCalculator [54, 32, 5, 53, 40, 14] => tripsimm = '000'
 
 An example with 3 numbersimmetries:
 ex4 2355 TripleSimmetricCalculator [51, 36, 3, 58, 10, 25] => tripsimm = '300'
-    300 | inspector = {'NUMSIMMETRY': [(51, 10), (36, 25), (3, 58)]}
+    300 | inspector = {'MODSIMMETRY': [(51, 10), (36, 25), (3, 58)]}
 
 An example with 2 simmetries of each:
 2520 TripleSimmetricCalculator [59, 23, 28, 55, 33, 38] => tripsimm = '222'
-    222 | inspector = {'NUMSIMMETRY': [(23, 38), (28, 33)], 'COLSIMMETRY': [(23, 33), (28, 38)],
+    222 | inspector = {'MODIMMETRY': [(23, 38), (28, 33)], 'COLSIMMETRY': [(23, 33), (28, 38)],
                        'ROWSIMMETRY': [(23, 28), (33, 38)]}
 CURIOSITY:
-  For conc 2520 above, results have 'swapped' elements from one tuple in NUMSIMMETRY
+  For conc 2520 above, results have 'swapped' elements from one tuple in MODSIMMETRY
     to another in ROWSIMMETRY and viceversa.
 """
 import copy
@@ -117,14 +117,14 @@ import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_car
 
 class TripleSimmetricCalculator:
 
-  NUMSIMMETRY = 'NUMSIMMETRY'
+  MODSIMMETRY = 'MODSIMMETRY'
   COLSIMMETRY = 'COLSIMMETRY'
   ROWSIMMETRY = 'ROWSIMMETRY'
 
   def __init__(self, numberlist, enable_inspector=False):
     self.numberlist = numberlist
     self.tripsimmlist = []
-    self.n_simm_acc, self.col_simm_acc, self.row_simm_acc = 0, 0, 0
+    self.m_simm_acc, self.col_simm_acc, self.row_simm_acc = 0, 0, 0
     self.enable_inspector = enable_inspector
     self.inspector_dict = {}
     self.triplesimmetric_as_int = -1
@@ -133,6 +133,9 @@ class TripleSimmetricCalculator:
   @property
   def triplesimmetric_as_str(self):
     return str(self.triplesimmetric_as_int).zfill(3)
+
+  def get_metric_datum(self):
+    return self.triplesimmetric_as_int
 
   def put_number_as_simmetric_in_inspector_dict(self, n_src, n_trg, typsimm):
     if not self.enable_inspector:
@@ -145,17 +148,17 @@ class TripleSimmetricCalculator:
       self.inspector_dict[typsimm] = tuplelist
 
   def accumulate_tripsimm_amounts_if_any(self):
-    self.n_simm_acc, self.col_simm_acc, self.row_simm_acc = 0, 0, 0
+    self.m_simm_acc, self.col_simm_acc, self.row_simm_acc = 0, 0, 0
     # 1 accumatate the number_simmetric checking each number in list
-    localnumberlist = copy.copy(self.numberlist)
+    localnumberlist = list(self.numberlist)
     for i, d in enumerate(localnumberlist):
       n_simm = calc_number_simmetric_for_range_1_60(d)
       if n_simm in localnumberlist:
-        self.n_simm_acc += 1
-        self.put_number_as_simmetric_in_inspector_dict(d, n_simm, self.NUMSIMMETRY)
+        self.m_simm_acc += 1
+        self.put_number_as_simmetric_in_inspector_dict(d, n_simm, self.MODSIMMETRY)
         localnumberlist.remove(n_simm)
     # 2 accumatate the column_simmetric checking each number in list
-    localnumberlist = copy.copy(self.numberlist)
+    localnumberlist = list(self.numberlist)
     for i, d in enumerate(localnumberlist):
       col_simm = calc_the_columnsimmetric_from_1_to_60_along_rows_in_a_10x6matrix(d)
       if col_simm in localnumberlist:
@@ -163,7 +166,7 @@ class TripleSimmetricCalculator:
         self.put_number_as_simmetric_in_inspector_dict(d, col_simm, self.COLSIMMETRY)
         localnumberlist.remove(col_simm)
     # 3 accumatate the row_simmetric checking each number in list
-    localnumberlist = copy.copy(self.numberlist)
+    localnumberlist = list(self.numberlist)
     for i, d in enumerate(localnumberlist):
       row_simm = calc_the_rowsimmetric_from_1_to_60_along_columns_in_a_10x6matrix(d)
       if row_simm in localnumberlist:
@@ -172,7 +175,7 @@ class TripleSimmetricCalculator:
         localnumberlist.remove(row_simm)
 
   def calc_the_triplesimmetrics_from_the_accumulated_componentes(self):
-    multiplicands_in_power_order = [self.row_simm_acc, self.col_simm_acc, self.n_simm_acc]
+    multiplicands_in_power_order = [self.row_simm_acc, self.col_simm_acc, self.m_simm_acc]
     self.triplesimmetric_as_int = compose_as_base10_a_base_b_from_ordered_multiplicands(
       multiplicands_in_power_order, base=10
     )

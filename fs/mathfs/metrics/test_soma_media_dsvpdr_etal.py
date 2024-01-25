@@ -6,7 +6,7 @@ fs/mathfs/combinatorics/test_soma_media_dsvpdr_etal.py
 import statistics as sta
 """
 import unittest
-import fs.mathfs.combinatorics.soma_media_dsvpdr_etal as smd  # smd.EnclosingAroundPointFinder
+import fs.mathfs.metrics.soma_media_dsvpdr_etal as smd  # smd.EnclosingAroundPointFinder
 
 
 class TestCase1(unittest.TestCase):
