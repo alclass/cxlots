@@ -37,7 +37,7 @@ class GeradorIterator(object):
     self.current_dezenas_list = map(addOneToEachElement, indices) 
 
   def move_to_one_before_last(self):
-    self.lgiCombiner.move_to_one_before_last()
+    self.lgiCombiner.move_to_one_before_first()
     indices = self.lgiCombiner.current()
     self.current_dezenas_list = map(addOneToEachElement, indices) 
 
@@ -99,13 +99,13 @@ def testGerador():
   #indices_position_to_move_at = [53,54,56,57,58,59]
   #indices_position_to_move_at = [54,55,56,57,58,59]
   #gerador.iterator.move_to_element_by_its_indices(indices_position_to_move_at)
-  print 'gerador.iterator.move_to_one_before_last()'
+  print 'gerador.iterator.move_to_one_before_first()'
   gerador.iterator.move_to_one_before_last()
   print '_one_before_last', gerador.iterator.get_current()
 #  gerador.iterator.next()
 #  print 'next/last', gerador.iterator.get_current()
   gerador.iterator.move_to_last()
-  print 'move_to_last', gerador.iterator.get_current()
+  print 'move_curr_comb_to_last', gerador.iterator.get_current()
   #gerador.iterator.next() # exception will be raised
   # print 'next after last', gerador.iterator.get_current()
 

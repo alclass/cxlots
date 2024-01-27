@@ -125,7 +125,7 @@ class TilProducerNB(NS.NumberSystem):
     Reimplemented from parent
     
     No need to reimplement:
-      move_to_first() 
+      move_curr_comb_to_first()
       get_first() 
     '''
     wpattern = self.who_is_wfirst()
@@ -140,7 +140,7 @@ class TilProducerNB(NS.NumberSystem):
     Reimplemented from parent
     
     No need to reimplement:
-      move_to_last() 
+      move_curr_comb_to_last()
       get_last() 
     '''
     wpattern = self.who_is_wlast()

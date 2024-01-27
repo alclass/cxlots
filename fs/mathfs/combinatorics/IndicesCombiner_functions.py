@@ -64,14 +64,14 @@ def get_distance_from_the_summation_scheme(n_elements, pos):
 def project_last_combinationlist(up_limit, n_slots):
   """
   Examples:
-    f(up_limit=2, n_slots=3) = [0, 1, 2]
-    f(up_limit=5, n_slots=3) = [3, 4, 5]
-    f(up_limit=7, n_slots=2) = [6, 7]
-    f(up_limit=7, n_slots=2) = [6, 7]
-    f(up_limit=2, n_slots=4) => raises ValueError because it would go "below zero" [-1, 0, 1, 2] not allowed
+    f(greatest_index=2, n_slots=3) = [0, 1, 2]
+    f(greatest_index=5, n_slots=3) = [3, 4, 5]
+    f(greatest_index=7, n_slots=2) = [6, 7]
+    f(greatest_index=7, n_slots=2) = [6, 7]
+    f(greatest_index=2, n_slots=4) => raises ValueError because it would go "below zero" [-1, 0, 1, 2] not allowed
   """
   if n_slots > up_limit + 1:
-    errmsg = f'n_slots (={n_slots}) > up_limit (={up_limit}) + 1 (={up_limit+1})'
+    errmsg = f'n_slots (={n_slots}) > greatest_index (={up_limit}) + 1 (={up_limit+1})'
     raise ValueError(errmsg)
   last_combination_inversed = [up_limit-i for i in range(n_slots)]
   return list(reversed(last_combination_inversed))
@@ -79,7 +79,7 @@ def project_last_combinationlist(up_limit, n_slots):
 
 def project_first_combinationlist(up_limit, n_slots):
   if n_slots > up_limit + 1:
-    errmsg = f'n_slots (={n_slots}) > up_limit (={up_limit}) + 1 (={up_limit+1})'
+    errmsg = f'n_slots (={n_slots}) > greatest_index (={up_limit}) + 1 (={up_limit+1})'
     raise ValueError(errmsg)
   first_combination = list(range(n_slots))
   return first_combination
@@ -223,7 +223,7 @@ def subtract_one(numberlist, up_limit):
   This 'strategy algorithm' is implemented below.
 
   pos = len(numberlist) - 1
-  min_at_pos = get_min_at_pos(up_limit, n_slots, pos)
+  min_at_pos = get_min_at_pos(greatest_index, n_slots, pos)
   number_at_pos = numberlist[pos]
   if number_at_pos == min_at_pos:
     if pos > 0:
@@ -261,8 +261,8 @@ def subtract_one(numberlist, up_limit):
 def adhoctest():
   """
   Examples:
-    f(up_limit=7, n_slots=2) = [6, 7]
-    f(up_limit=4, n_slots=3) = [2, 3, 4]
+    f(greatest_index=7, n_slots=2) = [6, 7]
+    f(greatest_index=4, n_slots=3) = [2, 3, 4]
 
   """
   relist = project_last_combinationlist(2, 3)
@@ -298,10 +298,10 @@ def adhoctest():
 def adhoctest2():
   up_limit, n_slots = 3, 2
   lastelem = project_last_combinationlist(up_limit, n_slots)  # [2, 3]
-  scrmsg = f'up_limit={up_limit} n_slots={n_slots} lastelem={lastelem}'
+  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} lastelem={lastelem}'
   print(scrmsg)
   firstelem = list(range(n_slots))
-  scrmsg = f'up_limit={up_limit} n_slots={n_slots} firstelem={firstelem}'
+  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} firstelem={firstelem}'
   print(scrmsg)
   previousone = subtract_one(lastelem, up_limit=3)  # expects [1, 3] ie [2, 3] minus 1 = [1, 3]
   print('before', lastelem, 'previousone', previousone)
@@ -325,14 +325,14 @@ def adhoctest2():
 def adhoctest3():
   up_limit, n_slots, pos = 3, 2, 2
   firstelem = list(range(up_limit+1))
-  scrmsg = f'up_limit={up_limit} n_slots={n_slots} firstelem={firstelem}'
+  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} firstelem={firstelem}'
   print(scrmsg)
   distance = get_distance_from_the_summation_scheme(n_elements=up_limit+1, pos=pos)
-  scrmsg = f'up_limit={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
+  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
   print(scrmsg)
   up_limit, n_slots, pos = 4, 3, 0
   distance = get_distance_from_the_summation_scheme(n_elements=up_limit+1, pos=pos)
-  scrmsg = f'up_limit={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
+  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
   print(scrmsg)
   alist = get_decrescent_integer_sequence_summation_of_n(up_limit)
   print(alist, 'sum', sum(alist))

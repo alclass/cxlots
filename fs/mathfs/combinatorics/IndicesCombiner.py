@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 fs/mathfs/combinatorics/IndicesCombiner.py
   Contains the class IndicesCombiner that models a combinadic object
@@ -13,19 +13,40 @@ import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
 import fs.mathfs.combinatorics.IndicesCombiner_functions as ICf  # ICf.project_last_combinationlist
 
 
-class IndicesCombiner(object):
+def verify_lexicographical_comb_must_be_within_first_n_last_or_raise(inbetween_comb, first_comb, last_comb):
+  # notice that first_comb and last_comb are equally sized from their origins
+  if len(inbetween_comb) != len(first_comb):
+    errmsg = f"len(inbetween_comb)={len(inbetween_comb)} != len(first_comb)={len(first_comb)}"
+    raise ValueError(errmsg)
+  two_by_2 = zip(first_comb, inbetween_comb)
+  bool_list = list(map(lambda tupl: tupl[0] <= tupl[1], two_by_2))
+  if False in bool_list:
+    error_cause = 'LESS'
+    errmsg = (f'parameter comb (combination={inbetween_comb}) is'
+              f' lexicographical-{error_cause} than the initial value {first_comb}')
+    raise ValueError(errmsg)
+  two_by_2 = zip(last_comb, inbetween_comb)
+  bool_list = list(map(lambda tupl: tupl[0] >= tupl[1], two_by_2))
+  if False in bool_list:
+    error_cause = 'MORE'
+    errmsg = (f'parameter comb (combination={inbetween_comb}) is'
+              f' lexicographical-{error_cause} than the initial value {last_comb}')
+    raise ValueError(errmsg)
+
+
+class IndicesCombiner:
   """
   This class is explained by examples
   ===================================
 
   Example 1:
-  indComb = IndicesCombiner(5, 3, False)
-  indComb.first() results [0, 1, 2]
-  indComb.get_first_given() in this case also results [0, 1, 2]
+    indComb = IndicesCombiner(5, 3, False)
+    indComb.first() results [0, 1, 2]
+    indComb.get_first_given() in this case also results [0, 1, 2]
   applying indComb.next() each time:
-  [0, 1, 2]   [0, 1, 3]   [0, 1, 4]   [0, 1, 5]   [0, 2, 3]
-  [0, 2, 4]   [0, 2, 5]   [0, 3, 4]   [0, 3, 5]   [0, 4, 5]
-  [1, 2, 3]   [1, 2, 4]  ... the last one is [3, 4, 5]
+    [0, 1, 2]   [0, 1, 3]   [0, 1, 4]   [0, 1, 5]   [0, 2, 3]
+    [0, 2, 4]   [0, 2, 5]   [0, 3, 4]   [0, 3, 5]   [0, 4, 5]
+    [1, 2, 3]   [1, 2, 4]  ... the last one is [3, 4, 5]
   if a new indComb.next(), after the last one, is applied, None is returned
 
   The behavior expected is that of a Combination
@@ -34,9 +55,9 @@ class IndicesCombiner(object):
 
   Example 2:
   Now the same example with overlap=True (in fact, 'True' is default)
-  indComb = IndicesCombiner(5, 3, True)
-  indComb.first() results [0, 0, 0]
-  indComb.get_first_given() in this case also results [0, 0, 0]
+    indComb = IndicesCombiner(5, 3, True)
+    indComb.first() results [0, 0, 0]
+    indComb.get_first_given() in this case also results [0, 0, 0]
   (*) get_first_given() is explained below
   aplying indComb.next() each time:
   [0, 0, 1]   [0, 0, 2]   [0, 0, 3]   [0, 0, 4]   [0, 0, 5]
@@ -44,19 +65,18 @@ class IndicesCombiner(object):
   [0, 2, 2] ... the last one is [5,5,5] after that, a None will be returned
 
   (*) get_first_given() explanation
-  when iArrayIn is passed with a consistent array
-  get_first_given() returns that array
+    when iArrayIn is passed with a consistent array
+    get_first_given() returns that array
 
   Example:
-
-  indComb = IndicesCombiner(5, 3, True, [2,2,3])
-  indComb.get_first_given() in this case results [2, 2, 3]
+    indComb = IndicesCombiner(5, 3, True, [2,2,3])
+    indComb.get_first_given() in this case results [2, 2, 3]
   [2, 2, 3] is called the "restartAt" array
   indComb.next() results [2, 2, 4]
 
   IMPORTANT: if indComb.first() is issued/called, the combiner is zeroed,
-  so to speak, ie, it goes top to [0,0,0] or [0,1,2] depending on whether
-  overlap is True or False, respectively
+    so to speak, ie, it goes top to [0,0,0] or [0,1,2] depending on whether
+    overlap is True or False, respectively
 
   Error Handling
   ==============
@@ -97,205 +117,177 @@ class IndicesCombiner(object):
     File "./combinadics.py", line 80, in __init__
       raise ValueError, msg
   ValueError: Inconsistent IndicesCombiner upLimit(=1) must be at least size(=4) - 1 when overlap=False
-
   """
 
-  def __init__(self, n_elements=0, n_slots=1, overlap=True, i_array_in=None):
-    i_array_in = [0] if i_array_in is None else i_array_in
-    self.parked_at_first_element = None
-    self.i_array_given = None
-    if n_slots < 1:
-      n_slots = 1
-    if n_elements < 0:
-      n_elements = 0
+  def __init__(self, n_elements=1, n_slots=1, overlap=True, ini_comb=None, fim_comb=None):
     self.n_elements = n_elements
-    if overlap not in [True, False]:
-      overlap = True
-    if not overlap:
-      if n_elements + 2 < n_slots:
+    self.n_slots = n_slots
+    self.ini_comb = ini_comb
+    self.fim_comb = fim_comb
+    self.curr_comb = None
+    self._first_comb = None
+    self._last_comb = None
+    self.comb_before_first = None  # [-1] * self.n_slots
+    self.overlap = bool(overlap)
+    self.check_consistency_of_nelements_n_nslots()
+    self.check_consistency_of_ini_comb_n_fim_comb()
+
+  def check_consistency_of_nelements_n_nslots(self):
+    """
+    """
+    try:
+      self.n_slots = int(self.n_slots)
+    except (TypeError, ValueError):
+      self.n_slots = 1
+    try:
+      self.n_elements = int(self.n_elements)
+    except (TypeError, ValueError):
+      self.n_elements = 1
+    if not self.overlap:
+      if self.n_elements + 2 < self.n_slots:
         errmsg = ('Inconsistent IndicesCombiner upLimit(=%d) must be at least size(=%d) - 1 when overlap=False '
-                  % (n_elements, n_slots))
+                  % (self.n_elements, self.n_slots))
         raise ValueError(errmsg)
-    self.overlap = overlap
-    if i_array_in == [0] and n_slots > 1:
-      if overlap:
-        self.i_array = [0] * n_slots
-      else:
-        self.i_array = list(range(n_slots))
     else:
-      self.i_array = list(i_array_in)
-    self.n_slots = len(self.i_array)
-    self.check_array_consistency()
-    self.determined_from_constructor_whether_position_is_before_first()
+      if self.n_elements < self.n_slots:
+        errmsg = ('Inconsistent IndicesCombiner upLimit(=%d) must be at least size(=%d) when overlap=False '
+                  % (self.n_elements, self.n_slots))
+        raise ValueError(errmsg)
+
+  def check_consistency_of_ini_comb_n_fim_comb(self):
+    # init self.curr_comb based on whether it's pos after zero or the zero pos
+    self.comb_before_first = [-1] * self.n_slots
+    if self.ini_comb is None:
+      self.ini_comb = list(self.first_comb)
+      self.curr_comb = list(self.first_comb)
+    else:
+      verify_lexicographical_comb_must_be_within_first_n_last_or_raise(self.ini_comb, self.first_comb, self.last_comb)
+      self.curr_comb = list(self.ini_comb)
+    if self.fim_comb is None:
+      self.fim_comb = list(self.last_comb)
+    else:
+      # the verification below also checks that len(self.curr_comb) is equal to self.n_slots
+      verify_lexicographical_comb_must_be_within_first_n_last_or_raise(self.fim_comb, self.first_comb, self.last_comb)
 
   @property
-  def up_limit(self):
+  def greatest_index(self):
+    """
+    greatest_index was formerly called "up_limit"
+    least_index is "commonly" 0, so there's not a @property for it
+    """
     return self.n_elements - 1
-
-  def determined_from_constructor_whether_position_is_before_first(self):
-    self.i_array_given = list(self.i_array)
-    if self.i_array_given == self.make_first():
-      self.park_before_first()
 
   def check_array_consistency(self):
     """
     Checks the consistency of iArray
     Examples of inconsistent arrays:
-    1) for overlap=True
-    valid ==>> [0,0,0], [0,1,1], [2,2,3]
-    invalid ==>> [0,1,0], [10,0,0]
-    2) for overlap=False
-    valid ==>> [0,1,2], [0,1,100]
-    invalid ==>> [0,0,0], [2,2,3] (these two valid when overlap=True)
+      1) for overlap=True
+        valid ==>> [0,0,0], [0,1,1], [2,2,3]
+        invalid ==>> [0,1,0], [10,0,0]
+      2) for overlap=False
+        valid ==>> [0,1,2], [0,1,100]
+        invalid ==>> [0,0,0], [2,2,3] (these two valid when overlap=True)
     """
     for i in range(self.n_slots - 1):
       raise_exception = False
       if self.overlap:
-        if self.i_array[i + 1] < self.i_array[i]:
+        if self.curr_comb[i] > self.curr_comb[i+1]:
           raise_exception = True
       else:
-        if self.i_array[i + 1] <= self.i_array[i]:
+        if self.curr_comb[i] >= self.curr_comb[i]+1:
           raise_exception = True
       if raise_exception:
         if self.overlap:
           context = 'lesser'
         else:
           context = 'lesser or equal'
-        errmsg = 'Inconsistent array: next elem can be %s than a previous one %s' %(context, str(self.i_array))
+        errmsg = 'Inconsistent array: next elem can be %s than a previous one %s' % (context, str(self.curr_comb))
         raise ValueError(errmsg)
 
-  def make_before_first(self):
-    """
-    No matter overlap kind, the "before first" is an array of minus one
-    Example:
-      if size=3, before_first is:
-        [-1, -1, -1]
-    """
-    before_first_i_array = [-1] * self.n_slots
-    return before_first_i_array
+  def position_curr_comb_before_first(self):
+    self.curr_comb = list(self.comb_before_first)
 
-  def restart_positioning_before_first(self):
-    self.i_array = self.make_before_first()
+  @property
+  def first_comb(self):
+    if self._first_comb is None:
+      if self.overlap:
+        self._first_comb = [0] * self.n_slots
+      else:
+        self._first_comb = list(range(self.n_slots))
+    return self._first_comb
 
-  def make_first(self):
-    if self.overlap:
-      first_i_array = [0] * self.n_slots
-    else:
-      first_i_array = list(range(self.n_slots))
-    return first_i_array
-  
+  @property
+  def ini_comb_given(self):
+    if self.ini_comb:
+      return self.ini_comb
+    return self.first_comb
+
+  @property
+  def last_comb(self):
+    if self._last_comb is None:
+      if self.overlap:
+        self._last_comb = [self.greatest_index] * self.n_slots
+      else:
+        cut_pos = self.greatest_index - self.n_slots + 1
+        self._last_comb = list(range(cut_pos, self.greatest_index + 1))
+    return self._last_comb
+
   @property
   def total_comb(self):
     """
     Uses the formula:
     comb_of_n_m_by_m = n! / ((n - m)! * m!)
+    For example: the MS has 50063860 combinations, ie C = 60! / (54! * 6!)
     """
-    n = self.n_elements
-    m = self.n_slots
-    num = ca.fact(n)
-    den = ca.fact(n - m) * ca.fact(m)
-    total_combinations = num / den
-    # total_combinations should be a countable integer
-    return int(total_combinations)
+    if not self.overlap:
+      if self.n_elements == self.n_slots:
+        return 1
+      n = self.n_elements
+      m = self.n_slots
+      num = ca.fact(n)
+      den = ca.fact(n - m) * ca.fact(m)
+      total_combinations = num / den
+      # total_combinations should be a countable integer
+      return int(total_combinations)
+    else:
+      # TO-DO
+      return -1
 
   @property
-  def first(self):
-    """
-    Moves the iArray to the top and returns it
-    Eg
-    overlap=True,  size=3 :: [0,0,0]
-    overlap=False, size=4 :: [0,1,2,3]
-    """
-    self.i_array = self.make_first()
-    return copy.copy(self.i_array)
-
-  @property
-  def top(self):
-    """
-    The same as self. first
-    """
-    return self.first
-
-  @property
-  def bottom(self):
-    """
-    The same as self. last
-    """
-    return self.last
-
-  @property
-  def first_zeroless(self):
-    first_all_elements_plus_one = list(map(lambda e: e + 1, self.first))
-    return first_all_elements_plus_one
-    
-  def get_first_given(self):
-    """
-    Returns the get_first_given or restartAt array but does not change current position
-    To change it, use reposition_to_first_given()
-    """
-    return copy.copy(self.i_array_given)
+  def size(self):
+    return self.total_comb
 
   def reposition_to_first_given(self):
     """
     Returns the get_first_given/restartAt array changing current position to it
     @see also get_first_given()
     """
-    self.i_array = list(self.i_array_given)
-
-  def park_before_first(self):
-    """
-    Move to first element and set flag self.parked_at_first_element to True 
-    """
-    self.i_array = [-1] * self.n_slots
-
-  @property
-  def last(self):
-    """
-    @see self.move_to_last_one()
-    """
-    last_i_array = [0]*self.n_slots
-    if self.overlap:
-      last_i_array = [self.up_limit] * self.n_slots
-      return last_i_array
+    if self.ini_comb:
+      self.curr_comb = list(self.ini_comb)
     else:
-      for i in list(range(self.n_slots)):
-        back_pos = self.n_slots - i - 1
-        last_i_array[i] = self.up_limit - back_pos
-      return last_i_array
+      self.curr_comb = list(self.first_comb)
+    return self.curr_comb
 
-  def tell_first_i_array(self):
-    first_i_array = [0]*self.n_slots
-    if self.overlap:
-      # first_i_array = [0] * self.size
-      return first_i_array
-    else:
-      first_i_array = len(range(self.n_slots))
-      return first_i_array
+  def move_curr_comb_to_first(self):
+    self.curr_comb = list(self.first_comb)
+    return self.curr_comb
 
-  def move_to_one_before_last(self):
-    self.move_to_last_one()
-    self.previous()
-  
-  def move_to_position_by_i_array(self, i_array_in):
-    if i_array_in is None or len(i_array_in) != self.n_slots:
-      errmsg = f"i_array_in is None or it's been given having an incorrect size {self.n_slots} | {str(i_array_in)}"
-      raise ValueError(errmsg)
-    if i_array_in != list(map(int, i_array_in)):
-      errmsg = 'parameter iArray_in was passed in containing non-integers'
-      raise ValueError(errmsg)
-    self.parked_at_first_element = False
-    last_i_array = self.last()
-    # if it's greater than last, move it to last
-    if True in map(lambda e: e > last_i_array, i_array_in):
-      self.move_to_last_one()
-      return
-    first_i_array = self.tell_first_i_array()
-    # if it's less than first, move it to first
-    if True in map(lambda e: e > first_i_array, i_array_in):
-      self.first()
-      return
-    self.i_array = i_array_in
-  
+  def move_curr_comb_to_last(self):
+    self.curr_comb = list(self.last_comb)
+    return self.curr_comb
+
+  def move_to_one_before_first(self):
+    self.curr_comb = list(self.comb_before_first)
+    return self.curr_comb
+
+  def gen_all_combs(self):
+    self.move_curr_comb_to_first()
+    local_count = 0
+    while self.curr_comb:
+      yield self.curr_comb
+      # when next() hits last_comb, curr_comb becomes None, the while-loop exit condition
+      self.next()
+
   def correct_remaining_to_the_right_overlap_case(self, pos):
     """
     Recursive method
@@ -307,11 +299,11 @@ class IndicesCombiner(object):
     """
     if pos+1 >= self.n_slots:
       return
-    if self.i_array[pos] > self.up_limit:
-      errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.up_limit, pos, self.i_array[pos])
+    if self.curr_comb[pos] > self.greatest_index:
+      errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.greatest_index, pos, self.curr_comb[pos])
       errmsg += str(self)
       raise ValueError(errmsg)
-    self.i_array[pos + 1] = self.i_array[pos]
+    self.curr_comb[pos + 1] = self.curr_comb[pos]
     return self.correct_remaining_to_the_right_overlap_case(pos + 1)
 
   def correct_remaining_to_the_right_non_overlap_case(self, pos):
@@ -327,79 +319,78 @@ class IndicesCombiner(object):
       return
     # notice back_pos here is POSITIVE ie eg. [0,1,3,...,10] back_pos's are [10,9,...,0]
     back_pos = self.n_slots - pos - 1
-    if self.i_array[pos] > self.up_limit - back_pos:
-      errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.up_limit, pos, self.i_array[pos])
+    if self.curr_comb[pos] > self.greatest_index - back_pos:
+      errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.greatest_index, pos, self.curr_comb[pos])
       errmsg += str(self)
       raise ValueError(errmsg)
-    self.i_array[pos+1] = self.i_array[pos] + 1
+    self.curr_comb[pos + 1] = self.curr_comb[pos] + 1
     return self.correct_remaining_to_the_right_non_overlap_case(pos + 1)
 
-  def shift_left(self, pos=-1): # , nOfPos=-1
-    '''
-    Left-shifts the iArray
+  def foward_n_positions(self, pos=-1):  # , nOfPos=-1
+    """
+    Left-shifts curr_comb (formerly iArray)
     Eg
-    overlap=True,  size=3, upLimit=15
-    [1,1,1].shift_left(1) ==>> [2,2,2]
-    overlap=False, size=4, upLimit=33
-    [1,2,3,4].shift_left(2) ==>> [1,3,4,5]
-    '''
+      overlap=True, size=3, upLimit=15
+        [1,1,1].foward_n_positions(1) ==>> [2,2,2]
+      overlap=False, size=4, upLimit=33
+        [1,2,3,4].foward_n_positions(2) ==>> [1,3,4,5]
+    """
     if pos == -1:
       pos = self.n_slots - 1
     if pos == 0:
       # well, it's the last one, a left-shift can't happen,
       # so it goes to the last one
-      self.move_to_last_one() #iArrayToDiscard = self.move_to_last_one()
-      return None
+      return self.move_curr_comb_to_last()  # iArrayToDiscard = self.move_to_last_one()
     if self.overlap:
-      if self.i_array[pos - 1] == self.up_limit:
-        return self.shift_left(pos - 1)
-      self.i_array[pos - 1] += 1
+      if self.curr_comb[pos - 1] == self.greatest_index:
+        return self.foward_n_positions(pos - 1)
+      self.curr_comb[pos - 1] += 1
       self.correct_remaining_to_the_right_overlap_case(pos - 1)
-      return self.i_array
+      return self.curr_comb
     else:
       pos_ant = pos - 1
       back_pos_ant = self.n_slots - pos_ant - 1
-      if self.i_array[pos_ant] == self.up_limit - back_pos_ant:
-        return self.shift_left(pos - 1)
-      self.i_array[pos - 1] += 1
+      if self.curr_comb[pos_ant] == self.greatest_index - back_pos_ant:
+        return self.foward_n_positions(pos - 1)
+      self.curr_comb[pos - 1] += 1
       self.correct_remaining_to_the_right_non_overlap_case(pos - 1)
-      return self.i_array
+      return self.curr_comb
 
   def vai_um_in_place_overlap_case(self, pos):
     """
     Case of "goes one" when overlap=True
     """
-    if pos == 0 and self.i_array[pos] == self.up_limit:
-      self.move_to_last_one() # iArrayToDiscard = self.move_to_last_one()
+    if pos == 0 and self.curr_comb[pos] == self.greatest_index:
+      self.move_curr_comb_to_last()  # iArrayToDiscard = self.move_to_last_one()
       return None
-    if self.i_array[pos] == self.up_limit:
+    if self.curr_comb[pos] == self.greatest_index:
       return self.vai_um_in_place_overlap_case(pos - 1)
-    self.i_array[pos] += 1
+    self.curr_comb[pos] += 1
     self.correct_remaining_to_the_right_overlap_case(pos)
-    return self.i_array
+    return self.curr_comb
 
   def vai_um_in_place_non_overlap_case(self, pos):
     """
     Case of vaiUm when overlap=False
     """
     back_pos = self.n_slots - pos - 1
-    if pos == 0 and self.i_array[pos] == self.up_limit - back_pos:
-      self.move_to_last_one()  # iArrayToDiscard = self.move_to_last_one()
+    if pos == 0 and self.curr_comb[pos] == self.greatest_index - back_pos:
+      self.move_curr_comb_to_last()  # iArrayToDiscard = self.move_to_last_one()
       return None
-    if self.i_array[pos] == self.up_limit - back_pos:
+    if self.curr_comb[pos] == self.greatest_index - back_pos:
       return self.vai_um_in_place_non_overlap_case(pos - 1)
-    self.i_array[pos] += 1
+    self.curr_comb[pos] += 1
     self.correct_remaining_to_the_right_non_overlap_case(pos)
-    return self.i_array
+    return self.curr_comb
 
   def vai_um_in_place(self, pos):
     """
     Adds one in the i-th (pos) element
     Example:
       overlap=True,  size=3, upLimit=15
-      [1,1,1].shift_left(1) ==>> [1,2,2]
+      [1,1,1].foward_n_positions(1) ==>> [1,2,2]
       overlap=False, size=4, upLimit=33
-      [1,2,3,4].shift_left(2) ==>> [1,2,4,5]
+      [1,2,3,4].foward_n_positions(2) ==>> [1,2,4,5]
     """
     if self.overlap:
       return self.vai_um_in_place_overlap_case(pos)
@@ -412,18 +403,18 @@ class IndicesCombiner(object):
     see @previous()
     """
     if pos == 0:
-      if self.i_array[0] > 0:
-        self.i_array[0] -= 1
-        return self.i_array
+      if self.curr_comb[0] > 0:
+        self.curr_comb[0] -= 1
+        return self.curr_comb
       else: # if self.iArray[pos] == 0:
-        self.first()
+        self.move_curr_comb_to_first()
         return None
-    if self.i_array[pos - 1] == self.i_array[pos]:
-      self.i_array[pos] = self.up_limit
+    if self.curr_comb[pos - 1] == self.curr_comb[pos]:
+      self.curr_comb[pos] = self.greatest_index
       return self.minus_one_overlap(pos - 1)
     else:
-      self.i_array[pos] -= 1
-      return self.i_array
+      self.curr_comb[pos] -= 1
+      return self.curr_comb
 
   def minus_one_non_overlap(self, pos):
     """
@@ -431,104 +422,75 @@ class IndicesCombiner(object):
     see @previous()
     """
     if pos == 0:
-      if self.i_array[pos] > 0:
-        self.i_array[pos] -= 1
-        return self.i_array
-    if self.i_array[pos] == pos:
-      self.first()
+      if self.curr_comb[pos] > 0:
+        self.curr_comb[pos] -= 1
+        return self.curr_comb
+    if self.curr_comb[pos] == pos:
+      self.move_curr_comb_to_first()
       return None
-    if self.i_array[pos - 1]+1 == self.i_array[pos]:
+    if self.curr_comb[pos - 1]+1 == self.curr_comb[pos]:
       debit_to_up_limit = self.n_slots - pos - 1
-      self.i_array[pos] = self.up_limit - debit_to_up_limit
+      self.curr_comb[pos] = self.greatest_index - debit_to_up_limit
       return self.minus_one_non_overlap(pos - 1)
     else:
-      self.i_array[pos] -= 1
-    return self.i_array
+      self.curr_comb[pos] -= 1
+    return self.curr_comb
 
   def previous(self):
     """
     Moves iArray to its previous consistent position and returns the array
     When the first one is current, None will be returned
     """
-    if self.i_array == self.make_before_first():
-      return self.i_array
-    if self.i_array == self.make_first():
-      self.i_array = self.make_before_first()
-      return self.i_array
-    if self.i_array is None:
-      return self.move_to_last_one()
+    if self.curr_comb == self.comb_before_first:
+      return self.curr_comb
+    if self.curr_comb == self.first_comb:
+      self.curr_comb = list(self.comb_before_first)
+      return self.curr_comb
+    if self.curr_comb is None:  # this convention may be reviewd later one
+      return self.move_curr_comb_to_last()
     pos = self.n_slots - 1
     if self.overlap:
       return copy.copy(self.minus_one_overlap(pos))
     else:
       return copy.copy(self.minus_one_non_overlap(pos))
 
-  def next(self, pos=-1):
-    """
-    Moves iArray position to the next consistent one and returns it
-    When the last one is current, a None will be returned
-    """
-    if not self.overlap:
-      self.i_array = ICf.add_one(self.i_array, up_limit=self.up_limit)
-      return self.i_array
+  def next_under_overlap(self):
     # check before first element
-    if self.i_array is not None and self.i_array == [-1] * self.n_slots:
+    if self.curr_comb is not None and self.curr_comb == [-1] * self.n_slots:
       # switch it off independently of next if's result
-      self.i_array = self.make_first()
-      return copy.copy(self.i_array)
+      return self.move_curr_comb_to_first()
     if pos == -1:
       pos = self.n_slots - 1
-      # if self.iArray[pos]+1 > self.up_limit:
+      # if self.iArray[pos]+1 > self.greatest_index:
     if self.overlap:
-      up_limit = self.up_limit
+      up_limit = self.greatest_index
     else:
-      up_limit = self.up_limit - (self.n_slots - pos - 1)
-
-    if self.i_array and self.i_array[pos]+1 > up_limit:
-      def recurse_indices_with_overlap(p_pos):
-        """
-        This is an inner recursive help method
-        For the case when overlap=True
-        """
-        if p_pos == 0 and self.i_array[p_pos]+1 > self.up_limit:
-          return None
-        if self.i_array[p_pos]+1 > self.up_limit:
-          if self.i_array[p_pos - 1]+1 > self.up_limit:
-            # self.iArray[pos]=self.iArray[pos-1]
-            return recurse_indices_with_overlap(p_pos - 1)
-          self.i_array[p_pos - 1] += 1
-          self.i_array[p_pos] = self.i_array[p_pos - 1]
-          return self.i_array[p_pos - 1]
-        return self.i_array[p_pos]+1
-
-      def recurse_indices_without_overlap(p_pos):
-        """
-        This is an inner recursive help method
-        For the case when overlap=False
-        """
-        if p_pos is None:
-          return None
-        if p_pos == 0 and self.i_array[p_pos]+1 > self.up_limit - (self.n_slots - p_pos - 1):
-          return None
-        if self.i_array[p_pos]+1 > self.up_limit - (self.n_slots - p_pos - 1):
-          tmp = recurse_indices_without_overlap(p_pos - 1)
-          if tmp is None:
-            return None
-          self.i_array[p_pos] = tmp + 1
-          return self.i_array[p_pos]
-        self.i_array[p_pos] += 1
-        return self.i_array[p_pos]
-
+      up_limit = self.greatest_index - (self.n_slots - pos - 1)
+    if self.curr_comb and self.curr_comb[pos]+1 > up_limit:
       if self.overlap:
-        value = recurse_indices_with_overlap(pos)
+        value = self.recurse_indices_with_overlap(pos)
       else:
-        value = recurse_indices_without_overlap(pos)
+        value = self.recurse_indices_without_overlap(pos)
       if value is None:
         return None
-      self.i_array[pos] = value
     else:
-      self.i_array[pos] += 1
-    return copy.copy(self.i_array)
+      self.curr_comb[pos] = value
+      self.curr_comb[pos] += 1
+    return copy.copy(self.curr_comb)
+
+  def next_under_nonoverlap(self):
+    self.curr_comb = ICf.add_one(self.curr_comb, up_limit=self.greatest_index)
+    return self.curr_comb
+
+  def next(self, pos=-1):
+    """
+    Moves curr_comb position to the next consistent one and returns it
+    When the last one is current, a None will be returned
+    (thus, None becomes here a kind of convention of "after the last" or "parked after the last")
+    """
+    if not self.overlap:
+      return self.next_under_nonoverlap()
+    return self.next_under_nonoverlap()
 
   def next_zeroless(self):
     """
@@ -543,22 +505,22 @@ class IndicesCombiner(object):
         then its next_zeroless is None, ie it's treated the same as next() or add_one()
     """
     # look up zeroes
-    if self.up_limit == 1 and self.n_slots == 2:
+    if self.greatest_index == 1 and self.n_slots == 2:
       # the case in which whole combination set is [[0,1]]
       return None
-    bool_array = list(map(lambda e: e == 0, self.i_array))
+    bool_array = list(map(lambda e: e == 0, self.curr_comb))
     if True in bool_array:
       zeroless = list(range(self.n_slots))
       # position i_array to it
-      self.i_array = copy.copy(zeroless)
+      self.curr_comb = copy.copy(zeroless)
       return zeroless
-    return self.i_array
+    return self.curr_comb
 
   def get_first_elements(self, upto=10):
     if upto > self.total_comb:
       upto = self.total_comb
     other = copy.copy(self)
-    i_array = other.move_to_first()
+    i_array = other.first_comb
     for i in range(upto):
       if i_array is None:
         return
@@ -608,139 +570,46 @@ class IndicesCombiner(object):
       yield list(work_set)  # hard-copy
       work_set = self.next()
 
-  
-def adhoctest_indicescombiner(up_limit, size):
-  # signature IndsControl(upLimit=1, size=-1, overlap=True, iArrayIn=[])
-  ind_comb = IndicesCombiner(up_limit, size, True); c=0
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, True)' % (up_limit, size)
-  print(scrmsg)
-  s = ind_comb.get_first_given()
-  set_with_ol = []
-  while s:
-    c+=1
-    print(c, s)
-    set_with_ol.append(list(s))
-    s = ind_comb.next()
-  set_without_ol = []
-  ind_comb = IndicesCombiner(up_limit, size, False); c=0
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, False)' % (up_limit, size)
-  print(scrmsg)
-  s = ind_comb.get_first_given()
-  while s:
-    c += 1
-    print(c, s)
-    set_without_ol.append(list(s))
-    s = ind_comb.next()
-  c=0
-  not_there = 0
-  for wol in set_with_ol:
-    c+=1
-    print(c, wol)
-    if wol in set_without_ol:
-      print(wol)
-    else:
-      not_there += 1
-      print(not_there)
+  def recurse_indices_with_overlap(self, p_pos):
+    """
+    This is an inner recursive help method
+    For the case when overlap=True
+    """
+    if p_pos == 0 and self.curr_comb[p_pos] + 1 > self.greatest_index:
+      return None
+    if self.curr_comb[p_pos] + 1 > self.greatest_index:
+      if self.curr_comb[p_pos - 1] + 1 > self.greatest_index:
+        # self.iArray[pos]=self.iArray[pos-1]
+        return self.recurse_indices_with_overlap(p_pos - 1)
+      self.curr_comb[p_pos - 1] += 1
+      self.curr_comb[p_pos] = self.curr_comb[p_pos - 1]
+      return self.curr_comb[p_pos - 1]
+    return self.curr_comb[p_pos] + 1
 
-def pick_up_params():
-  params = []
-  up_limit = 5
-  size = 3
-  for i in range(1, len(sys.argv)):
-    params.append(sys.argv[i].lower())
-  print('params', params)
-  if '-uplimit' in params:
-    index = params.index('-uplimit')
-    print('index -uplimit', index)
-    if index + 1 < len(params):
-      try:
-        up_limit = int(params[index + 1])
-      except ValueError:
-        pass
-  if '-size' in params:
-    index = params.index('-size')
-    if index + 1 < len(params):
-      try:
-        size = int(params[index + 1])
-      except ValueError:
-        pass
-  return up_limit, size
-
-def adhoctest_shiftleft(up_limit, size):
-  ind_comb = IndicesCombiner(up_limit, size, True, [2, 4, 5]); c=0
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
-  print(scrmsg)
-  print(ind_comb)
-  print('adhoctest_shift_left()', ind_comb.shift_left())
-  for i in range(7):
-    next_i = ind_comb.next()
-  print('next_i 7', next_i)
-  print('adhoctest_shift_left()', ind_comb.shift_left())
-  ind_comb = IndicesCombiner(7, -1, True, [0,6,6,7,7])
-  scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
-  print(scrmsg)
-  print(ind_comb)
-  pos = 1
-  vai_um = ind_comb.vai_um_in_place(pos)
-  scrmsg = f'test pos={pos} vai_um={vai_um}'
-  print(scrmsg)
-  pos = 2
-  shifleft = ind_comb.shift_left(pos)
-  scrmsg = f'adhoctest pos={pos} shift_left {shifleft}'
-  print(scrmsg)
-  pos = 1
-  vai_um = ind_comb.vai_um_in_place(pos)
-  scrmsg = f'adhoctest pos={pos} shift_left {shifleft}'
-  print(scrmsg)
-  vai_um = ind_comb.vai_um_in_place(pos)
-  scrmsg = f'adhoctest pos={pos} shift_left {shifleft}'
-  print(scrmsg)
-  vai_um = ind_comb.vai_um_in_place(pos)
-  scrmsg = f'adhoctest pos={pos} shift_left {shifleft}'
-  print(scrmsg)
-  print('current', ind_comb.current())
-  print('next_i', ind_comb.next())
-  
-
-def adhoctest_previous(up_limit, size):
-  ic = IndicesCombiner(up_limit, size, True, [0, 2, 12])
-  print('ic', ic)
-  print('ic.next()', ic.next())
-  print('ic', ic)
-  print('ic.previous()', ic.previous())
-  for i in range(36):
-    print('ic.previous()', ic.previous())
+  def recurse_indices_without_overlap(self, p_pos):
+    """
+    This is an inner recursive help method
+    For the case when overlap=False
+    """
+    if p_pos is None:
+      return None
+    if p_pos == 0 and self.curr_comb[p_pos] + 1 > self.greatest_index - (self.n_slots - p_pos - 1):
+      return None
+    if self.curr_comb[p_pos] + 1 > self.greatest_index - (self.n_slots - p_pos - 1):
+      tmp = self.recurse_indices_without_overlap(p_pos - 1)
+      if tmp is None:
+        return None
+      self.curr_comb[p_pos] = tmp + 1
+      return self.curr_comb[p_pos]
+    self.curr_comb[p_pos] += 1
+    return self.curr_comb[p_pos]
 
 
 def adhoc_test():
-  """
-  sc = SetsCombiner()
-  worksetWithQuantity = ([1,2,3], 2)
-  sc.addSetWithQuantities(worksetWithQuantity)
-  worksetWithQuantity = ([4,5,6], 2)
-  sc.addSetWithQuantities(worksetWithQuantity)
-  for ws in sc.getAllSetsCombinationNonRecursively():
-    print 'ws', ws
-  """
-  ic = IndicesCombiner(4, 2, False); c=0
-  for ws in ic.gen_all_sets():
-    c += 1
-    print(c, ws)
-
-
-def ynext():
-  for i in range(10):
-    yield i
-
-
-def test_yield():
-  for i in ynext():
-    print(i)
-
-
-def adhoc_test2():
-  test_yield()
+  pass
 
 
 if __name__ == '__main__':
-  pass
+  """
+  """
+  adhoc_test()

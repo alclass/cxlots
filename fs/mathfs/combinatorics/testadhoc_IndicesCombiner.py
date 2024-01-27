@@ -12,7 +12,7 @@ import fs.mathfs.combinatorics.IndicesCombiner as iCmb  # ic.IndicesCombiner
 def adhoctest_instantiate_indicescombiner():
   """
   Default parameters to IndicesCombiner
-  ic = IndicesCombiner(up_limit=0, size=1, overlap=True, i_array_in=None)
+  ic = IndicesCombiner(greatest_index=0, size=1, overlap=True, i_array_in=None)
   Example:
     ic = iCmb.IndicesCombiner(2, 2, False)
   [0, 1]   [0, 2]   [1, 2]

@@ -55,7 +55,7 @@ class TestCombFunctions(unittest.TestCase):
     This 'idea' can help in the strategy for subtract_one() (or previous())
     decrescent_integer_sequence = [3, 2, 1, 0]  # the ending zero is more theoretical than practical
     """
-    # suppose IC(up_limit=3, n_slots=2)  # n_elements here is 4 (ie from 0 to 3)
+    # suppose IC(greatest_index=3, n_slots=2)  # n_elements here is 4 (ie from 0 to 3)
     # ic = IndicesCombiner(3, 2) we have:
     # combination_elements = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]  # 6 total
     n_elements = 4
@@ -97,7 +97,7 @@ class TestCombFunctions(unittest.TestCase):
   def test_add_one(self):
     """
     """
-    # t1 expects the first combination from IC(up_limit=4, n_slots=3) which is [0, 1, 2]
+    # t1 expects the first combination from IC(greatest_index=4, n_slots=3) which is [0, 1, 2]
     up_limit, n_slots = 4, 3
     nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
@@ -106,7 +106,7 @@ class TestCombFunctions(unittest.TestCase):
     expected_added_one = [0, 1, 3]
     returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
     self.assertEqual(expected_added_one, returned_added_one)
-    # t3 expects the last combination from IC(up_limit=4, n_slots=3) which is [2, 3, 4]
+    # t3 expects the last combination from IC(greatest_index=4, n_slots=3) which is [2, 3, 4]
     nlist = iCf.project_last_combinationlist(up_limit=up_limit, n_slots=n_slots)
     expected_nlist = [2, 3, 4]
     self.assertEqual(expected_nlist, nlist)
@@ -117,7 +117,7 @@ class TestCombFunctions(unittest.TestCase):
   def test_subtract_one(self):
     """
     """
-    # t1 expects the last combination from IC(up_limit=4, n_slots=3) which is [2, 3, 4]
+    # t1 expects the last combination from IC(greatest_index=4, n_slots=3) which is [2, 3, 4]
     up_limit, n_slots = 4, 3
     nlist = iCf.project_last_combinationlist(up_limit=up_limit, n_slots=n_slots)
     expected_nlist = [2, 3, 4]
@@ -126,7 +126,7 @@ class TestCombFunctions(unittest.TestCase):
     expected_subtracted_one = [1, 3, 4]
     returned_subtracted_one = iCf.subtract_one(nlist, up_limit=up_limit)
     self.assertEqual(expected_subtracted_one, returned_subtracted_one)
-    # t3 expects the first combination from IC(up_limit=4, n_slots=3) which is [0, 1, 2]
+    # t3 expects the first combination from IC(greatest_index=4, n_slots=3) which is [0, 1, 2]
     nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
     self.assertEqual(expected_nlist, nlist)
@@ -155,7 +155,7 @@ class TestCombFunctions(unittest.TestCase):
     # t2 a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
     up_limit, n_slots = 19, 5
-    # pair(up_limit=19, n_slots=5) above generates 15504 combinations
+    # pair(greatest_index=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
     nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
     all_returned_combs = [nlist]
@@ -176,7 +176,7 @@ class TestCombFunctions(unittest.TestCase):
     n_elements = up_limit + 1
     n_combs = ca.combine_n_c_by_c(n_elements, n_slots)
     self.assertEqual(n_combs, len(all_returned_combs))
-    # OBS comment out this last subtest if line "up_limit, n_slots = 19, 5" is changed above
+    # OBS comment out this last subtest if line "greatest_index, n_slots = 19, 5" is changed above
     # (or alternatively recalculate it) (it's been commented out though the two parameters above were not updated)
     # expected_size_calc_by_hand = 15504  # calculated sideways  # n_combs = combine_n_c_by_c(20, 5)
     # self.assertEqual(n_combs, expected_size_calc_by_hand)
@@ -203,7 +203,7 @@ class TestCombFunctions(unittest.TestCase):
     # t2 a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
     up_limit, n_slots = 19, 5
-    # pair(up_limit=19, n_slots=5) above generates 15504 combinations
+    # pair(greatest_index=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
     nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
     all_returned_combs = [nlist]
@@ -224,7 +224,7 @@ class TestCombFunctions(unittest.TestCase):
     n_elements = up_limit + 1
     n_combs = ca.combine_n_c_by_c(n_elements, n_slots)
     self.assertEqual(n_combs, len(all_returned_combs))
-    # OBS comment out this last subtest if line "up_limit, n_slots = 19, 5" is changed above
+    # OBS comment out this last subtest if line "greatest_index, n_slots = 19, 5" is changed above
     # (or alternatively recalculate it) (it's been commented out though the two parameters above were not updated)
     # expected_size_calc_by_hand = 15504  # calculated sideways  # n_combs = combine_n_c_by_c(20, 5)
     # self.assertEqual(n_combs, expected_size_calc_by_hand)
