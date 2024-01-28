@@ -96,7 +96,7 @@ class TilProducerNB(NS.NumberSystem):
       Because TilR equally occupies the slots, there are, in the example of Megasena, 12 dozens per slot (5 slots total, 60 dozens altogether)
       So the n. of combinations will be:
       
-      afc.combine_n_c_by_c(12,0) * afc.combine_n_c_by_c(12,2) * afc.combine_n_c_by_c(12,2) * afc.combine_n_c_by_c(12,1) * afc.combine_n_c_by_c(12,1) =
+      afc.combine_n_c_by_c_nonfact(12,0) * afc.combine_n_c_by_c_nonfact(12,2) * afc.combine_n_c_by_c_nonfact(12,2) * afc.combine_n_c_by_c_nonfact(12,1) * afc.combine_n_c_by_c_nonfact(12,1) =
       = 1 * 66 * 66 * 12 * 12 = 
       = 627264 combinations
     '''
@@ -109,7 +109,7 @@ class TilProducerNB(NS.NumberSystem):
     array = self.get_pattern()
     total_combinations = 1
     for n_elems_happening_in_slot in array:
-      total_combinations *= afc.combine_n_c_by_c(total_elems_per_slot, n_elems_happening_in_slot)
+      total_combinations *= afc.combine_n_c_by_c_nonfact(total_elems_per_slot, n_elems_happening_in_slot)
     return total_combinations
     
     #return len(self.wpatterns_array)
@@ -125,7 +125,7 @@ class TilProducerNB(NS.NumberSystem):
     Reimplemented from parent
     
     No need to reimplement:
-      move_curr_comb_to_first()
+      move_curr_comb_to_first_or_ini()
       get_first() 
     '''
     wpattern = self.who_is_wfirst()
@@ -140,7 +140,7 @@ class TilProducerNB(NS.NumberSystem):
     Reimplemented from parent
     
     No need to reimplement:
-      move_curr_comb_to_last()
+      move_curr_comb_to_last_or_fim()
       get_last() 
     '''
     wpattern = self.who_is_wlast()

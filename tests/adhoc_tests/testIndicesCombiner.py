@@ -12,20 +12,20 @@ sys.path.insert(0, '..')
 import datafiller.frequencyMounting as fm
 
 def test1():
-  icObj = ic.IndicesCombiner(5,3, False)
+  icObj = ic.IndicesCombinerForCombinations(5, 3, False)
   print 'icObj', icObj
   print 'icObj.current()', icObj.current()
   print 'icObj.next()', icObj.next()
   print 'icObj.next()', icObj.move_to_last_one()
   #print 'icObj.next_zeroless()', icObj.next_zeroless()
-  print 'icObj.all_sets()', icObj.all_sets()
+  print 'icObj.all_sets_first_to_last()', icObj.all_sets_first_to_last()
   
-  icObj = ic.IndicesCombiner(4,3, False)
+  icObj = ic.IndicesCombinerForCombinations(4, 3, False)
   result = ic.createWorkSetsWithIndicesCombiner([12, 15, 19, 21, 32], icObj)
   print 'result', result
   
   tupleWorkSetPlusQuantity = ([11, 37], 1); workSet = tupleWorkSetPlusQuantity[0]; quantity=tupleWorkSetPlusQuantity[1]
-  icObj = ic.IndicesCombiner(len(workSet)-1, quantity, False)
+  icObj = ic.IndicesCombinerForCombinations(len(workSet) - 1, quantity, False)
   result = ic.createWorkSetsWithIndicesCombiner(workSet, icObj)
   print 'result', result
   

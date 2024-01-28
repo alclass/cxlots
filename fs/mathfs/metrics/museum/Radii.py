@@ -308,8 +308,8 @@ def testRadii():
   lgiComb  = jogosObj.getGenericLgiComb()
   jogos = jogosObj.getJogos()
   for i in range(4):
-    #lgi = random.randint(0, nDeCombs-1)
-    #jogo = lgiComb.move_to(lgi)
+    #lgi_b1idx = random.randint(0, nDeCombs-1)
+    #jogo = lgiComb.move_to(lgi_b1idx)
     jogo = jogos[i]
     jogo.sort()
     # print 'jogo', jogo

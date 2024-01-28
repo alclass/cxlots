@@ -202,13 +202,13 @@ class FiltreFILTTILS(Filtre):
       outFile.write(line)
       return jogo
     elif self.streamType == STREAM_SQL:
-      sql = "insert into `%(table)s` (`lgi`) values ('%(lgi)d');" \
-        %{'table':table,'lgi':lgi}
+      sql = "insert into `%(table)s` (`lgi_b1idx`) values ('%(lgi)d');" \
+        %{'table':table,'lgi_b1idx':lgi}
       #print rCount, c, 'insert', sql
       self.insert(sql)
     if self.c % 50000 == 0:
       print 'rCount', rCount, c,'til5pattern',til5pattern,'r',r
-      print 'lgi', lgi, jogo
+      print 'lgi_b1idx', lgi, jogo
 
 
 def printOut(c):

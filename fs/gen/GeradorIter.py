@@ -53,7 +53,7 @@ class GeradorIterator(object):
       # return None
 
   def get_index(self):
-    # to implement using the lgi's technique
+    # to implement using the lgi_b1idx's technique
     pass
     
   def produce_next(self):
@@ -105,7 +105,7 @@ def testGerador():
 #  gerador.iterator.next()
 #  print 'next/last', gerador.iterator.get_current()
   gerador.iterator.move_to_last()
-  print 'move_curr_comb_to_last', gerador.iterator.get_current()
+  print 'move_curr_comb_to_last_or_fim', gerador.iterator.get_current()
   #gerador.iterator.next() # exception will be raised
   # print 'next after last', gerador.iterator.get_current()
 

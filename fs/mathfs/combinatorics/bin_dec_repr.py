@@ -10,7 +10,7 @@ class IntPacker(object):
   This class helps read and write integers (from 0 up to 2 ** nOfBytes - 1)
     from and to binary files.
 
-  The orginal purpose was to keep lgi's numbers.  Each lgi, as it's known,
+  The orginal purpose was to keep lgi_b1idx's numbers.  Each lgi_b1idx, as it's known,
     represents a jogo-combination.
 
   """
@@ -118,7 +118,7 @@ def pack_byte_int(number, n_of_bytes):
     an array of bytes that represent a non-negative integer in 
     the range from 0 to 2**(nOfBytes*8) - 1
 
-  Eg. to keep lgi's for LF, which has its max int c25to15 = 3268760 (minus 1),
+  Eg. to keep lgi_b1idx's for LF, which has its max int c25to15 = 3268760 (minus 1),
     one needs 22 bits.
 
     Here follows some calculations:

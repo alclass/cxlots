@@ -118,7 +118,7 @@ class Stream(Filtre.Filtre):
     # ==========================================
     print 'creating table', self.outTable
     createTableSql = '''create table if not exists `%s` (
-      `lgi` int
+      `lgi_b1idx` int
     );
 ''' %(self.outTable)
     # ==========================================
@@ -137,7 +137,7 @@ class Stream(Filtre.Filtre):
     return table, sqliteFile
 
   def returnJogoObjFromLgi(self, lgi):
-    #print 'returnJogoObjFromLgi(self, lgi) lgi=', lgi
+    #print 'returnJogoObjFromLgi(self, lgi_b1idx) lgi_b1idx=', lgi_b1idx
     if lgi == None:
       return None
     jogo = self.mockIc.move_to(lgi)
@@ -151,7 +151,7 @@ class Stream(Filtre.Filtre):
     if self.inStreamType == STREAM_LGICOMB:
       jogo = self.inStream.first()
       return jogo
-    return self.returnJogoObjFromLgi(lgi)
+    return self.returnJogoObjFromLgi(lgi_b1idx)
     '''
 
   def next(self):
@@ -164,7 +164,7 @@ class Stream(Filtre.Filtre):
       return jogo
     else:
       lgi = self.inStream.next()
-      #print ' next()', lgi
+      #print ' next()', lgi_b1idx
     jogoObj = self.returnJogoObjFromLgi(lgi)
     #jogo = jogoObj.jogo
     return jogoObj
@@ -172,7 +172,7 @@ class Stream(Filtre.Filtre):
   '''    if self.streamIn == STREAM_SQL:
       row = cursor.next()
       if row:
-        lgi = row[0]
+        lgi_b1idx = row[0]
       return jogoObj # transformRow(row)
 '''
 
@@ -189,7 +189,7 @@ class Stream(Filtre.Filtre):
       self.outStream.write(line + '\n')
       return
     elif self.outStreamType == STREAM_SQL:
-      sql = "insert into %(table)s (`lgi`) values ('%(lgi)d');" %{'table':self.outTable, 'lgi':lgi}
+      sql = "insert into %(table)s (`lgi_b1idx`) values ('%(lgi)d');" %{'table':self.outTable, 'lgi_b1idx':lgi}
       self.outCursor.execute(sql)
     else:
       self.outStream.write(lgi)
@@ -205,7 +205,7 @@ def createSqliteTest():
   sqliteDBFile = 'test.sqlite'
   apostasConn = sqlite3.connect(sqliteDBFile)
   sql = '''CREATE TABLE `lfapostas2` (
-  lgi int
+  lgi_b1idx int
   );
   '''
   cursor = apostasConn.cursor()

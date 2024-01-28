@@ -87,7 +87,7 @@ class NumberSystem(object):
     """
     self.arraySize = array_size # same as n_slots
     self.base = base # number base
-    # do not use move_curr_comb_to_first() here because child classes use an extra attribute that's not here (self.first)
+    # do not use move_curr_comb_to_first_or_ini() here because child classes use an extra attribute that's not here (self.first)
     self.values = self.digits_zeroed()
     self.max_sum = None
 
@@ -99,7 +99,7 @@ class NumberSystem(object):
 
   def who_is_first(self):
     """
-    This method is the one that will be implemented by child classes, move_curr_comb_to_first() and get_first() depend on this one
+    This method is the one that will be implemented by child classes, move_curr_comb_to_first_or_ini() and get_first() depend on this one
       and, these two, are not to reimplement on child classes
 
     """

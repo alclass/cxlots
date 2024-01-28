@@ -856,7 +856,7 @@ if __name__ == '__main__':
   #piObj = parImparPatternObj()
   #print piObj
   #co=Controller()
-  #lgi=co.getLgiStats()
-  #print 'lgi.avg', lgi.avg
+  #lgi_b1idx=co.getLgiStats()
+  #print 'lgi_b1idx.avg', lgi_b1idx.avg
   #searchingJogosNOSE()
   searchingPrimes()

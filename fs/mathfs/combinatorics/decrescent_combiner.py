@@ -93,8 +93,8 @@ class ZeroGrafterCombiner():
 
 def adhoc_test():
   """
-  n_combs = combine_n_c_by_c(20, 5)
-  print('ca.combine_n_c_by_c(70, 7)', n_combs)
+  n_combs = combine_n_c_by_c_nonfact(20, 5)
+  print('ca.combine_n_c_by_c_nonfact(70, 7)', n_combs)
   Returns:
   guide = 3
   results = get_combine_sumsets(guide, upto=6)

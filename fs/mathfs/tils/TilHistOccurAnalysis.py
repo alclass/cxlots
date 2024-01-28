@@ -290,7 +290,7 @@ class Gerador2(object):
     self.chosenLgis = []
     for lgi in histGJogosLgisForATilFaixa.keys():
       if histGJogosLgisForATilFaixa[lgi] > quantCorte:
-        #print lgi
+        #print lgi_b1idx
         self.chosenLgis.append(lgi)
 
   def mountFirstSets(self):
@@ -464,7 +464,7 @@ def geradorDeJogos(dezenasNasFaixas, lgis):
     for faixa in dezenasNasFaixas:
       faixa = list(dezenasNasFaixas[i])
       if len(faixa) < int(lgiToUse[i]):
-        # lgi can not be used
+        # lgi_b1idx can not be used
         useThisLgi = False
         break
     if useThisLgi:
@@ -495,7 +495,7 @@ def combineFaixas(workFaixas):
     for faixa in dezenasNasFaixas:
       faixa = list(dezenasNasFaixas[i])
       if len(faixa) < int(lgiToUse[i]):
-        # lgi can not be used
+        # lgi_b1idx can not be used
         useThisLgi = False
         break
     if useThisLgi:
@@ -555,12 +555,12 @@ def generateLgiForJogoVsTilFaixas(histG, faixas, jogo):
   some dezenas have occurred more than others
   some others have occurred less
   
-  lgi is the LexicoGraphical Index
+  lgi_b1idx is the LexicoGraphical Index
   Eg.
   1c5a203   101010   32001   etc.
   '''
   TIL = len(faixas)
-  # lgi is the LexicoGraphical Index
+  # lgi_b1idx is the LexicoGraphical Index
   lgi = ''
   for faixa in faixas:
     quantLower = faixa[0]
@@ -582,7 +582,7 @@ def generateLgiForJogoVsTilFaixas(histG, faixas, jogo):
       digit = str(quantNaFaixa)
     lgi += digit
     print
-  print 'lgi', lgi
+  print 'lgi_b1idx', lgi
   return lgi
   
 def tilJogoAJogo():

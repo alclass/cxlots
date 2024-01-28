@@ -5,7 +5,7 @@ fs/mathfs/combinatorics/lexicographical_indices.py
 """
 import random
 import sys
-import fs.mathfs.combinatorics.IndicesCombiner as iCmb  # for the comb(n, m) function
+import fs.mathfs.combinatorics.IndicesCombinerForCombinations as iCmb  # for the comb(n, m) function
 SUBINDO = 2
 DESCENDO = 1
 counter = 0  # global
@@ -24,7 +24,7 @@ def check_up_amount_in_array_carried(carried_array, lgi):
     pos_inv = size - i
     soma += iCmb.comb(value, pos_inv)
   if soma != lgi:
-    errmsg = 'checkUpAmountInCarriedArray() ==>> soma (=%d) não igual a lgi (=%d) %s' %(soma, lgi, str(carried_array))
+    errmsg = 'checkUpAmountInCarriedArray() ==>> soma (=%d) não igual a lgi_b1idx (=%d) %s' %(soma, lgi, str(carried_array))
     raise ValueError(errmsg)
 
 
@@ -49,17 +49,17 @@ class LgiCombiner(object):
   last() ==>> sets combination to the last one and returns it
   next(jump=1) ==>> moves to the next 'jump' combinations ahead
   previous(jump=1) ==>> moves to the previous 'jump' combinations behind
-  move_to(lgi=0) ==>> moves to the combination corresponding to the LG Index 'lgi'
+  move_to(lgi_b1idx=0) ==>> moves to the combination corresponding to the LG Index 'lgi_b1idx'
   lgi_of() ==>> returns the LG Index of the current combination
   set_comb(array=[n-1,n-2,...,2,1,0])  ==>> sets the current combination to the one passed-in
   current_in_ascending_order() ==> gets the current combination in Ascending/Crescent Order
 
   This class models a combinadics function, ie:
 
-    f(lgi,ic(n,m)) = [comb]
+    f(lgi_b1idx,ic(n,m)) = [comb]
 
   where:
-    lgi is the LexicoGraphic Index
+    lgi_b1idx is the LexicoGraphic Index
     ic(n,m) is the IndicesCombinerLgi object, n is number of elements, m is array size
 
   Eg ==>> f(31029, ic(60,6)) = [19,15,13,11,5,4]
@@ -80,7 +80,7 @@ class LgiCombiner(object):
 
   To use get_lgi giving an array, it can be done by instantiating the object with the array, ie:
   obj = IndicesCombinerLgi(59,6,[19,15,13,11,5,4])
-  Then, obj.get_lgi() will return the lgi for that array (ie, 31029)
+  Then, obj.get_lgi() will return the lgi_b1idx for that array (ie, 31029)
 
 
   This class can also be explained by examples
@@ -163,7 +163,7 @@ class LgiCombiner(object):
         self.still_first = True
     self.size = len(self.i_array)
     self.check_array_consistency()
-    self.n_of_combines = iCmb.IndicesCombiner(self.up_limit + 1, self.size)
+    self.n_of_combines = iCmb.IndicesCombinerForCombinations(self.up_limit + 1, self.size)
     self.i_array_given = list(self.i_array)
 
   def check_array_consistency(self):
@@ -276,7 +276,7 @@ class LgiCombiner(object):
     amount_compare_sup = amount + parcel_sup
     parcel_inf = iCmb.comb(point_inf, pos_inv)
     amount_compare_inf = amount + parcel_inf
-    # msg = 'i=%d inf=%d/%d mid=%d/%d sup=%d/%d pos=%d %s press [ENTER]' %(lgi, pointInf, amount_compare_inf, point_mid, amount_compare, pointSup, amount_compare_sup, pos, str(arrayCarried))
+    # msg = 'i=%d inf=%d/%d mid=%d/%d sup=%d/%d pos=%d %s press [ENTER]' %(lgi_b1idx, pointInf, amount_compare_inf, point_mid, amount_compare, pointSup, amount_compare_sup, pos, str(arrayCarried))
     # ans=raw_input(msg)
     # counter+=1 # global
     # print counter, msg
@@ -322,7 +322,7 @@ class LgiCombiner(object):
       point_inf = point_mid
       # pointSup is the same
       return self.approach(lgi, point_inf, point_sup, pos, array_carried, amount)
-    else:  # ie, amount_compare == lgi ie, element has just been FOUND!
+    else:  # ie, amount_compare == lgi_b1idx ie, element has just been FOUND!
       array_carried[pos] = point_mid
       # check for consistency
       check_up_amount_in_array_carried(array_carried, lgi)
@@ -443,7 +443,7 @@ class LgiCombiner(object):
 def adhoctest():
   lgi = LgiCombiner(up_limit=6, size=6)
   print('n_of_combines', lgi.n_of_combines)
-  print('lgi', lgi)
+  print('lgi_b1idx', lgi)
 
 
 def process():

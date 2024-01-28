@@ -95,12 +95,12 @@ def testLgiOf():
   print 'jogo', jogo
   lgiObj = lgicomb.LgiCombiner(ic.iCmb(60, 6) - 1, -1, jogo)
   lgi = lgiObj.get_lgi()
-  print 'lgi', lgi
+  print 'lgi_b1idx', lgi
   jogo = filterMinusOne(jogo)
   print 'jogo', jogo
   lgiObj = lgicomb.LgiCombiner(ic.iCmb(60, 6) - 1, -1, jogo)
   lgi = lgiObj.get_lgi()
-  print 'lgi', lgi
+  print 'lgi_b1idx', lgi
 
 def testLgiInJogoClass():
   jogosObj = CLClasses.getJogosObj('LF')

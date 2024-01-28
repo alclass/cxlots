@@ -87,7 +87,7 @@ def compareFromUserFreeInputArgs(acceptAnyArraySize=False):
   checker = CheckWithHistory(dezenasToCompare)
   if acceptAnyArraySize:
     nDeDezenas = len(dezenasToCompare)
-    print 'Comparing with', nDeDezenas, 'dozens :: combinações', algoComb.combine_n_c_by_c(nDeDezenas, 6)
+    print 'Comparing with', nDeDezenas, 'dozens :: combinações', algoComb.combine_n_c_by_c_nonfact(nDeDezenas, 6)
   print 'for [shell input]', dezenasToCompare, checker.sameAsNDoConcs, checker.prize2NDoConcs, checker.prize3NDoConcs, checker.histogramNDeAcertos
 
 def compareFromUserFreeInputArgsMoreDezenas():

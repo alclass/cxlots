@@ -24,8 +24,8 @@ def guaranteeOneQuadPerVolant(apostaFilename):
     dictQuadClash[i] = {}
     quadrasI = eph.getQuadrasFromDezenasList(allDezenas[i])
     for quadra in quadrasI:
-      # lgi is LexicoGraphical Index 
-      # lgi = combinadics.findIndexFromCombination(quadra, 4)
+      # lgi_b1idx is LexicoGraphical Index
+      # lgi_b1idx = combinadics.findIndexFromCombination(quadra, 4)
       quadraStrList = map(eph.tmpF, quadra)
       quadraStr = ' '.join(quadraStrList)
       if quadraStr in allQuadrasDict.keys():

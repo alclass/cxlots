@@ -5,7 +5,7 @@ fs/mathfs/combinatorics/adhoctest_lexicographical_indices.py
 """
 import random
 import sys
-import IndicesCombiner as iCmb # for the comb(n, m) function
+import IndicesCombinerForCombinations as iCmb # for the comb(n, m) function
 SUBINDO  = 2
 DESCENDO = 1
 counter = 0 # global
@@ -24,7 +24,7 @@ def check_up_amount_in_array_carried(carried_array, lgi):
     pos_inv = size - i
     soma += iCmb.comb(value, pos_inv)
   if soma != lgi:
-    errmsg = 'checkUpAmountInCarriedArray() ==>> soma (=%d) não igual a lgi (=%d) %s' %(soma, lgi, str(carried_array))
+    errmsg = 'checkUpAmountInCarriedArray() ==>> soma (=%d) não igual a lgi_b1idx (=%d) %s' %(soma, lgi, str(carried_array))
     raise ValueError(errmsg)
 
 
@@ -147,24 +147,24 @@ def testGetByLgi(upLimit, size):
   nOfComb = ic.n_of_combines
   #sys.exit(0)
   lgi = random.randint(0,nOfComb-1)
-  msg = 'ic.move_to(lgi=%d)' %(lgi)
+  msg = 'ic.move_to(lgi_b1idx=%d)' %(lgi)
   #ans=raw_input(msg)
-  #lgi = 31029 #21208
-  #print 'ic.move_to(lgi=%d)' %(lgi), ic.move_to(lgi)
+  #lgi_b1idx = 31029 #21208
+  #print 'ic.move_to(lgi_b1idx=%d)' %(lgi_b1idx), ic.move_to(lgi_b1idx)
   for i in range(3):
     lgi = random.randint(0,nOfComb-1)
     ic.move_to(lgi)
     array = ic.currentSorted()
     array1 = ic.currentSortedFrom1()
-    print i, 'ic.move_to(lgi=%d)' %(lgi), array, array1, 'lgi', ic.get_lgi()
+    print i, 'ic.move_to(lgi_b1idx=%d)' %(lgi), array, array1, 'lgi_b1idx', ic.get_lgi()
 
 def testTransforms():
   combArray = [14,10,5,1]; nOfElems = 20
   lgi = transform_comb_in_lgi(combArray, nOfElems)
-  print 'lgi = transform_comb_in_lgi(combArray, nOfElems)', combArray, nOfElems, 'lgi', lgi
+  print 'lgi_b1idx = transform_comb_in_lgi(combArray, nOfElems)', combArray, nOfElems, 'lgi_b1idx', lgi
   nOfElems = 20; size = 4; lgi = 7
   combArray = transform_lgi_in_comb(nOfElems, size, lgi)
-  print 'comb = transform_lgi_in_comb(nOfElems, size, lgi)', nOfElems, size, lgi, 'comb', combArray
+  print 'comb = transform_lgi_in_comb(nOfElems, size, lgi_b1idx)', nOfElems, size, lgi, 'comb', combArray
 
 
 def test_get_item():

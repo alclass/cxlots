@@ -182,7 +182,7 @@ def verifyAllCombsWith4OrMoreInAPattern(tilN=10):
   til6  = tilc.Til(jogosObj, 6)
   til10 = tilc.Til(jogosObj, 10)
 
-  combObj = ic.IndicesCombiner(59, 6, False)
+  combObj = ic.IndicesCombinerForCombinations(59, 6, False)
   jogo = combObj.first_zeroless()
   c = 0; booleanTrueCounter = 0; exclCod = 0; count = False
   while jogo:

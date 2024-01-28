@@ -9,7 +9,7 @@ import __init__
 __init__.setlocalpythonpath()
 
 # from fs import lambdas
-from IndicesCombiner import IndicesCombiner
+from IndicesCombinerForCombinations import IndicesCombinerForCombinations
 import combinatoric_algorithms as afc
 
 
@@ -59,7 +59,7 @@ class WorkSet(object):
       return self.total_combinations
     n = len(self.workSet)
     c = self.indicesCombiner.n_slots
-    self.total_combinations = afc.combine_n_c_by_c(n, c)
+    self.total_combinations = afc.combine_n_c_by_c_nonfact(n, c)
     return self.total_combinations
 
   def next(self):
@@ -140,7 +140,7 @@ class SetsCombiner(object):
     indicesCombiner_upLimit = len(workSet) - 1  # ie, index of last element
     indicesCombiner_size = quantity  
     indicesCombiner_mode = False
-    indicesCombiner = IndicesCombiner(indicesCombiner_upLimit, indicesCombiner_size, indicesCombiner_mode)
+    indicesCombiner = IndicesCombinerForCombinations(indicesCombiner_upLimit, indicesCombiner_size, indicesCombiner_mode)
     return indicesCombiner 
 
   def isWorkSetWithQuantityValid(self, workSetWithQuantity):
@@ -314,7 +314,7 @@ class SetsCombinerMemoryIntensive(object):
     for workSetWithQuantity in self.workSetsWithQuantities:
       workSet = workSetWithQuantity[0]
       quantity = workSetWithQuantity[1]
-      n_combinations_for_workSet = afc.combine_n_c_by_c(len(workSet), quantity)
+      n_combinations_for_workSet = afc.combine_n_c_by_c_nonfact(len(workSet), quantity)
       self.total_combinations *= n_combinations_for_workSet
     return self.total_combinations 
 
@@ -355,7 +355,7 @@ class SetsCombinerWithTils(SetsCombiner):
 
 def createWorkSetsWithIndicesCombiner(workSet, icObj):
   workSets = []
-  for indicesArray in icObj.all_sets(): # implement an iterator with yield in the future
+  for indicesArray in icObj.all_sets_first_to_last(): # implement an iterator with yield in the future
     set_under_indices = [workSet[i] for i in indicesArray]
     workSets.append(set_under_indices)
   return workSets
@@ -370,7 +370,7 @@ def generateAllCombinationsForWorkDict(workSetAndQuantity):
     return []
   if quantity == 1 and len(workSet) == 1:
     return workSet[:]
-  icObj = IndicesCombiner(len(workSet)-1, quantity, False)
+  icObj = IndicesCombinerForCombinations(len(workSet) - 1, quantity, False)
   workSets = createWorkSetsWithIndicesCombiner(workSet, icObj)
   return workSets
 
@@ -389,10 +389,10 @@ def doRecursiveSetsCombination(workSetsAndQuantities, allCombinations=[[]]):
   return doRecursiveSetsCombination(workSetsAndQuantities, newAllCombinations)
 
 def setCombine(workSet, piecesSize):
-  indComb = IndicesCombiner(len(workSet)-1,piecesSize,False)
+  indComb = IndicesCombinerForCombinations(len(workSet) - 1, piecesSize, False)
   print indComb
   print indComb.next()
-  indexAllSets = indComb.all_sets()
+  indexAllSets = indComb.all_sets_first_to_last()
   realSets = []
   for indexSet in indexAllSets:
     realSet = []
@@ -461,7 +461,7 @@ def adhoc_test3():
   
   
   s = ['a','b','c']; combsize = 2
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  ws = WorkSet(s, IndicesCombinerForCombinations(len(s) - 1, combsize, False))
   comb = ws.next()
   while comb:
     print comb
@@ -471,7 +471,7 @@ def adhoc_test3():
   combiner.addSetWithQuantities((s, combsize))
 
   s = [4,5]; combsize = 2
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  ws = WorkSet(s, IndicesCombinerForCombinations(len(s) - 1, combsize, False))
   comb = ws.next()
   while comb:
     print comb
@@ -481,7 +481,7 @@ def adhoc_test3():
   combiner.addSetWithQuantities((s, combsize))
 
   s = [6,7,8,9]; combsize = 3
-  ws = WorkSet(s, IndicesCombiner( len(s)-1, combsize,False))
+  ws = WorkSet(s, IndicesCombinerForCombinations(len(s) - 1, combsize, False))
   comb = ws.next()
   while comb:
     print comb

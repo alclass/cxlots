@@ -145,6 +145,6 @@ def testLgi():
   iArray.reverse()
   print iArray
   lgiObj = lc.LgiCombiner(24,-1,iArray)
-  print 'lgi', lgiObj.get_lgi(), lgiObj
+  print 'lgi_b1idx', lgiObj.get_lgi(), lgiObj
   print 'ok'
   sys.exit(0)

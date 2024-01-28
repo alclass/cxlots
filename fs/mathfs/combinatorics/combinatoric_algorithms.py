@@ -17,6 +17,7 @@ Main functions here:
 import copy
 import random
 import sys
+import fs.mathfs.combinatorics.IndicesCombiner_functions as icfs  # icfs.add_one
 
 
 def fact_inner(n):
@@ -189,39 +190,55 @@ def get_permutations(subtokens):
   return all_perms
 
 
-def combine_n_c_by_c(n, c):
+def combine_n_c_by_c_fact(n, c, turnoff_floatcheck=True):
+  if n < 0 or c < 0:
+    errmsg = f'Cannot calculate factorial with negative numbers ({n}, {c}).'
+    raise ValueError(errmsg)
+  # this condition below may be reformulation to an exception raising
+  if n == 0 or c == 0:
+    return 0  # empty set: review this when possible
+  if n < c:
+    return 0
+  if n == c:
+    return 1
+  float_result = fact(n) / (fact(n - c) * fact(c))
+  if not turnoff_floatcheck:
+    rounded_float = round(float_result, 0)
+    if float_result != rounded_float:
+      errmsg = f'float_result={float_result} != round(float_result, 0)={rounded_float} in combination by factorial'
+      raise ValueError(errmsg)
+  return int(float_result)
+
+
+def combine_n_c_by_c_nonfact(n, c):
   """
 
-  combine_n_c_by_c(n, c) is a function that computes the number R of
+  combine_n_c_by_c_nonfact(n, c) is a function that computes the number R of
     combinations of an n-element set S, c by c elements.
    
   Ex. suppose S = [1,2,3]
   Combinations 2 by 2 of S are [1,2],[1,3] and [2,3]
   Hence, R, the resulting numbers of combinations, is 3.
   
-  We can also see combine_n_c_by_c(n, c) by its factorial formula, which is n!/((n-c)!c!)
+  We can also see combine_n_c_by_c_nonfact(n, c) by its factorial formula, which is n!/((n-c)!c!)
   
-  In the simple example above, R = 3!/(2!1!) = 3 x 2 / 2 = 3
+  In the simple example above, R = 3!/(2!1!) = 3 x 2! / 2! = 3
   
   As a more computing-intense example, Megasena has:
-    R = combine_n_c_by_c(60, 6) = 60! / ((60-6)!6!) = ... =  50,063,860
+    R = combine_n_c_by_c_nonfact(60, 6) = 60! / ((60-6)!6!) = ... =  50063860
   
   The Python code implementation here does not use factorial in order
      to optimization/minimize computation efforts.
   """
   if n < 0 or c < 0:
-    errmsg = f'Can not calculate combination with negative numbers ({n}, {c}).'
+    errmsg = f'Cannot calculate factorial with negative numbers ({n}, {c}).'
     raise ValueError(errmsg)
   # this condition below may be reformulation to an exception raising
   # in the future (how can one combine more than one has?), for the time being, it's returning 0
+  if n == 0 or c == 0:
+    return 0
   if n < c:
     return 0
-  if c == 0:
-    if n == 0:
-      return 0
-    # if n > 0: # no need for an "if" here, n > 0 is logically the condition fell into, if program flow passes by this
-    # point
-    return 1  # convention for "produtório", sequence-multiply
   if n == c:
     return 1
   mult = 1
@@ -233,6 +250,110 @@ def combine_n_c_by_c(n, c):
     mult = mult / (0.0 + c)
     c -= 1
   return int(mult)
+
+
+def mount_middle_comb_with_pivot_n_pivotidx(pivot, pivot_idx, n_elements, n_slots):
+  if pivot > n_elements - n_slots:
+    return None
+  if pivot_idx > n_slots - 1:
+    errmsg = f"pivot_idx (={pivot_idx}) > n_slots=({n_slots}) - 1"
+    raise ValueError(errmsg)
+  if pivot_idx == 0:
+    middle_comb = [pivot+i for i in range(n_slots)]
+    return middle_comb
+  if pivot_idx == n_slots - 1:
+    middle_comb = [pivot-(n_slots+i) for i in range(n_slots)]
+    return middle_comb
+  # pivot_idx > 0 and < n_slots - 1
+  left_comb = [pivot-i for i in range(pivot_idx-1, -1, -1)]
+  right_comb = [pivot+i for i in range(pivot_idx+1, n_slots)]
+  middle_comb = left_comb + [pivot] + right_comb
+  return middle_comb
+
+
+def calc_comb_from_lgi_b1idx_where_ints_start_at_0(
+    lgi, n_elements, n_slots, total_combs=None, comb=None, lastcomb=None, pivot=None, pivot_idx=None
+):
+  """
+  This function is the inverse of calc_lgi_from_comb_where_ints_start_at_0(cmbset, n_elements)
+  """
+  if lastcomb is None:
+    lastcomb = list(range(54, 60))
+  if comb is None:
+    comb = list(lastcomb)
+  if total_combs is None:
+    total_combs = combine_n_c_by_c_fact(n_elements, n_slots)
+  remaining = total_combs - lgi + 1
+  if remaining == 1:
+    return lastcomb
+  pivot = n_elements if pivot is None else pivot
+  pivot_idx = 0 if pivot_idx is None else pivot_idx
+  comb = mount_middle_comb_with_pivot_n_pivotidx(pivot, pivot_idx)
+  while remaining > 0:
+    comb = icfs.subtract_one(comb, n_elements)
+    # continue from here!
+    lgi = calc_lgi_from_comb_where_ints_start_at_0(comb, n_elements)
+    remaining = remaining - lgi + 1
+  return comb
+
+
+def calc_lgi_from_comb_where_ints_start_at_0(cmbset, n_elements):
+  """
+    Outputs the lexicographical index representing the current_combination in the instance object
+
+    IMPORTANT:
+      i1 this implementation may not be the standard one if such a standard one exists;
+      i2 the version here uses ascending order (lexicographical order) for combinations;
+      i3 it also establishes ascending order for the lexicographical index itself;
+
+    ie, in the case n_elements=60, n_slots=6:
+      the first combination [1, 2, 3, 4, 5, 6] should have (1-based) index 1
+      the last combination [54, 55, 56, 57, 58, 59, 60] should have (1-based) index 50063860
+
+    The algorithm for finding the lgi_b1idx:
+
+      1st) the combination must be in ascending order, ie:
+           c1 < c2 < ... < c[ns-1] < c[ns]  where ns is the
+        number of ints in cardgame (a combination set itself) or,
+        in the nomeclature here, n_slots,
+          and comb = [c1, c2, ..., c[ns-1], c[ns]]
+
+      2nd) the formula (or function) for finding the lgi_b1idx (n_elements=ne, n_slots=ns)
+           is the following:
+
+      parcial = c(60-c1, 6) + c(60-c2, 5) + c(60-c3, 4) + c(60-c4, 3) + c(60-c5, 2) + c(60-c6, 1)
+      lgi_b1idx(comb) = totalCombs(60, 6) - parcial
+
+      and totalCombs(60, 6) = c(60, 6) = 60! / (54!*6!) =  50063860
+
+      Obs:
+        o1 the results form a "1-index" mapping to the combination set;
+        o2 for a 0-index mapping suffices subtracting one to it (ie idx0[n]=idx1[n]-1);
+
+      Example (for the MS case: n_elements=60, n_slots=6):
+        Let us take a look at the combinations in ascending order (or lexicographical order):
+          cmb1 = [1, 2, 3, 4, 5, 6] => its lgi_b1idx is 1 (under 1-index-mapping) or 0 (under 0-index-mapping)
+          cmb2 = [1, 2, 3, 4, 5, 7] => its lgi_b1idx is 2 (or 1, 2-1)
+          cmb3 = [1, 2, 3, 4, 5, 8] => its lgi_b1idx is 3 (or 2, 3-1)
+          (...)
+          cmbLast = [54, 55, 56, 57, 58, 59, 60] => its lgi_b1idx is 50063860 (or 50063859, 50063860-1)
+      @see also the above algorithm in the module where its function is located.
+
+  """
+  n_slots = len(cmbset)
+  # looking at the docstring above, comb [1, 2, 3, 4, 5, 6] comes in as 0-indices, ie [0, 1, 2, 3, 4, 5]
+  # so the next "plus 1" adjustment is necessary
+  adjusted_plus1_cmb = list(map(lambda e: e+1, cmbset))
+  total_combs = combine_n_c_by_c_fact(n_elements, n_slots)
+  slot_idx, lgi_computed = 0, 0
+  for m in range(n_slots, 0, -1):
+    fact_num = n_elements - (adjusted_plus1_cmb[slot_idx])
+    fact_den = m
+    sumparcel = combine_n_c_by_c_fact(fact_num, fact_den)
+    lgi_computed += sumparcel
+    slot_idx += 1
+  lgi_computed = total_combs - lgi_computed
+  return lgi_computed
 
 
 def random_permutation(perm):
@@ -352,9 +473,6 @@ def get_all_complements_to_sum(ongoidx, target_sum):
   complements = []
   for i in range(len(ints), 0, -1):
     pass
-
-
-
 
 
 def gen_all_integer_partitions_for(ongoidx=6, target_sum=6, up_to_slots=6):
@@ -611,9 +729,9 @@ def process():
     if sys.argv[2] == 'comb':
       n = int(sys.argv[3])
       c = int(sys.argv[4])
-      result = combine_n_c_by_c(n, c)
+      result = combine_n_c_by_c_nonfact(n, c)
       outdict = {'n': n, 'c': c, 'result': result}
-      scrmsg = 'combine_n_c_by_c(%(n)d, %(c)d) =  %(result)d' % outdict
+      scrmsg = 'combine_n_c_by_c_nonfact(%(n)d, %(c)d) =  %(result)d' % outdict
       print(scrmsg)
   except ValueError:
     is_command_invalid = True
@@ -623,8 +741,8 @@ def process():
 
 def adhoc_test5():
   """
-  n_combs = combine_n_c_by_c(20, 5)
-  print('ca.combine_n_c_by_c(70, 7)', n_combs)
+  n_combs = combine_n_c_by_c_nonfact(20, 5)
+  print('ca.combine_n_c_by_c_nonfact(70, 7)', n_combs)
   Returns:
   guide = 3
   results = get_combine_sumsets(guide, upto=6)
@@ -637,7 +755,90 @@ def adhoc_test5():
   print(cmber)
 
 
+def adhoctest_sumlgi(comb):
+  total = 0
+  m = 7
+  for n in comb:
+    m -= 1
+    comb = combine_n_c_by_c_nonfact(60 - n, m)
+    total += comb
+    scrmsg = f"comb(n={60-n}, m={m})={comb} | total={50063860-total}"
+    print(scrmsg)
+
+
+def adhoc_test6():
+  """
+    Eg ==>> f(31029, ic(60,6)) = [19,15,13,11,5,4]
+    because
+      c(19,6)+c(15,5)+c(13,4)+c(11,3)+c(5,2)+c(4,1) = 31029
+
+  """
+  comb = list(range(1, 7))
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = comb[:5] + [7]
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = sorted([19, 15, 13, 11, 5, 4])
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = list(reversed(comb))
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = list(range(1, 7))
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = list(reversed(comb))
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = [7] + comb[1:]
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+  #
+  comb = list(range(54, 61))
+  print('='*20, comb)
+  adhoctest_sumlgi(comb)
+
+
+def table_combs_size():
+  for i in range(4, 7):
+    n, m = i + 3, i
+    tot = combine_n_c_by_c_fact(n, m)
+    scrmsg = f"comb {n}, {n-m} is {tot}"
+    print(scrmsg)
+
+
+def accompany_lgi():
+  """
+  1 (50063855, [53, 55, 56, 57, 58, 59])
+  2 (50063855, [54, 55, 56, 57, 58, 59])
+  """
+  tupl = (50063855, [53, 55, 56, 57, 58, 59])
+  retval = calc_lgi_from_comb_where_ints_start_at_0(tupl[1], n_elements=60)
+  print(retval, tupl)
+  tupl = (50063855, [54, 55, 56, 57, 58, 59])
+  retval = calc_lgi_from_comb_where_ints_start_at_0(tupl[1], n_elements=60)
+  print(retval, tupl)
+  n, m = 59, 54
+  tot = combine_n_c_by_c_fact(n, n-m)
+  scrmsg = f"comb {n}, {n-m}, {m} is {tot}"
+  print(scrmsg)
+  n, m = 59, 55
+  tot = combine_n_c_by_c_fact(n, n-m)
+  scrmsg = f"comb {n}, {n-m}, {m} is {tot}"
+  print(scrmsg)
+
+
 if __name__ == '__main__':
   """
+  adhoc_test6()
   """
-  adhoc_test5()
+  accompany_lgi()
+  table_combs_size()
+

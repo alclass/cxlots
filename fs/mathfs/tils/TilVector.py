@@ -314,11 +314,11 @@ class Til_old(object):
   some dezenas have occurred more than others
   some others have occurred less
   
-  lgi is the LexicoGraphical Index
+  lgi_b1idx is the LexicoGraphical Index
   Eg.
   1c5a203   101010   32001   etc.
     '''
-    # lgi is the LexicoGraphical Index
+    # lgi_b1idx is the LexicoGraphical Index
     lgi = ''
     histG = self.jogosObj.getHistG()
     for faixa in self.faixas:
@@ -334,7 +334,7 @@ class Til_old(object):
       if quantNaFaixa > 15:
         # well, TIL should be larger
         # it's rare for, eg, til=5
-        # it also acts as a protect for the use of hexadecimal numbers in the lgi (15=e)
+        # it also acts as a protect for the use of hexadecimal numbers in the lgi_b1idx (15=e)
         raise ValueError, 'well, TIL should be larger, IT CAN NOT CONTINUE'
       if quantNaFaixa > 9:
         hexadec = hex(quantNaFaixa)
@@ -343,7 +343,7 @@ class Til_old(object):
         digit = str(quantNaFaixa)
       lgi += digit
       #print
-    # print 'lgi', lgi
+    # print 'lgi_b1idx', lgi_b1idx
     return lgi
 
   def tilJogoAJogo(self):

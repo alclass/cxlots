@@ -100,7 +100,7 @@ class Base(object):
 
     This will be a problem only for lotomania
     In due time, one scheme will be needed for encoding jogosfs to generate
-    Notice that lgi's and binDecRepr's will 'suffer' of the same problem
+    Notice that lgi_b1idx's and binDecRepr's will 'suffer' of the same problem
 
     '''
     if self.intFromLowestJogo:
@@ -181,7 +181,7 @@ class Jogo(Base):
   Data transformation and encodings:
   jogo can be transformed into:
   1) a binDecRepr
-  2) a lgi
+  2) a lgi_b1idx
   3) an int from list minus intFromLowestJogo
 
   However, one issue remains to be decided
@@ -280,12 +280,12 @@ class Jogo(Base):
     #print 'maiorAMenor', maiorAMenor
     lgiObj = lc.LgiCombiner(self.getNDeCombs()-1,-1,maiorAMenor)
     lgi = lgiObj.get_lgi()
-    #print 'lgi', lgi
+    #print 'lgi_b1idx', lgi_b1idx
     # test in here
     '''
-    jogo = getJogoFromLgi(lgi)
+    jogo = getJogoFromLgi(lgi_b1idx)
     if jogo <> self.jogo:
-      errorMsg = 'Inconsistency of jogo %s with self.jogo %s and its lgi %d' %(str(jogo), str(self.jogo), lgi)
+      errorMsg = 'Inconsistency of jogo %s with self.jogo %s and its lgi_b1idx %d' %(str(jogo), str(self.jogo), lgi_b1idx)
       raise ValueError, errorMsg
     '''
     self.lgi = lgi
@@ -295,7 +295,7 @@ class Jogo(Base):
       return self.lgi
     self.setLgi()
     if not self.lgi:
-      errorMsg = 'Could not get lgi (the LexoGraphic Index) from self.jogo %s' %(str(self.jogo))
+      errorMsg = 'Could not get lgi_b1idx (the LexoGraphic Index) from self.jogo %s' %(str(self.jogo))
       raise ValueError, errorMsg
     return self.lgi
 
@@ -492,7 +492,7 @@ class Jogos(Base):
     tilObj = tilc.Til(til); lgis = []
     for jogo in self.jogos:
       lgi = tilObj.generateLgiForJogoVsTilFaixas(jogo)
-      #print 'lgi', lgi,
+      #print 'lgi_b1idx', lgi_b1idx,
       lgis.append(lgi)
     #print
     self.jogosLgisTilFaixaDict[til] = lgis

@@ -83,7 +83,7 @@ def m4():
   for i in range(5):
     lgi = random.randint(0,c25to15)
     randomLgis.append(lgi)
-    print 'lgi', lgi
+    print 'lgi_b1idx', lgi
     bytes = binDec.pack_byte_int(lgi, nOfBytes)
     for byte in bytes:
       #print 'byte', byte
@@ -101,7 +101,7 @@ def m4():
     if len(bytes) == 3:
       outNumber = unpackByteInt(bytes, nOfBytes)
       print 'outNumber', outNumber
-      print 'lgi', randomLgis[i]
+      print 'lgi_b1idx', randomLgis[i]
       i+=1
       bytes = []
   print
@@ -129,7 +129,7 @@ def m7():
   ip.set_file_obj(fileobj) # readMode is defaulted to False
   for i in range(5):
     lgi = random.randint(0,c25to15)
-    print i, 'lgi', lgi
+    print i, 'lgi_b1idx', lgi
     ip.set_number(lgi)
     ip.write()
 

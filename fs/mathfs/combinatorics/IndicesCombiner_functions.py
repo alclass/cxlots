@@ -61,17 +61,18 @@ def get_distance_from_the_summation_scheme(n_elements, pos):
   return distance_at_pos
 
 
-def project_last_combinationlist(up_limit, n_slots):
+def project_last_combinationlist(n_elements, n_slots):
   """
   Examples:
-    f(greatest_index=2, n_slots=3) = [0, 1, 2]
-    f(greatest_index=5, n_slots=3) = [3, 4, 5]
-    f(greatest_index=7, n_slots=2) = [6, 7]
-    f(greatest_index=7, n_slots=2) = [6, 7]
-    f(greatest_index=2, n_slots=4) => raises ValueError because it would go "below zero" [-1, 0, 1, 2] not allowed
+    f(greatest_int_in_comb=2, n_slots=3) = [0, 1, 2]
+    f(greatest_int_in_comb=5, n_slots=3) = [3, 4, 5]
+    f(greatest_int_in_comb=7, n_slots=2) = [6, 7]
+    f(greatest_int_in_comb=7, n_slots=2) = [6, 7]
+    f(greatest_int_in_comb=2, n_slots=4) => raises ValueError because it would go "below zero" [-1, 0, 1, 2] not allowed
   """
-  if n_slots > up_limit + 1:
-    errmsg = f'n_slots (={n_slots}) > greatest_index (={up_limit}) + 1 (={up_limit+1})'
+  up_limit = n_elements - 1
+  if n_slots > n_elements:
+    errmsg = f'n_slots (={n_slots}) > greatest_int_in_comb (={up_limit}) + 1 (n_elements={n_elements})'
     raise ValueError(errmsg)
   last_combination_inversed = [up_limit-i for i in range(n_slots)]
   return list(reversed(last_combination_inversed))
@@ -79,7 +80,7 @@ def project_last_combinationlist(up_limit, n_slots):
 
 def project_first_combinationlist(up_limit, n_slots):
   if n_slots > up_limit + 1:
-    errmsg = f'n_slots (={n_slots}) > greatest_index (={up_limit}) + 1 (={up_limit+1})'
+    errmsg = f'n_slots (={n_slots}) > greatest_int_in_comb (={up_limit}) + 1 (={up_limit+1})'
     raise ValueError(errmsg)
   first_combination = list(range(n_slots))
   return first_combination
@@ -90,18 +91,19 @@ def get_min_at_pos(up_limit, n_slots, pos):
   return projected_last[pos]
 
 
-def get_max_at_pos(up_limit, n_slots, pos):
+def get_max_at_pos(n_elements, n_slots, pos):
+  up_limit = n_elements - 1
   projected_last = project_last_combinationlist(up_limit, n_slots)
   return projected_last[pos]
 
 
-def add_one(numberlist, up_limit, pos=None):
+def add_one(numberlist, n_elements, pos=None):
   """
     "Adds one" to a combinatory numberlist.
     add_one() also means next()
 
   Example:
-    ic = IndicesCombiner(4, 2) we have:
+    ic = IndicesCombiner(n_elements=4, n_slots=2) we have:
     combination_elements = [[0, 1], [0, 2],[0, 3],[1, 2],[1, 3],[2, 3]]  # 6 total
   In the ic object above:
     next([0, 1]) = [0, 2]  # first one [0, 1]
@@ -112,23 +114,24 @@ def add_one(numberlist, up_limit, pos=None):
     next([2, 3]) = None  # adding one to the last one results None
     next(None) = None  # adding one to None also results None
   """
+  up_limit = n_elements - 1
   if numberlist is None:
     return None
   if not isinstance(numberlist, list):
     print(f'Error not isinstance(numberlist, list) numberlist = {numberlist}')
     sys.exit(1)
   n_slots = len(numberlist)
-  projected_last = project_last_combinationlist(up_limit, n_slots)
+  projected_last = project_last_combinationlist(n_elements, n_slots)
   if numberlist == projected_last:
     return None  # it means it can't add one to the last one
   if pos is None:
     pos = len(numberlist) - 1
-  max_at_pos = get_max_at_pos(up_limit, n_slots, pos)
+  max_at_pos = get_max_at_pos(n_elements, n_slots, pos)
   number_at_pos = numberlist[pos]
   if number_at_pos == max_at_pos:
     if pos > 0:
       # recursive call traversing the indices leftwards
-      return add_one(numberlist, up_limit, pos-1)
+      return add_one(numberlist, n_elements-1, pos-1)
     else:
       # can't add to it anymore, ie, it's already the last one
       return None
@@ -146,11 +149,12 @@ def add_one(numberlist, up_limit, pos=None):
   return next_numberlist
 
 
-def subtract_one_inner(numberlist, up_limit, pos=None, dec_int_seq=None):
+def subtract_one_inner(numberlist, n_elements, pos=None, dec_int_seq=None):
   """
   This function is a recursive? continuation of subtract_one()
   """
   # look ahead left to see if "vai um" is needed
+  up_limit = n_elements - 1
   if pos is None:
     pos = len(numberlist) - 1
   if pos == 0:
@@ -163,35 +167,13 @@ def subtract_one_inner(numberlist, up_limit, pos=None, dec_int_seq=None):
   leftnumber = numberlist[pos-1]
   if leftnumber >= numberlist[pos] - distance:
     # recurse decreasing one from pos
-    return subtract_one_inner(numberlist, up_limit, pos=pos-1, dec_int_seq=dec_int_seq)
+    return subtract_one_inner(numberlist, n_elements=up_limit+1, pos=pos-1, dec_int_seq=dec_int_seq)
   # else: ie leftnumber < number_at_pos - distance
   # do minus one
   return do_minus_one_n_propagate(numberlist, up_limit, pos)
 
 
-def do_minus_one_n_propagate(numberlist, up_limit, pos):
-  """
-  # the right side number must be the highest in its possible place and propagate rightwards doing the same
-  """
-  previous_numberlist = copy.copy(numberlist)
-  previous_numberlist[pos] = numberlist[pos] - 1
-  n_slots = len(numberlist)
-  propagate = True
-  while propagate:
-    if pos == n_slots - 1:  # ie, the last one available
-      break
-    pos += 1
-    max_at_pos = get_max_at_pos(up_limit=up_limit, n_slots=n_slots, pos=pos)
-    if previous_numberlist[pos] < max_at_pos:
-      previous_numberlist[pos] = max_at_pos
-      # propagate from here
-      continue
-    # stop propagation
-    break
-  return previous_numberlist
-
-
-def subtract_one(numberlist, up_limit):
+def subtract_one(numberlist, n_elements):
   """
     "Subtracts one" to a combinatory numberlist.
     add_one() also means previous()
@@ -223,7 +205,7 @@ def subtract_one(numberlist, up_limit):
   This 'strategy algorithm' is implemented below.
 
   pos = len(numberlist) - 1
-  min_at_pos = get_min_at_pos(greatest_index, n_slots, pos)
+  min_at_pos = get_min_at_pos(greatest_int_in_comb, n_slots, pos)
   number_at_pos = numberlist[pos]
   if number_at_pos == min_at_pos:
     if pos > 0:
@@ -246,6 +228,7 @@ def subtract_one(numberlist, up_limit):
   return next_numberlist
 
   """
+  up_limit = n_elements - 1
   if numberlist is None:
     return None
   if not isinstance(numberlist, list):
@@ -255,41 +238,65 @@ def subtract_one(numberlist, up_limit):
   projected_first = project_first_combinationlist(up_limit, n_slots)
   if numberlist == projected_first:
     return None  # it means it can't subtract one to the first one
-  return subtract_one_inner(numberlist, up_limit)
+  return subtract_one_inner(numberlist, n_elements=up_limit+1)
+
+
+def do_minus_one_n_propagate(numberlist, n_elements, pos):
+  """
+  # the right side number must be the highest in its possible place and propagate rightwards doing the same
+  """
+  up_limit = n_elements - 1
+  previous_numberlist = copy.copy(numberlist)
+  previous_numberlist[pos] = numberlist[pos] - 1
+  n_slots = len(numberlist)
+  propagate = True
+  while propagate:
+    if pos == n_slots - 1:  # ie, the last one available
+      break
+    pos += 1
+    max_at_pos = get_max_at_pos(n_elements=up_limit+1, n_slots=n_slots, pos=pos)
+    if previous_numberlist[pos] < max_at_pos:
+      previous_numberlist[pos] = max_at_pos
+      # propagate from here
+      continue
+    # stop propagation
+    break
+  return previous_numberlist
 
 
 def adhoctest():
   """
   Examples:
-    f(greatest_index=7, n_slots=2) = [6, 7]
-    f(greatest_index=4, n_slots=3) = [2, 3, 4]
+    f(greatest_int_in_comb=7, n_slots=2) = [6, 7]
+    f(greatest_int_in_comb=4, n_slots=3) = [2, 3, 4]
 
   """
-  relist = project_last_combinationlist(2, 3)
+  n_elements, n_slots = 4, 3
+  relist = project_last_combinationlist(n_elements, n_slots)
   print(relist)
-  relist = project_last_combinationlist(4, 3)
-  print(relist)
-  relist = project_last_combinationlist(7, 2)
+  n_elements, n_slots = 7, 2
+  relist = project_last_combinationlist(n_elements, n_slots)
   print(relist)
   numberlist = [0, 1, 2]
-  nextone = add_one(numberlist, up_limit=3)
+  nextone = add_one(numberlist, n_elements)
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
-  numberlist = project_last_combinationlist(up_limit=3, n_slots=3)
-  nextone = add_one(numberlist, up_limit=3)
+  n_elements, n_slots = 4, 3
+  numberlist = project_last_combinationlist(n_elements, n_slots)
+  nextone = add_one(numberlist, n_elements)
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
   numberlist = None
-  nextone = add_one(numberlist, up_limit=3)
+  nextone = add_one(numberlist, n_elements)
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
-  uplim = 4
-  numberlist = project_first_combinationlist(up_limit=uplim, n_slots=2)
+  n_elements, n_slots = 5, 2
+  numberlist = project_first_combinationlist(n_elements, n_slots)
   idx = 0
   scrmsg = f"first numberlist {numberlist} idx {idx}"
   print(scrmsg)
   while numberlist is not None:
-    numberlist = add_one(numberlist, up_limit=uplim)
+    numberlist = add_one(numberlist, n_elements)
     idx += 1
     scrmsg = f"numberlist {numberlist} idx {idx}"
     print(scrmsg)
@@ -298,41 +305,42 @@ def adhoctest():
 def adhoctest2():
   up_limit, n_slots = 3, 2
   lastelem = project_last_combinationlist(up_limit, n_slots)  # [2, 3]
-  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} lastelem={lastelem}'
+  scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} lastelem={lastelem}'
   print(scrmsg)
   firstelem = list(range(n_slots))
-  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} firstelem={firstelem}'
+  scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} firstelem={firstelem}'
   print(scrmsg)
-  previousone = subtract_one(lastelem, up_limit=3)  # expects [1, 3] ie [2, 3] minus 1 = [1, 3]
+  up_limit = 3
+  previousone = subtract_one(lastelem, n_elements=up_limit+1)  # expects [1, 3] ie [2, 3] minus 1 = [1, 3]
   print('before', lastelem, 'previousone', previousone)
   before = copy.copy(previousone)
-  previousone = subtract_one(previousone, up_limit=3)  # expects [1, 2] ie [1, 3] minus 1 = [1, 2]
+  previousone = subtract_one(previousone, n_elements=up_limit+1)  # expects [1, 2] ie [1, 3] minus 1 = [1, 2]
   print('before', before, 'previousone', previousone)
   before = copy.copy(previousone)
-  previousone = subtract_one(previousone, up_limit=3)  # expects [1, 2] ie [0, 3] minus 1 = [0, 2]
+  previousone = subtract_one(previousone, n_elements=up_limit+1)  # expects [1, 2] ie [0, 3] minus 1 = [0, 2]
   print('before', before, 'previousone', previousone)
   before = copy.copy(previousone)
-  previousone = subtract_one(previousone, up_limit=3)  # expects [0, 2] ie [0, 2] minus 1 = [0, 1]
+  previousone = subtract_one(previousone, n_elements=up_limit+1)  # expects [0, 2] ie [0, 2] minus 1 = [0, 1]
   print('before', before, 'previousone', previousone)
   before = copy.copy(previousone)
-  previousone = subtract_one(previousone, up_limit=3)  # expects [0, 1] ie [0, 2] minus 1 = None
+  previousone = subtract_one(previousone, n_elements=up_limit+1)  # expects [0, 1] ie [0, 2] minus 1 = None
   print('before', before, 'previousone', previousone)
   before = copy.copy(previousone)
-  previousone = subtract_one(previousone, up_limit=3)
+  previousone = subtract_one(previousone, n_elements=up_limit+1)
   print('before', before, 'previousone', previousone)
 
 
 def adhoctest3():
   up_limit, n_slots, pos = 3, 2, 2
   firstelem = list(range(up_limit+1))
-  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} firstelem={firstelem}'
+  scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} firstelem={firstelem}'
   print(scrmsg)
   distance = get_distance_from_the_summation_scheme(n_elements=up_limit+1, pos=pos)
-  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
+  scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
   print(scrmsg)
   up_limit, n_slots, pos = 4, 3, 0
   distance = get_distance_from_the_summation_scheme(n_elements=up_limit+1, pos=pos)
-  scrmsg = f'greatest_index={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
+  scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} at pos={pos} distance={distance}'
   print(scrmsg)
   alist = get_decrescent_integer_sequence_summation_of_n(up_limit)
   print(alist, 'sum', sum(alist))
@@ -342,3 +350,4 @@ def adhoctest3():
 
 if __name__ == '__main__':
   adhoctest2()
+  adhoctest()

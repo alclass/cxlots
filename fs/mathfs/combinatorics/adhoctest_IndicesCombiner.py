@@ -10,12 +10,12 @@ import fs.mathfs.combinatorics.IndicesCombiner_functions as ICf  # ICf.project_l
 """
 import datetime
 import sys
-import fs.mathfs.combinatorics.IndicesCombiner as iCmb  # ic.IndicesCombiner
+import fs.mathfs.combinatorics.IndicesCombinerForCombinations as iCmb  # ic.IndicesCombiner
 
 
 def adhoctest_indicescombiner(up_limit, size):
   # signature IndsControl(upLimit=1, size=-1, overlap=True, iArrayIn=[])
-  ind_comb = iCmb.IndicesCombiner(up_limit, size, True)
+  ind_comb = iCmb.IndicesCombinerForCombinations(up_limit, size, True)
   c = 0
   scrmsg = 'ind_comb = IndicesCombiner(%d, %d, True)' % (up_limit, size)
   print(scrmsg)
@@ -27,7 +27,7 @@ def adhoctest_indicescombiner(up_limit, size):
     set_with_ol.append(list(s))
     s = ind_comb.next()
   set_without_ol = []
-  ind_comb = iCmb.IndicesCombiner(up_limit, size, False)
+  ind_comb = iCmb.IndicesCombinerForCombinations(up_limit, size, False)
   c = 0
   scrmsg = 'ind_comb = IndicesCombiner(%d, %d, False)' % (up_limit, size)
   print(scrmsg)
@@ -75,7 +75,7 @@ def pick_up_params():
 
 
 def adhoctest_shiftleft(up_limit, size):
-  ind_comb = iCmb.IndicesCombiner(up_limit, size, True, [2, 4, 5])
+  ind_comb = iCmb.IndicesCombinerForCombinations(up_limit, size, True, [2, 4, 5])
   c = 0
   scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
   print(scrmsg)
@@ -86,7 +86,7 @@ def adhoctest_shiftleft(up_limit, size):
     next_i = ind_comb.next()
   print('next_i 7', next_i)
   print('adhoctest_shift_left()', ind_comb.foward_n_positions())
-  ind_comb = iCmb.IndicesCombiner(7, -1, True, [0, 6, 6, 7, 7])
+  ind_comb = iCmb.IndicesCombinerForCombinations(7, -1, True, [0, 6, 6, 7, 7])
   scrmsg = 'ind_comb = IndicesCombiner(%d, %d, %s)' % (up_limit, size, ind_comb.overlap)
   print(scrmsg)
   print(ind_comb)
@@ -113,7 +113,7 @@ def adhoctest_shiftleft(up_limit, size):
   
 
 def adhoctest_previous(up_limit, size):
-  ic = iCmb.IndicesCombiner(up_limit, size, True, [0, 2, 12])
+  ic = iCmb.IndicesCombinerForCombinations(up_limit, size, True, [0, 2, 12])
   print('ic', ic)
   print('ic.next()', ic.next())
   print('ic', ic)
@@ -132,7 +132,7 @@ def adhoc_test3():
   for ws in sc.getAllSetsCombinationNonRecursively():
     print 'ws', ws
   """
-  ic = iCmb.IndicesCombiner(4, 2, False); c=0
+  ic = iCmb.IndicesCombinerForCombinations(4, 2, False); c=0
   for ws in ic.gen_all_sets():
     c += 1
     print(c, ws)
@@ -149,33 +149,33 @@ def test_yield():
 
 
 def adhoc_test():
-  ic = iCmb.IndicesCombiner(3, 2, False)
+  ic = iCmb.IndicesCombinerForCombinations(3, 2, False)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
-  for i, comb in enumerate(ic.gen_all_combs()):
+  for i, comb in enumerate(ic.gen_all_cmbs_or_those_bw_ini_fim_if_given()):
     print(i, comb)
-  ic = iCmb.IndicesCombiner(4, 4, False)
+  ic = iCmb.IndicesCombinerForCombinations(4, 4, False)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
-  for i, comb in enumerate(ic.gen_all_combs()):
+  for i, comb in enumerate(ic.gen_all_cmbs_or_those_bw_ini_fim_if_given()):
     print(i, comb)
-  ic = iCmb.IndicesCombiner(5, 5, False)
+  ic = iCmb.IndicesCombinerForCombinations(5, 5, False)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
-  for i, comb in enumerate(ic.gen_all_combs()):
+  for i, comb in enumerate(ic.gen_all_cmbs_or_those_bw_ini_fim_if_given()):
     print(i, comb)
-  ic = iCmb.IndicesCombiner(6, 3, False)
+  ic = iCmb.IndicesCombinerForCombinations(6, 3, False)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
-  for i, comb in enumerate(ic.gen_all_combs()):
+  for i, comb in enumerate(ic.gen_all_cmbs_or_those_bw_ini_fim_if_given()):
     print(i, comb)
 
 
 def adhoctest_output_combinations_for_megasena_large_set():
   # count execution time for the large MegaSena combination generation (next() with yield)
   start_time = datetime.datetime.now()
-  ic = iCmb.IndicesCombiner(60, 6, False)
-  for i, comb in enumerate(ic.gen_all_combs()):
+  ic = iCmb.IndicesCombinerForCombinations(60, 6, False)
+  for i, comb in enumerate(ic.get_all_cmbs_or_those_bw_ini_fim_if_given(cut_off=10)):
     print(i, comb)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
