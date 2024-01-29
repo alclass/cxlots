@@ -198,7 +198,7 @@ class TestCombFunctions(unittest.TestCase):
   def test_add_one_until_last_larger_set(self):
     # t1 tests a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
-    n_elements, n_slots = 20, 5
+    n_elements, n_slots = 10, 5  # C(10, 5) = 252!
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
     nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
@@ -221,6 +221,7 @@ class TestCombFunctions(unittest.TestCase):
     n_combs = ca.combine_n_c_by_c_nonfact(n_elements, n_slots)
     self.assertEqual(n_combs, len(all_returned_combs))
     # if n_elements=20, n_slots=5 (ie, if they are not changed from above); n_combs=15504
+    # yes, it was reduced to C(10, 5) = 252!
     # expected_size_calc_by_hand = 15504  # calculated aside  # n_combs = combine_n_c_by_c_nonfact(20, 5)
     # self.assertEqual(n_combs, expected_size_calc_by_hand)
 
@@ -247,7 +248,7 @@ class TestCombFunctions(unittest.TestCase):
   def test_subtract_one_w_larger_set(self):
     # t2 a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
-    n_elements, n_slots = 20, 5
+    n_elements, n_slots = 10, 5  # C(10, 5) = 252
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
     nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
@@ -268,9 +269,63 @@ class TestCombFunctions(unittest.TestCase):
     self.assertEqual(firstcomb, all_returned_combs[-1])
     self.assertTrue(middlecomb in all_returned_combs)
     n_combs = ca.combine_n_c_by_c_nonfact(n_elements, n_slots)
-    # self.assertEqual(n_combs, len(all_returned_combs))
-    self.assertEqual(15504, len(all_returned_combs))
-    # OBS comment out this last subtest if line "greatest_int_in_comb, n_slots = 19, 5" is changed above
-    # (or alternatively recalculate it) (it's been commented out though the two parameters above were not updated)
-    # expected_size_calc_by_hand = 15504  # calculated sideways  # n_combs = combine_n_c_by_c_nonfact(20, 5)
+    self.assertEqual(n_combs, len(all_returned_combs))
+    # if n_elements=20, n_slots=5 (ie, if they are not changed from above); n_combs=15504
+    # yes, it was reduced to C(10, 5) = 252!
+    # expected_size_calc_by_hand = 15504  # calculated aside  # n_combs = combine_n_c_by_c_nonfact(20, 5)
     # self.assertEqual(n_combs, expected_size_calc_by_hand)
+
+  def test_add_subtract_w_larger_set_at_margins(self):
+    # t1 adds up all possible combinations until the last one
+    n_elements, n_slots = 7, 4  # C(7, 4) = 35
+    firstcomb = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    lastcomb = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = list(firstcomb)
+    lastone = None
+    while nlist is not None:
+      nlist = iCf.add_one(nlist, n_elements=n_elements)
+      if nlist is None:
+        break
+      # remind that nlist is mutated inside add_one(), so list() is necessary to avoid side effect
+      lastone = list(nlist)
+    self.assertEqual(lastcomb, lastone)
+    # t2 subtracts down all possible combinations until the first one
+    nlist = list(lastone)
+    firstone = None
+    while nlist is not None:
+      nlist = iCf.subtract_one(nlist, n_elements=n_elements)
+      if nlist is None:
+        break
+      # remind that nlist is mutated inside add_one(), so list() is necessary to avoid side effect
+      firstone = list(nlist)
+    self.assertEqual(firstcomb, firstone)
+
+  def test_add_subtract_full_equivalent_w_smaller_set(self):
+    # t1 adds up all possible combinations until the last one
+    n_elements, n_slots = 7, 4  # C(7, 4) = 35
+    firstcomb = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    lastcomb = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    full_asc_list = [firstcomb]
+    nlist = list(firstcomb)
+    while nlist is not None:
+      nlist = iCf.add_one(nlist, n_elements=n_elements)
+      if nlist is None:
+        break
+      # remind that nlist is mutated inside add_one(), so list() is necessary to avoid side effect
+      curr_one = list(nlist)
+      full_asc_list.append(curr_one)
+    # t2 subtracts down all possible combinations until the first one
+    full_desc_list = [lastcomb]
+    nlist = list(lastcomb)
+    while nlist is not None:
+      nlist = iCf.subtract_one(nlist, n_elements=n_elements)
+      if nlist is None:
+        break
+      # remind that nlist is mutated inside add_one(), so list() is necessary to avoid side effect
+      curr_one = list(nlist)
+      full_desc_list.append(curr_one)
+    self.assertEqual(full_asc_list[-1], full_desc_list[0])
+    self.assertEqual(full_asc_list[0], full_desc_list[-1])
+    self.assertEqual(len(full_asc_list), len(full_desc_list))
+    full_desc_list_reversed = list(reversed(full_desc_list))
+    self.assertEqual(full_asc_list, full_desc_list_reversed)

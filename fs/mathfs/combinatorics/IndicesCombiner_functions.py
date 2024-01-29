@@ -219,22 +219,34 @@ class CombinationAdderSubtracter:
 
 def set_rightward_digits_after_pos_to_their_max(pos, numberlist, n_elements):
   """
-  This is an adjustment function for the subtract_one() need for a "vai um" kind of propagating adjustment
+  This is an adjustment function for the subtract_one()
+    need for a "vai um" kind of propagating adjustment
 
   Example:
-    Suppose a subtract_one() happens to [1, 2, 3] where n_elements=5
-    The minimal (or first) set (where n_elements=5 & n_slots=3) is [0, 1, 2],
-      so the first "1" can decrease to "0", resulting in [0, 2, 3]
-    but [1, 2, 3] minus_1 is in fact [0, 3, 4],
-      so [0, 2, 3] needs to propagate a "correction-like vai-um" to its ending [2, 3]
-    That correction is to move [2, 3] to their maximum positional values,
-      ie [3, 4], because the maximum (or last) set is [2, 3, 4]
+    suppose combinations(n_elements=5, n_slots=3)
+    suppose a subtracting by one starting from its maximum combination set:
+      0 [2, 3, 4] => [1, 3, 4]
+      1 [1, 3, 4] => [1, 2, 4]
+      2 [1, 2, 4] => [1, 2, 3]
+      3 [1, 2, 3] => [0, 3, 4]
+      4 [0, 3, 4] => [0, 2, 4]
+      5 [0, 2, 4] => [0, 2, 3]
+      6 [0, 2, 3] => [0, 1, 4]
+      7 [0, 1, 4] => [0, 1, 3]
+      8 [0, 1, 3] => [0, 1, 2]
+      9 [0, 1, 2] => None
 
-  This function does this "vai um" propagation that the example above mentions.
+  Notice that every diminishing by 1 not at the last position
+    provokes a propagation to the right
+  The transition below is illustrative:
+      2 [1, 2, 4] => [1, 2, 3]
+      3 [1, 2, 3] => [0, 3, 4]
+  Notice that when 1 fell to 0 (at pos 0) the rightside [2, 3] became [3, 4]
+    ie, that's what this function does!
   """
-  if pos > len(numberlist) - 1:
-    return numberlist  # or None, yet to decide
   n_slots = len(numberlist)
+  if pos > n_slots - 1:
+    return numberlist  # or None, yet to decide
   elem_min, elem_max = n_elements - n_slots, n_elements - 1
   # max_values_array is the same as lastcomb
   max_values_array = [i for i in range(elem_min, elem_max + 1)]
@@ -245,19 +257,93 @@ def set_rightward_digits_after_pos_to_their_max(pos, numberlist, n_elements):
 
 
 def subtract_one(numberlist, n_elements, pos=None):
+  """
+  Subtracts one to a combination set.
+  Examples:
+    Let's start with [2, 3, 4] and n_elements = 5
+      Applying the operation (subtract_one()), one has:
+    [2, 3, 4] - minus_1 = [1, 3, 4]
+      Repeating the operation (subtract_one())
+    [1, 3, 4] - minus_1 = [1, 2, 4]
+      Repeating the operation (subtract_one())
+    [1, 2, 4] - minus_1 = [1, 2, 3]
+      and so on until
+    [0, 1, 2] - minus_1 returns None
+      (TO-DO: maybe a differentiation must occur between None and "GROUND")
+      (for the time being, it's None in function and [-1]*n_slots in class)
+  Notice the algorithm.
+    1) it goes leftward looking for a digit that can be diminished by 1;
+    2) if it finds it, diminishes it;
+       the condition for that is based on two requirements:
+      2-1 it must be greater than the digit on the left;
+      2-2 it must be not be lesser than the mininum at position;
+    3) if 2) is not doable, check or do:
+      3-1 if pos == 0, combination cannot be diminished anymore,
+        return None (or, maybe in a future implementation, GROUND "for a kind of ground state")
+      3-2 if pos > 0, move pos to the left and repeat this algorithm.
+  Args:
+    numberlist: list (the combination set)
+    n_elements: int (informs the number of elements in set [0, n-1]
+    pos: int (the index position in numberlist)
+
+  Returns: None | list (None or the "diminished by 1" numberlist)
+  """
   n_slots = len(numberlist)
+  # firstcomb also informs mininum values for positions
   firstcomb = [i for i in range(n_slots)]
+  # the mininum cannot be diminished or, another interpretation,
+  # its result is None (a kind of "ground state")
+  # in the class implementation (@see class CombinationAdderSubtracter),
+  # this "ground state" has a different convention
   if numberlist == firstcomb:
-    return None
+    return None  # ie, the firstcomb diminished by 1 goes to a kind of "GROUND"
+  # if param pos is None, default it to the last position
   pos = n_slots - 1 if pos is None else pos
   if pos < 0:
     return None
-  right_side_val = numberlist[pos]
+  value_at_pos = numberlist[pos]
+  # asks if it can be diminished
+  min_val_at_pos = firstcomb[pos]
+  if value_at_pos > min_val_at_pos:
+    # okay, now asks if left digit (or -1 if pos=0) permits diminishing it
+    if pos > 0:
+      value_at_left = numberlist[pos-1]
+    else:
+      # ie, when pos = 0, "project" a virtual left digit with -1
+      value_at_left = -1
+    if value_at_pos > value_at_left + 1:
+      # at this condition, the combination set may be diminished by 1
+      value_at_pos -= 1
+      numberlist[pos] = value_at_pos
+      # subtracted combination set has been formed,
+      # before returning it, propagate rightward based on pos
+      if pos < n_slots - 1:
+        numberlist = set_rightward_digits_after_pos_to_their_max(pos, numberlist, n_elements)
+      return numberlist
+    else:  # ie value is still higher than its minimal, but left digit impedes diminishing it
+      if pos == 0:
+        # this is a halting condition and
+        # subtraction could not happen
+        return None
+      else:  # pos > 0:
+        # recurse on moving pos to the left
+        return subtract_one(numberlist, n_elements, pos-1)
+  else:  # ie value_at_pos <= min_val_at_pos
+    if pos == 0:
+      # this is a halting condition and
+      # subtraction could not happen
+      return None
+    else:
+      # recurse on moving pos to the left
+      return subtract_one(numberlist, n_elements, pos-1)
+
+
+"""
   leftpos = pos - 1
   if leftpos < 0:
-    if right_side_val > 0:
+    if value_at_pos > 0:
       # pos here is 0 because leftpos < 0
-      numberlist[pos] = right_side_val - 1
+      numberlist[pos] = value_at_pos - 1
       # at this point, a propagating "vai um" must happen
       if numberlist[pos] == firstcomb[pos]:
         # propagation vai-um-like
@@ -265,14 +351,15 @@ def subtract_one(numberlist, n_elements, pos=None):
       return numberlist
     return None
   left_side_val = numberlist[leftpos]
-  if right_side_val - 1 > left_side_val:
+  if value_at_pos - 1 > left_side_val:
     # done
-    numberlist[pos] = right_side_val - 1
+    numberlist[pos] = value_at_pos - 1
     if numberlist[pos] == firstcomb[pos]:
       # propagation vai-um-like
       numberlist = set_rightward_digits_after_pos_to_their_max(pos, numberlist, n_elements)
     return numberlist
   return subtract_one(numberlist, n_elements=n_elements, pos=pos-1)
+"""
 
 
 def adhoctest():
@@ -436,8 +523,22 @@ def adhoctest6():
   print(nlist)
 
 
+def adhoctest7():
+  n_elements, comb = 5, [2, 3, 4]
+  previouscomb = list(comb)
+  idx = 0
+  while 1:
+    comb = subtract_one(comb, n_elements=n_elements)
+    if comb is None:
+      break
+    print(idx, previouscomb, '=>', comb)
+    previouscomb = list(comb)
+    idx += 1
+  print(idx, previouscomb, '=>', None)
+
+
 if __name__ == '__main__':
   """
   adhoctest2()
   """
-  adhoctest6()
+  adhoctest7()
