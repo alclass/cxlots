@@ -237,7 +237,7 @@ class IndicesCombinerForCombinations:
         combination [1, 2] is index 3
 
     @see more info and explanation in docstring for function:
-      ca.calc_lgi_from_comb_where_ints_start_at_0(cmbset, n_elements)
+      ca.calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
     """
     lgi_computed = ca.calc_lgi_from_comb_where_ints_start_at_0(self.curr_comb, self.n_elements)
     return lgi_computed

@@ -5,7 +5,7 @@ fs/mathfs/combinatorics/test_IndicesCombiner_functions.py
 
 """
 import unittest
-import fs.mathfs.combinatorics.IndicesCombiner_functions as iCf  # icf.get_decrescent_integer_sequence_summation_of_n
+import fs.mathfs.combinatorics.IndicesCombiner_functions as iCf  # icf.get_decrescent_integer_sequence_for_later_summation_of_n
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.comb_n_by_m
 
 
@@ -27,22 +27,22 @@ class TestCombFunctions(unittest.TestCase):
     f(-2) = None
     """
     n, expected_seq = 0, [0]
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertEqual(expected_seq, returned_seq)
     n, expected_seq = 1, [1, 0]
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertEqual(expected_seq, returned_seq)
     n, expected_seq = 2, [2, 1, 0]
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertEqual(expected_seq, returned_seq)
     n, expected_seq = n, list(range(n, -1, -1))
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertEqual(expected_seq, returned_seq)
     n = 'foo bar'
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertIsNone(returned_seq)
     n = -2
-    returned_seq = iCf.get_decrescent_integer_sequence_summation_of_n(n)
+    returned_seq = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(n)
     self.assertIsNone(returned_seq)
 
   def test_get_distance_from_the_summation_scheme(self):
@@ -80,7 +80,7 @@ class TestCombFunctions(unittest.TestCase):
     self.assertIsNone(returned_distance_at_pos_in_seq)
     # testing directly with the array
     max_value = n_elements - 1
-    int_sequence_in_sum = iCf.get_decrescent_integer_sequence_summation_of_n(max_value)
+    int_sequence_in_sum = iCf.get_decrescent_integer_sequence_for_later_summation_of_n(max_value)
     pos_in_seq = 0  # expects 2 ie the distance may be 3 - 1 = 2 (seen in element [1, 3])
     expected_distance_at_pos_in_seq = 3
     returned_distance_at_pos_in_seq = int_sequence_in_sum[pos_in_seq]
@@ -98,41 +98,83 @@ class TestCombFunctions(unittest.TestCase):
     """
     """
     # t1 expects the first combination from IC(greatest_int_in_comb=4, n_slots=3) which is [0, 1, 2]
-    up_limit, n_slots = 4, 3
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
+    n_elements, n_slots = 4, 3
+    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
     self.assertEqual(expected_nlist, nlist)
     # t2 expects the next() when a combination is added by one
     expected_added_one = [0, 1, 3]
-    returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
+    returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
     self.assertEqual(expected_added_one, returned_added_one)
-    # t3 expects the last combination from IC(greatest_int_in_comb=4, n_slots=3) which is [2, 3, 4]
-    nlist = iCf.project_last_combinationlist(up_limit=up_limit, n_slots=n_slots)
-    expected_nlist = [2, 3, 4]
+    # t3 expects the last combination [1, 2, 3]
+    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    expected_nlist = [1, 2, 3]
     self.assertEqual(expected_nlist, nlist)
     # t4 expects None when the last combination is added by one
-    returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
+    returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
     self.assertIsNone(returned_added_one)
 
   def test_subtract_one(self):
     """
     """
     # t1 expects the last combination from IC(greatest_int_in_comb=4, n_slots=3) which is [2, 3, 4]
-    up_limit, n_slots = 4, 3
-    nlist = iCf.project_last_combinationlist(up_limit=up_limit, n_slots=n_slots)
-    expected_nlist = [2, 3, 4]
+    n_elements, n_slots = 4, 3
+    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    expected_nlist = [1, 2, 3]
     self.assertEqual(expected_nlist, nlist)
     # t2 expects the previous() when a combination is subtracted by one
-    expected_subtracted_one = [1, 3, 4]
-    returned_subtracted_one = iCf.subtract_one(nlist, up_limit=up_limit)
+    expected_subtracted_one = [0, 2, 3]
+    returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
     self.assertEqual(expected_subtracted_one, returned_subtracted_one)
-    # t3 expects the first combination from IC(greatest_int_in_comb=4, n_slots=3) which is [0, 1, 2]
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
+    # t3 expects the first combination [0, 1, 2]
+    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
     self.assertEqual(expected_nlist, nlist)
-    # t4 expects None when the last combination is added by one
-    returned_subtracted_one = iCf.subtract_one(nlist, up_limit=up_limit)
+    # t4 expects None when the last combination is subtracted by one
+    returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
     self.assertIsNone(returned_subtracted_one)
+
+  def test_add_n_subtract_one(self):
+    """
+    Notice: the add_one() and subtract_one() "mutates" the input list.
+      So caution must be taken to "freeze" the comparable list if needed.
+    """
+    # t1 expects the next() when a combination is added by one
+    n_elements, n_slots = 5, 3
+    nlist = [0, 1, 2, 3]
+    expected_added_one = [0, 1, 2, 4]
+    returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
+    self.assertEqual(expected_added_one, returned_added_one)
+    # t2 "revert" the add_one() with a subtract_one()
+    returned_reverted = iCf.subtract_one(expected_added_one, n_elements=n_elements)
+    self.assertEqual(nlist, returned_reverted)
+    # t3 add three times in a row
+    nlist = [0, 1, 2, 4]
+    added_one = iCf.add_one(nlist, n_elements=n_elements)
+    expected_added_one = [0, 1, 3, 4]
+    self.assertEqual(expected_added_one, added_one)
+    added_two = iCf.add_one(added_one, n_elements=n_elements)
+    expected_added_two = [0, 2, 3, 4]
+    self.assertEqual(expected_added_two, added_two)
+    added_three = iCf.add_one(added_two, n_elements=n_elements)
+    expected_added_three = [1, 2, 3, 4]
+    self.assertEqual(expected_added_three, added_three)
+    # t4 subtract three times in a row
+    returned_revert_to_2 = iCf.subtract_one(expected_added_three, n_elements=n_elements)
+    self.assertEqual(expected_added_two, returned_revert_to_2)
+    returned_revert_to_1 = iCf.subtract_one(expected_added_two, n_elements=n_elements)
+    self.assertEqual(expected_added_one, returned_revert_to_1)
+    # t5 subtract and add from the last combination
+    nlist = [1, 2, 3, 4]
+    lastcomb = list(nlist)
+    subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
+    expected_penultimate = [0, 2, 3, 4]
+    self.assertEqual(expected_penultimate, subtracted_one)
+    added_one = iCf.add_one(expected_penultimate, n_elements=n_elements)
+    self.assertEqual(lastcomb, added_one)
+    # t6 another adding goes to None, ie the value undertaking the last combination in set
+    added_one = iCf.add_one(added_one, n_elements=n_elements)
+    self.assertIsNone(added_one)
 
   def test_add_one_until_last(self):
     """
@@ -140,45 +182,46 @@ class TestCombFunctions(unittest.TestCase):
       comment out the last subtest that is hardcoded with the combination set total size amount
     """
     # t1
+    n_elements, n_slots = 4, 2
     all_expected_combs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
-    up_limit, n_slots = 3, 2
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
+    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
     all_returned_combs = [nlist]
     while nlist is not None:
-      returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
+      returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
       if returned_added_one is None:
         break
       all_returned_combs.append(returned_added_one)
       # copy.copy() is not needed because a new one is out from add_one() above
       nlist = returned_added_one
     self.assertEqual(all_expected_combs, all_returned_combs)
-    # t2 a larger set!
+
+  def test_add_one_until_last_larger_set(self):
+    # t1 tests a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
-    up_limit, n_slots = 19, 5
+    n_elements, n_slots = 20, 5
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
-    all_returned_combs = [nlist]
+    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    all_returned_combs = [list(nlist)]
     while nlist is not None:
-      returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
+      returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
       if returned_added_one is None:
         break
       all_returned_combs.append(returned_added_one)
-      # copy.copy() is not needed because a new one is out from add_one() above
-      nlist = returned_added_one
-    firstelem = list(range(n_slots))
-    lastelem = list(range(up_limit - n_slots + 1, up_limit+1))
-    displacement = int(up_limit / 2)
-    middle_elem = list(range(up_limit - n_slots + 1 - displacement, up_limit+1 - displacement))
-    self.assertEqual(firstelem, all_returned_combs[0])
-    self.assertEqual(lastelem, all_returned_combs[-1])
-    self.assertTrue(middle_elem in all_returned_combs)
-    n_elements = up_limit + 1
+      nlist = list(returned_added_one)  # list() used instead of copy.copy()
+    firstcomb = list(range(n_slots))
+    elem_min, elem_max = n_elements - n_slots, n_elements - 1
+    lastcomb = list(range(elem_min, elem_max + 1))
+    greatest_int = n_elements - 1
+    displacement = int(greatest_int / 2)
+    middlecomb = list(range(greatest_int - n_slots + 1 - displacement, greatest_int+1 - displacement))
+    self.assertEqual(firstcomb, all_returned_combs[0])
+    self.assertEqual(lastcomb, all_returned_combs[-1])
+    self.assertTrue(middlecomb in all_returned_combs)
     n_combs = ca.combine_n_c_by_c_nonfact(n_elements, n_slots)
     self.assertEqual(n_combs, len(all_returned_combs))
-    # OBS comment out this last subtest if line "greatest_int_in_comb, n_slots = 19, 5" is changed above
-    # (or alternatively recalculate it) (it's been commented out though the two parameters above were not updated)
-    # expected_size_calc_by_hand = 15504  # calculated sideways  # n_combs = combine_n_c_by_c_nonfact(20, 5)
+    # if n_elements=20, n_slots=5 (ie, if they are not changed from above); n_combs=15504
+    # expected_size_calc_by_hand = 15504  # calculated aside  # n_combs = combine_n_c_by_c_nonfact(20, 5)
     # self.assertEqual(n_combs, expected_size_calc_by_hand)
 
   def test_subtract_one_until_first(self):
@@ -187,43 +230,46 @@ class TestCombFunctions(unittest.TestCase):
     If parameters are changed in the test code,
       comment out the last subtest that is hardcoded with the combination set total size amount
     """
-    # t1
+    # t1 first: add one repeatedly until it gets maximum value
     all_expected_combs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
-    up_limit, n_slots = 3, 2
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
-    all_returned_combs = [nlist]
+    all_expected_combs = list(reversed(all_expected_combs))
+    n_elements, n_slots = 4, 2
+    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    all_returned_combs = [list(nlist)]  # [[2, 3]] if n_elements, n_slots = 4, 2
     while nlist is not None:
-      returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
-      if returned_added_one is None:
+      returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
+      if returned_subtracted_one is None:
         break
-      all_returned_combs.append(returned_added_one)
-      # copy.copy() is not needed because a new one is out from add_one() above
-      nlist = returned_added_one
+      all_returned_combs.append(returned_subtracted_one)
+      nlist = list(returned_subtracted_one)
     self.assertEqual(all_expected_combs, all_returned_combs)
+
+  def test_subtract_one_w_larger_set(self):
     # t2 a larger set!
     # with a larger set, the four tests are: first, last, size and a "middle element" contained
-    up_limit, n_slots = 19, 5
+    n_elements, n_slots = 20, 5
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
-    nlist = iCf.project_first_combinationlist(up_limit=up_limit, n_slots=n_slots)
-    all_returned_combs = [nlist]
+    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    all_returned_combs = [list(nlist)]
     while nlist is not None:
-      returned_added_one = iCf.add_one(nlist, up_limit=up_limit)
-      if returned_added_one is None:
+      returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
+      if returned_subtracted_one is None:
         break
-      all_returned_combs.append(returned_added_one)
-      # copy.copy() is not needed because a new one is out from add_one() above
-      nlist = returned_added_one
-    firstelem = list(range(n_slots))
-    lastelem = list(range(up_limit - n_slots + 1, up_limit+1))
-    displacement = int(up_limit / 2)
-    middle_elem = list(range(up_limit - n_slots + 1 - displacement, up_limit+1 - displacement))
-    self.assertEqual(firstelem, all_returned_combs[0])
-    self.assertEqual(lastelem, all_returned_combs[-1])
-    self.assertTrue(middle_elem in all_returned_combs)
-    n_elements = up_limit + 1
+      all_returned_combs.append(returned_subtracted_one)
+      nlist = list(returned_subtracted_one)
+    firstcomb = list(range(n_slots))
+    elem_min, elem_max = n_elements - n_slots, n_elements - 1
+    lastcomb = list(range(elem_min, elem_max + 1))
+    greatest_int = n_elements - 1
+    displacement = int(greatest_int / 2)
+    middlecomb = list(range(greatest_int - n_slots + 1 - displacement, greatest_int+1 - displacement))
+    self.assertEqual(lastcomb, all_returned_combs[0])
+    self.assertEqual(firstcomb, all_returned_combs[-1])
+    self.assertTrue(middlecomb in all_returned_combs)
     n_combs = ca.combine_n_c_by_c_nonfact(n_elements, n_slots)
-    self.assertEqual(n_combs, len(all_returned_combs))
+    # self.assertEqual(n_combs, len(all_returned_combs))
+    self.assertEqual(15504, len(all_returned_combs))
     # OBS comment out this last subtest if line "greatest_int_in_comb, n_slots = 19, 5" is changed above
     # (or alternatively recalculate it) (it's been commented out though the two parameters above were not updated)
     # expected_size_calc_by_hand = 15504  # calculated sideways  # n_combs = combine_n_c_by_c_nonfact(20, 5)

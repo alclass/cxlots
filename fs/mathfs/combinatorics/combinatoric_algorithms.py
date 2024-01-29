@@ -275,7 +275,7 @@ def calc_comb_from_lgi_b1idx_where_ints_start_at_0(
     lgi, n_elements, n_slots, total_combs=None, comb=None, lastcomb=None, pivot=None, pivot_idx=None
 ):
   """
-  This function is the inverse of calc_lgi_from_comb_where_ints_start_at_0(cmbset, n_elements)
+  This function is the inverse of calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
   """
   if lastcomb is None:
     lastcomb = list(range(54, 60))
