@@ -1,7 +1,26 @@
 #!/usr/bin/env python
 """
 fs/mathfs/combinatorics/IndicesCombiner_functions.py
+  Contains, mainly, the add_one() and subtract_one() functions that implements
+   next() and previous operations, respectively, to combinations in a combination whole set.
 
+In this module, one finds the CombinationAdderSubtracter class that, in turn,
+  uses the two functions mentioned above.
+
+These two functions are used in the context of index combining.
+  For example, the decrescent combination set:
+    0 [1, 2, 3]
+    1 [0, 2, 3]
+    2 [0, 1, 3]
+    3 [0, 1, 2]
+    (the beginning integer before each set is its lgi [lexicographical index])
+  can be formed by establishing the maximum set [1, 2, 3] and, from it, applying
+  successive previous() [or subtract_one()] operations until it reaches the
+  minimum set ([0, 1, 2]).
+
+  The lgi transformation can also, as an alternative approach, establish the whole combination set.
+
+At this version, there are some functions in here that may be refactored to other modules.
 """
 import copy
 import sys
@@ -115,7 +134,7 @@ def add_one(numberlist, n_elements, lastcomb=None, pos=None):
   return next_numberlist
 
 
-def project_first_combinationlist(n_elements, n_slots):
+def make_the_first_or_minimum_combination(n_elements, n_slots):
   if n_slots > n_elements:
     greatest_int_in_comb = n_elements - 1
     errmsg = f'n_slots (={n_slots}) > greatest_int_in_comb (={greatest_int_in_comb}) + 1 (={n_elements})'
@@ -124,7 +143,7 @@ def project_first_combinationlist(n_elements, n_slots):
   return first_combination
 
 
-def project_last_combinationlist(n_elements, n_slots):
+def make_the_last_or_maximum_combination(n_elements, n_slots):
   """
   Examples:
     f(greatest_int_in_comb=2, n_slots=3) = [0, 1, 2]
@@ -161,7 +180,7 @@ class CombinationAdderSubtracter:
     """
     """
     if self._first_comb is None:
-      self._first_comb = project_first_combinationlist(self.n_elements, self.n_slots)
+      self._first_comb = make_the_first_or_minimum_combination(self.n_elements, self.n_slots)
       self.before_first_comb = [-1] * self.n_slots
     return self._first_comb
 
@@ -170,7 +189,7 @@ class CombinationAdderSubtracter:
     """
     """
     if self._last_comb is None:
-      self._last_comb = project_last_combinationlist(self.n_elements, self.n_slots)
+      self._last_comb = make_the_last_or_maximum_combination(self.n_elements, self.n_slots)
     return self._last_comb
 
   def get_min_elem_at_pos(self, pos):
@@ -370,17 +389,17 @@ def adhoctest():
 
   """
   n_elements, n_slots = 4, 3
-  relist = project_last_combinationlist(n_elements, n_slots)
+  relist = make_the_last_or_maximum_combination(n_elements, n_slots)
   print(relist)
   n_elements, n_slots = 7, 2
-  relist = project_last_combinationlist(n_elements, n_slots)
+  relist = make_the_last_or_maximum_combination(n_elements, n_slots)
   print(relist)
   numberlist = [0, 1, 2]
   nextone = add_one(numberlist, n_elements)
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
   n_elements, n_slots = 4, 3
-  numberlist = project_last_combinationlist(n_elements, n_slots)
+  numberlist = make_the_last_or_maximum_combination(n_elements, n_slots)
   nextone = add_one(numberlist, n_elements)
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
@@ -389,7 +408,7 @@ def adhoctest():
   scrmsg = f"numberlist {numberlist} plus 1 = nextone {nextone}"
   print(scrmsg)
   n_elements, n_slots = 5, 2
-  numberlist = project_first_combinationlist(n_elements, n_slots)
+  numberlist = make_the_first_or_minimum_combination(n_elements, n_slots)
   idx = 0
   scrmsg = f"first numberlist {numberlist} idx {idx}"
   print(scrmsg)
@@ -402,7 +421,7 @@ def adhoctest():
 
 def adhoctest2():
   up_limit, n_slots = 3, 2
-  lastelem = project_last_combinationlist(up_limit, n_slots)  # [2, 3]
+  lastelem = make_the_last_or_maximum_combination(up_limit, n_slots)  # [2, 3]
   scrmsg = f'greatest_int_in_comb={up_limit} n_slots={n_slots} lastelem={lastelem}'
   print(scrmsg)
   firstelem = list(range(n_slots))
@@ -504,7 +523,7 @@ def adhoctest6():
   # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
   # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
   idx = 0
-  nlist = project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+  nlist = make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
   print(idx, 'first', nlist)
   all_returned_combs = [nlist]
   idx = 0
@@ -519,12 +538,12 @@ def adhoctest6():
   print('size all_returned_combs', len(all_returned_combs))
   ncombs = ca.combine_n_c_by_c_nonfact(20, 5)
   print('ncombs', ncombs)
-  nlist = project_last_combinationlist(n_elements=4, n_slots=2)
+  nlist = make_the_last_or_maximum_combination(n_elements=4, n_slots=2)
   print(nlist)
 
 
 def adhoctest7():
-  n_elements, comb = 5, [2, 3, 4]
+  n_elements, comb = 4, [1, 2, 3]
   previouscomb = list(comb)
   idx = 0
   while 1:

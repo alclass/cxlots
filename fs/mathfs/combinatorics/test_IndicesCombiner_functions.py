@@ -99,7 +99,7 @@ class TestCombFunctions(unittest.TestCase):
     """
     # t1 expects the first combination from IC(greatest_int_in_comb=4, n_slots=3) which is [0, 1, 2]
     n_elements, n_slots = 4, 3
-    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
     self.assertEqual(expected_nlist, nlist)
     # t2 expects the next() when a combination is added by one
@@ -107,7 +107,7 @@ class TestCombFunctions(unittest.TestCase):
     returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
     self.assertEqual(expected_added_one, returned_added_one)
     # t3 expects the last combination [1, 2, 3]
-    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [1, 2, 3]
     self.assertEqual(expected_nlist, nlist)
     # t4 expects None when the last combination is added by one
@@ -119,7 +119,7 @@ class TestCombFunctions(unittest.TestCase):
     """
     # t1 expects the last combination from IC(greatest_int_in_comb=4, n_slots=3) which is [2, 3, 4]
     n_elements, n_slots = 4, 3
-    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [1, 2, 3]
     self.assertEqual(expected_nlist, nlist)
     # t2 expects the previous() when a combination is subtracted by one
@@ -127,7 +127,7 @@ class TestCombFunctions(unittest.TestCase):
     returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
     self.assertEqual(expected_subtracted_one, returned_subtracted_one)
     # t3 expects the first combination [0, 1, 2]
-    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
     expected_nlist = [0, 1, 2]
     self.assertEqual(expected_nlist, nlist)
     # t4 expects None when the last combination is subtracted by one
@@ -184,7 +184,7 @@ class TestCombFunctions(unittest.TestCase):
     # t1
     n_elements, n_slots = 4, 2
     all_expected_combs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
-    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
     all_returned_combs = [nlist]
     while nlist is not None:
       returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
@@ -201,7 +201,7 @@ class TestCombFunctions(unittest.TestCase):
     n_elements, n_slots = 10, 5  # C(10, 5) = 252!
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
-    nlist = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
     all_returned_combs = [list(nlist)]
     while nlist is not None:
       returned_added_one = iCf.add_one(nlist, n_elements=n_elements)
@@ -235,7 +235,7 @@ class TestCombFunctions(unittest.TestCase):
     all_expected_combs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
     all_expected_combs = list(reversed(all_expected_combs))
     n_elements, n_slots = 4, 2
-    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     all_returned_combs = [list(nlist)]  # [[2, 3]] if n_elements, n_slots = 4, 2
     while nlist is not None:
       returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
@@ -251,7 +251,7 @@ class TestCombFunctions(unittest.TestCase):
     n_elements, n_slots = 10, 5  # C(10, 5) = 252
     # pair(greatest_int_in_comb=19, n_slots=5) above generates 15504 combinations
     # (notice that, if still greater this number, it may slow down processing depending on CPU availability etc.)
-    nlist = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    nlist = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     all_returned_combs = [list(nlist)]
     while nlist is not None:
       returned_subtracted_one = iCf.subtract_one(nlist, n_elements=n_elements)
@@ -278,8 +278,8 @@ class TestCombFunctions(unittest.TestCase):
   def test_add_subtract_w_larger_set_at_margins(self):
     # t1 adds up all possible combinations until the last one
     n_elements, n_slots = 7, 4  # C(7, 4) = 35
-    firstcomb = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
-    lastcomb = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    firstcomb = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
+    lastcomb = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     nlist = list(firstcomb)
     lastone = None
     while nlist is not None:
@@ -303,8 +303,8 @@ class TestCombFunctions(unittest.TestCase):
   def test_add_subtract_full_equivalent_w_smaller_set(self):
     # t1 adds up all possible combinations until the last one
     n_elements, n_slots = 7, 4  # C(7, 4) = 35
-    firstcomb = iCf.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
-    lastcomb = iCf.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+    firstcomb = iCf.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
+    lastcomb = iCf.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
     full_asc_list = [firstcomb]
     nlist = list(firstcomb)
     while nlist is not None:

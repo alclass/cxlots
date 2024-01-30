@@ -356,40 +356,90 @@ def calc_lgi_parcel(combint, pos, n_slots, n_elements):
   return parcel
 
 
-def lgi_f_inv_inner_from_b0idx_to_combination(
-    lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos
+def find_int_n_lgiparcel_from_all_poss_ints(
+    lgi_remains, pos, n_slots, n_elements, min_at_pos, max_at_pos
 ):
   """
-  This function has an "entrance function" and this one, which is recursive.
-  The "entrance function" validates parameters and this one does the computation.
-  Consider this function 'private' to the former or a function that at least treats parameters.
+  This function is (an inner) part of the algorithm for the lgi inversion function.
+
+  It picks up the intvalue key, in a dict, that contains
+    the closest value to lgi_remains that is not, at the same, greater than it.
+
+  Example:
+      Suppose lgi_remains = 10 and pos = 1
+
+  Examining min_at_pos = [0, 1, 2] & max_at_pos = [2, 3, 4]
+    pos 1 can contain a mininum of 1 and a maximum of 3
+
+  Suppose now that poss_ints_n_lgis_dict is formed (just as an example) with:
+    {1: 5, 2: 9, 3: 12}
+  The algorithm must choose the lesser than 10 value closest to 10.
+    In the dict above, that value is 9 and its key is 2, ie {2: 9}.
+    That is also the pair (intguessed, ilgi) that will be returned.
+      ie (intguessed=2, ilgi=9)
+
+  Args:
+    lgi_remains:
+    pos:
+    n_slots:
+    n_elements:
+    min_at_pos:
+    max_at_pos:
+
+  Returns:
+
   """
-  pos = 0 if acc_comb is None else len(acc_comb)
-  max_at_pos = max_at_each_pos[pos]
-  min_at_pos = min_at_each_pos[pos]
   all_poss_ints = list(range(min_at_pos, max_at_pos+1))
   # call a function getting all pairs (intvals, parcels)
   # chosen the one that fits! ie one that is less than lgi, but having its next follower greater than
   poss_ints_n_lgis_dict = {}
-  for intguess in all_poss_ints:
-    ilgi = calc_lgi_parcel(intguess, pos, n_slots, n_elements)
-    poss_ints_n_lgis_dict[intguess] = ilgi
+  for intguessed in all_poss_ints:
+    ilgi = calc_lgi_parcel(intguessed, pos, n_slots, n_elements)
+    poss_ints_n_lgis_dict[intguessed] = ilgi
   poss_ints_n_lgis_dict = dict(sorted(poss_ints_n_lgis_dict.items(), key=lambda e: e[1]))
   pair = (-1, -1)
-  for intguess in poss_ints_n_lgis_dict:
-    ilgi = poss_ints_n_lgis_dict[intguess]
+  for intguessed in poss_ints_n_lgis_dict:
+    ilgi = poss_ints_n_lgis_dict[intguessed]
     if ilgi <= lgi_remains:
-      pair = (intguess, ilgi)
+      pair = (intguessed, ilgi)
     else:
       break
   if pair == (-1, -1):
-    print('not found')
-    return
-  intguess, ilgi = pair
-  acc_comb.append(intguess)
+    errmsg = f'Error in the algorithm: the function failed to find a remaining value for lgi "consumption"'
+    raise ValueError(errmsg)
+  intguessed, ilgi = pair
+  return intguessed, ilgi
+
+
+def lgi_f_inv_inner_from_b0idx_to_combination(
+    lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos
+):
+  """
+    Implements the inverse lgi function, ie given a lgi, find a combination.
+
+  This function has an "entrance function" and this follower one is recursive.
+  The division of work, so to say, is the following:
+    1 the "entrance function" validates parameters.
+    2 this follower function does the computation.
+
+  Because of this, it's important, if this functionality is needed,
+    to call it indirectly via the "entrace one",
+    so that parameters be treated before getting here. (*)
+
+  (*) As a side note, the Python language does not enforce 'private' access,
+     so, because of that, the programmer should observe
+     the access to it via the entrance function (...).
+  """
+  pos = 0 if acc_comb is None else len(acc_comb)
+  max_at_pos = max_at_each_pos[pos]
+  min_at_pos = min_at_each_pos[pos]
+  intguessed, ilgi = find_int_n_lgiparcel_from_all_poss_ints(
+    lgi_remains, pos, n_slots, n_elements, min_at_pos, max_at_pos
+  )
+  acc_comb.append(intguessed)
   lgi_remains -= ilgi
   if pos == n_slots - 1:
-    # finish condition!
+    # finish condition (ie, combination was fully traversed from left to right)
     return acc_comb
   # recurse on with acc_comb, though appended not yet having n_slots size
   return lgi_f_inv_inner_from_b0idx_to_combination(
@@ -411,8 +461,8 @@ def lgi_f_inv_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_co
     errmsg = f"lgi_remains {lgi_remains} > max_1based_combs_idx {max_1based_combs_idx}"
     raise ValueError(errmsg)
   acc_comb = [] if acc_comb is None else acc_comb
-  max_at_each_pos = icfs.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
-  min_at_each_pos = icfs.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+  max_at_each_pos = icfs.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
+  min_at_each_pos = icfs.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
   return lgi_f_inv_inner_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos)
 
 
