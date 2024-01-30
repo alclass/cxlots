@@ -286,11 +286,134 @@ def calc_lgisimm_b1idx_from_comb_where_ints_start_at_0(cmbset, n_elements):
 
 
 def table_combs_size():
-  for i in range(4, 7):
-    n, m = i + 3, i
-    tot = ca.combine_n_c_by_c_fact(n, m)
-    scrmsg = f"comb {n}, {n-m} is {tot}"
+  """
+  show number in the lgi formation of:
+    0 [2, 3, 4]    1 [1, 3, 4]    2 [1, 2, 4]
+    3 [1, 2, 3]    4 [0, 3, 4]    5 [0, 2, 4]
+    6 [0, 2, 3]    7 [0, 1, 4]    8 [0, 1, 3]
+    9 [0, 1, 2]
+  """
+  combs = [
+    [2, 3, 4], [1, 3, 4], [1, 2, 4], [1, 2, 3], [0, 3, 4],
+    [0, 2, 4], [0, 2, 3], [0, 1, 4], [0, 1, 3], [0, 1, 2],
+  ]
+  n_elements, n_slots = 5, 3
+  lgis = []
+  for comb in combs:
+    ms = list(range(1, n_slots+1))
+    lgi = 0
+    adjusted_plus1_cmb = list(map(lambda e: e + 1, comb))
+    for i, ccoef in enumerate(adjusted_plus1_cmb):
+      n = n_elements - ccoef
+      m = ms.pop()
+      parcel = ca.combine_n_c_by_c_fact(n, m)
+      scrmsg = f"{i} comb {n}, {m} = {parcel} ccoef={ccoef}"
+      print(scrmsg)
+      lgi += parcel
+    lgis.append(lgi)
+    print('-'*10, 'lgi', lgi, comb)
+  print(lgis)
+
+
+def adhoctest_f_inv():
+  """
+  lgi = 4
+  comb = lgi_f_inv_from_b0idx_to_combination(lgi, n_slots=3, n_elements=5, acc_comb=None)
+  scrmsg = f"f_inv given lgi={lgi} => found comb={comb}"
+  print(scrmsg)
+
+  """
+  for lgi in range(10):
+    comb = lgi_f_inv_from_b0idx_to_combination(lgi, n_slots=3, n_elements=5, acc_comb=None)
+    scrmsg = f"f_inv given lgi={lgi} => found comb={comb}"
     print(scrmsg)
+  print('='*20)
+  for lgi in range(9, -1, -1):
+    comb = lgi_f_inv_from_b0idx_to_combination(lgi, n_slots=3, n_elements=5, acc_comb=None)
+    scrmsg = f"f_inv given lgi={lgi} => found comb={comb}"
+    print(scrmsg)
+  lgi = 50063859
+  comb = lgi_f_inv_from_b0idx_to_combination(lgi, n_slots=6, n_elements=60, acc_comb=None)
+  scrmsg = f"f_inv given lgi={lgi} => found comb={comb}"
+  print(scrmsg)
+  # ===========
+  n_elements, comb = 60, [0, 1, 2, 3, 4, 5]
+  lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(comb, n_elements=n_elements)
+  scrmsg = f" => given comb={comb} => found lgi={lgi}"
+  print(scrmsg)
+  # ===========
+  lgi = 10000000
+  comb = lgi_f_inv_from_b0idx_to_combination(lgi, n_slots=6, n_elements=60, acc_comb=None)
+  scrmsg = f"f_inv given lgi={lgi} => found comb={comb}"
+  print(scrmsg)
+
+
+def calc_lgi_parcel(combint, pos, n_slots, n_elements):
+  ccoef = combint + 1
+  n = n_elements - ccoef
+  m = n_slots - pos
+  parcel = ca.combine_n_c_by_c_fact(n, m)
+  return parcel
+
+
+def lgi_f_inv_inner_from_b0idx_to_combination(
+    lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos
+):
+  """
+  This function has an "entrance function" and this one, which is recursive.
+  The "entrance function" validates parameters and this one does the computation.
+  Consider this function 'private' to the former or a function that at least treats parameters.
+  """
+  pos = 0 if acc_comb is None else len(acc_comb)
+  max_at_pos = max_at_each_pos[pos]
+  min_at_pos = min_at_each_pos[pos]
+  all_poss_ints = list(range(min_at_pos, max_at_pos+1))
+  # call a function getting all pairs (intvals, parcels)
+  # chosen the one that fits! ie one that is less than lgi, but having its next follower greater than
+  poss_ints_n_lgis_dict = {}
+  for intguess in all_poss_ints:
+    ilgi = calc_lgi_parcel(intguess, pos, n_slots, n_elements)
+    poss_ints_n_lgis_dict[intguess] = ilgi
+  poss_ints_n_lgis_dict = dict(sorted(poss_ints_n_lgis_dict.items(), key=lambda e: e[1]))
+  pair = (-1, -1)
+  for intguess in poss_ints_n_lgis_dict:
+    ilgi = poss_ints_n_lgis_dict[intguess]
+    if ilgi <= lgi_remains:
+      pair = (intguess, ilgi)
+    else:
+      break
+  if pair == (-1, -1):
+    print('not found')
+    return
+  intguess, ilgi = pair
+  acc_comb.append(intguess)
+  lgi_remains -= ilgi
+  if pos == n_slots - 1:
+    # finish condition!
+    return acc_comb
+  # recurse on with acc_comb, though appended not yet having n_slots size
+  return lgi_f_inv_inner_from_b0idx_to_combination(
+    lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos
+  )
+
+
+def lgi_f_inv_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_comb=None):
+  """
+    Implements the inverse lgi function, ie given a lgi, find a combination
+
+  This is the "entrance" function, ie lgi_f_inv_from_b0idx_to_combination.
+  It treats parameters and dispatch to lgi_f_inv_inner_from_b0idx_to_combination(),
+  the latter being recursive and doing the computation itself.
+  """
+  total_combs = ca.combine_n_c_by_c_nonfact(n_elements, n_slots)
+  max_1based_combs_idx = total_combs - 1
+  if lgi_remains > max_1based_combs_idx:
+    errmsg = f"lgi_remains {lgi_remains} > max_1based_combs_idx {max_1based_combs_idx}"
+    raise ValueError(errmsg)
+  acc_comb = [] if acc_comb is None else acc_comb
+  max_at_each_pos = icfs.project_last_combinationlist(n_elements=n_elements, n_slots=n_slots)
+  min_at_each_pos = icfs.project_first_combinationlist(n_elements=n_elements, n_slots=n_slots)
+  return lgi_f_inv_inner_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos)
 
 
 def accompany_lgi():
@@ -369,7 +492,9 @@ def adhoc_test():
 if __name__ == '__main__':
   """
   adhoc_test()
-  accompany_lgi()
-  table_combs_size()
-  """
   adhoc_test()
+  accompany_lgi()
+
+  """
+  # table_combs_size()
+  adhoctest_f_inv()
