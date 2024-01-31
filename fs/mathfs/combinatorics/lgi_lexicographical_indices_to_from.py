@@ -43,13 +43,14 @@ class LgiToCombination:
   The inverse/backward (math) function is implemented as a (program) class.
   """
 
-  def __init__(self, lgi, n_elements, n_slots):
-    self.lgi = lgi
+  def __init__(self, n_elements, n_slots):
+    self._b0idx_lgi = None
+    self._b1idx_lgi = None
+    self._b0idx_lgisimm = b0idx_lgi
+    self._b1idx_lgisimm = None
     self.n_elements = n_elements
     self.n_slots = n_slots
     self.curr_comb = list(range(n_slots))
-    self.pivot = None
-    self.pivot_idx = None
     self.middle_comb = None
     self.total_combs = ca.combine_n_c_by_c_fact(n_elements, n_slots)
 
@@ -104,100 +105,80 @@ class LgiToCombination:
     retval = self.recurse_combination_amount_parcel(goal, ccoef, slot_fw_pos)
     print(retval)
 
-  def estimate_pivot(self):
-    """
-    The idea here is to find the greatest lgi_composite mapped to the pair (n, m)
-      that composes the summation that found the lgi from the combination.
-
-    Once it's found, it diminishes the lgi from the lgi_composite and recurse on,
-      or, if function not recursive, loop on, until the original becomes
-      zero being subtracted by its composits.
-
-    The idea above is somehow connected to the composition of diferent systems as a power summation,
-      for example, as a decimal number with powers of 10:
-        S = d0*10**0 + d1*10**2 + d2*10**3 + ... + dN*10**N
-
-    The similarity is that the lgi is composed of combinational-sums, ie:
-      lgi = c(n0, m0) + c(n1, m1) + c(n2, m2) + ... + c(nN, mN)
-
-    This underlying thesis, in order for it to work, should have the sum parcels
-      above in descending order, ie:
-        c(n0, m0) > c(n1, m1) > c(n2, m2) > ... > c(nN, mN)
-    """
-    slot_idx, lgi_computed = 0, 0
-    for m in range(self.n_slots, 0, -1):
-      fact_num = self.n_elements - (adjusted_plus1_cmb[slot_idx])
-      fact_den = m
-      sumparcel = ca.combine_n_c_by_c_fact(fact_num, fact_den)
-      lgi_computed += sumparcel
-      slot_idx += 1
-    return lgi_computed
-
-  def mount_middle_comb_with_pivot_n_pivotidx(self):
-    if self.pivot > self.n_elements - self.n_slots:
-      return None
-    if self.pivot_idx > self.n_slots - 1:
-      errmsg = f"pivot_idx (={self.pivot_idx}) > n_slots=({self.n_slots}) - 1"
-      raise ValueError(errmsg)
-    if self.pivot_idx == 0:
-      middle_comb = [self.pivot+i for i in range(self.n_slots)]
-      return middle_comb
-    if self.pivot_idx == self.n_slots - 1:
-      self.middle_comb = [self.pivot-(self.n_slots+i) for i in range(self.n_slots)]
-      return self.middle_comb
-    # pivot_idx > 0 and < n_slots - 1
-    left_comb = [self.pivot-i for i in range(self.pivot_idx-1, -1, -1)]
-    right_comb = [self.pivot+i for i in range(self.pivot_idx+1, self.n_slots)]
-    middle_comb = left_comb + [self.pivot] + right_comb
-    return middle_comb
-
-  def calc_comb_from_lgi_b1idx_where_ints_start_at_0(self):
+  def calc_comb_from_lgi_b0idx_where_ints_start_at_0(self):
     """
     This function is the inverse of calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
     """
-    if lastcomb is None:
-      lastcomb = list(range(54, 60))
-    if comb is None:
-      comb = list(lastcomb)
-    if total_combs is None:
-      total_combs = combine_n_c_by_c_fact(n_elements, n_slots)
-    remaining = total_combs - lgi + 1
-    if remaining == 1:
-      return lastcomb
-    pivot = n_elements if pivot is None else pivot
-    pivot_idx = 0 if pivot_idx is None else pivot_idx
-    comb = mount_middle_comb_with_pivot_n_pivotidx(pivot, pivot_idx)
-    while remaining > 0:
-      comb = icfs.subtract_one(comb, n_elements)
-      # continue from here!
-      lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(comb, n_elements)
-      remaining = remaining - lgi + 1
-    return comb
+    self._b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(self.curr_comb)
+    self._b1idx_lgi = self._b0idx_lgi + 1
+    self._b0idx_lgisimm = self.total_combs - self._b0idx_lgi + 1
+    self._b1idx_lgisimm = self._b0idx_lgisimm + 1
+
+  @property
+  def b0idx_lgi(self):
+    return self._b0idx_lgi
+
+  @property
+  def b1idx_lgi(self):
+    return self._b1idx_lgi
+
+  @property
+  def b0idx_lgisimm(self):
+    return self._b0idx_lgisimm
+
+  @property
+  def b1idx_lgisimm(self):
+    return self._b1idx_lgisimm
 
 
 def is_combination_consistent_w_nelements(cmbset, n_elements):
+  """
+  # check 1: cmbset should not be None or with size zero
+  # check 2: check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
+  # check 3: should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
+  # check 4: should be in ascending order: valid [1,2,3], invalid [3,2,1]
+  # check 5: should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
+  # check 6: should not have elements greater than upper limit, which is n_elements - 1
+  Args:
+    cmbset:
+    n_elements:
+
+  Returns:
+
+  """
+  # check 1: cmbset should not be None or with size zero
   if cmbset is None or n_elements < 1:
     return False
-  # check the 'unit' (or least sized) set
+  # check 2: check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
   if n_elements == 1 and list(cmbset) != [0]:
     # errmsg = f"when n_elements == 1, cmbset must be [0]. It's = {cmbset}."
     # raise ValueError(errmsg)
     return False
-  # check repeated elements: valid [1,2,3], invalid [1,2,2,3]
+  # check 3: should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
   n_slots = len(cmbset)
   cmbset_as_set = set(cmbset)
   if n_slots != len(cmbset_as_set):
     # errmsg = f"combination (=[{cmbset}) is invalid for having repeated elements (as_set={cmbset_as_set})."
     # raise ValueError(errmsg)
     return False
-  # check ascending order: valid [1,2,3], invalid [3,2,1]
+  # check 4: should be in ascending order: valid [1,2,3], invalid [3,2,1]
   bool_list_chk_asc_order = [cmbset[i] < cmbset[i+1] for i in range(n_slots-1)]
   if False in bool_list_chk_asc_order:
     # errmsg = f"combination (=[{cmbset}) is not in ascending order."
     # raise ValueError(errmsg)
     return False
-  # check minimal n_elements (ne)
-  # this (minimal n_elements) check is reduced to the last one (check ascending order)
+  # check 5: should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
+  bool_list_chk_non_negative = [cmbset[i] >= 0 for i in range(n_slots)]
+  if False in bool_list_chk_non_negative:
+    # errmsg = f"combination (=[{cmbset}) has negative numbers."
+    # raise ValueError(errmsg)
+    return False
+  # check 6: should not have elements greater than upper limit, which is n_elements - 1
+  bool_comb_chk_has_elements_below_nelements = [cmbset[i] < n_elements for i in range(n_slots)]
+  if False in bool_comb_chk_has_elements_below_nelements:
+    # errmsg = f"combination (=[{cmbset}) has elements greater than upper limit."
+    # raise ValueError(errmsg)
+    return False
   return True
 
 
