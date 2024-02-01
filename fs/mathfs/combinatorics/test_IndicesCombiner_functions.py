@@ -5,7 +5,7 @@ fs/mathfs/combinatorics/test_IndicesCombiner_functions.py
 
 """
 import unittest
-import fs.mathfs.combinatorics.IndicesCombiner_functions as iCf  # icf.get_decrescent_integer_sequence_for_later_summation_of_n
+import fs.mathfs.combinatorics.IndicesCombiner_functions as iCf
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.comb_n_by_m
 
 

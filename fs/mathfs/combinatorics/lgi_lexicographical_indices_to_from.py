@@ -25,13 +25,13 @@ The algorithm found in the Wikidepia (@see info and URL below) uses
     t2 the complement from the one described above
       (ie, in the example, 8 becomes 1 (which is 9-8) and 1 becomes 8 (9-1)
 """
-import fs.mathfs.combinatorics.IndicesCombiner_functions as icfs  # icfs.add_one
+import fs.mathfs.combinatorics.IndicesCombiner_functions as iCfs  # icfs.add_one
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
 
 
-class LgiToCombination:
+class LgiToFromCombination:
   """
-  This class implements the "inverse lgi function".
+  This class implements the bijective lgi functions (foward and inverse).
     The direct/forward function finds the lgi of a combination.
     The inverse/backward function finds the combination from its lgi.
 
@@ -41,141 +41,134 @@ class LgiToCombination:
 
   The direct/forward (math) function is implemented as a (program) function.
   The inverse/backward (math) function is implemented as a (program) class.
+
+  This class is a kind of associator, ie when one is set, the other is calculated and set too,
+    so if either of the two changes, the other changes too.
+
+  Out of the four index-types, only b0_idx is settable, this derives the other three.
   """
 
   def __init__(self, n_elements, n_slots):
-    self._b0idx_lgi = None
-    self._b1idx_lgi = None
-    self._b0idx_lgisimm = b0idx_lgi
-    self._b1idx_lgisimm = None
+    """
+    """
     self.n_elements = n_elements
     self.n_slots = n_slots
-    self.curr_comb = list(range(n_slots))
-    self.middle_comb = None
     self.total_combs = ca.combine_n_c_by_c_fact(n_elements, n_slots)
+    # the following two are settable and setting one modifies the other
+    self._b0idx_lgi = None
+    self._combset = None
 
-  def sweet_combination_thru_possible_coefs(self, lookup_comb, goal, ccoef, pos):
-    slots_indices = [i for i in range(1, self.n_slots+1)]
-    possible_countercoefs = [i+1 for i in range(self.n_elements)]
-    if len(slots_indices) != len(possible_countercoefs):
-      errmsg = f'len(slots_indices)={len(slots_indices)} != len(possible_countercoefs)={len(possible_countercoefs)}'
+  @property
+  def combset(self):
+    return self._combset
+
+  @combset.setter
+  def combset(self, p_combset):
+    """
+    calls the "inverse lgi function"
+      b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
+      setting both combset and its associated lgi
+    """
+    is_consistent = is_combination_consistent_w_nelements(p_combset, self.n_elements)
+    if not is_consistent:
+      errmsg = f'parameter combset {p_combset}, for finding its lgi, is not valid.'
       raise ValueError(errmsg)
-    for countercoef in possible_countercoefs:
-      n = self.n_elements - countercoef
-      m = slots_indices.pop()
-      ca.combine_n_c_by_c_fact(n, m)
-
-  def recurse_combination_amount_parcel(self, goal, ccoef, slot_fw_pos, ccoefs=None):
-    ccoefs = [] if ccoefs is None else ccoefs
-    n = self.n_elements - ccoef
-    m = self.n_slots - slot_fw_pos
-    amount = ca.combine_n_c_by_c_fact(n, m)
-    if amount < goal:
-      if slot_fw_pos < self.n_slots - 1:
-        slot_fw_pos += 1
-        if ccoef < self.n_elements:
-          ccoef += 1
-          return self.recurse_combination_amount_parcel(goal, ccoef, slot_fw_pos)
-      # cannot recurse and ccoef was not found
-      return None
-    # amount is >= goal, return ccoef and remaining
-    remaining = amount - goal
-    ccoefs.append(ccoef)
-    if remaining > 0:
-      goal = self.find_goal_for_combparcel()
-      return self.recurse_combination_amount_parcel(goal, ccoef, slot_fw_pos, ccoefs)
-    return ccoefs
-
-  def find_goal_for_combparcel(self):
-    vmax = -1
-    ms = [i for i in range(1, self.n_slots+1)]
-    for ccoef in self.curr_comb:
-      n = self.n_elements - ccoef
-      m = ms.pop()  # greatest value pops up first
-      parcel = ca.combine_n_c_by_c_fact(n, m)
-      if parcel > vmax:
-        vmax = parcel
-    self.curr_comb = icfs.add_one(self.curr_comb, n_elements=self.n_elements)
-    return vmax
-
-  def process(self):
-    ccoef = 1
-    slot_fw_pos = 0
-    goal = self.find_goal_for_combparcel()
-    retval = self.recurse_combination_amount_parcel(goal, ccoef, slot_fw_pos)
-    print(retval)
-
-  def calc_comb_from_lgi_b0idx_where_ints_start_at_0(self):
-    """
-    This function is the inverse of calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
-    """
-    self._b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(self.curr_comb)
-    self._b1idx_lgi = self._b0idx_lgi + 1
-    self._b0idx_lgisimm = self.total_combs - self._b0idx_lgi + 1
-    self._b1idx_lgisimm = self._b0idx_lgisimm + 1
+    self._combset = list(p_combset)
+    self._b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(self._combset, n_elements=self.n_elements)
 
   @property
   def b0idx_lgi(self):
     return self._b0idx_lgi
 
+  @b0idx_lgi.setter
+  def b0idx_lgi(self, p_b0idx_lgi):
+    """
+    calls the "forward lgi function"
+      b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
+      setting both combset and its associated lgi
+    """
+    if p_b0idx_lgi < 0 or p_b0idx_lgi > self.size:
+      errmsg = f'parameter b0idx_lgi {p_b0idx_lgi}, for finding its combset, is not valid.'
+      raise ValueError(errmsg)
+    self._b0idx_lgi = p_b0idx_lgi
+    self._combset = lgi_f_inv_from_b0idx_to_combination(p_b0idx_lgi, self.n_slots, self.n_elements)
+
   @property
   def b1idx_lgi(self):
-    return self._b1idx_lgi
+    if self._b0idx_lgi is not None:
+      return self._b0idx_lgi + 1
+    return None
 
   @property
   def b0idx_lgisimm(self):
-    return self._b0idx_lgisimm
+    if self._b0idx_lgi is not None:
+      return self.size - self._b0idx_lgi
+    return None
 
   @property
   def b1idx_lgisimm(self):
-    return self._b1idx_lgisimm
+    if self._b0idx_lgi is not None:
+      return self.size - self.b1idx_lgisimm
+    return None
+
+  @property
+  def size(self):
+    return self.total_combs
+
+  def __str__(self):
+    outstr = f"LgiToFromComb {self.combset} | b0_idx={self.b0idx_lgi}"
+    return outstr
 
 
 def is_combination_consistent_w_nelements(cmbset, n_elements):
   """
-  # check 1: cmbset should not be None or with size zero
-  # check 2: check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
-  # check 3: should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
-  # check 4: should be in ascending order: valid [1,2,3], invalid [3,2,1]
-  # check 5: should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
-  # check 6: should not have elements greater than upper limit, which is n_elements - 1
+  # check 1: cmbset should not be None or empty or with n_elements < 1
+    (n_slots does not affect consistency though used for ordering checking)
+  # check 2: combset should be in ascending order: valid [1,2,3], invalid [3,2,1]
+  # check 3: first element should be greater than -1
+             (resulting in all of them being non-negative, because they are in ascending order)
+  # check 4: last element should be lesser than n_elements
+             (resulting in every element being less than n_elements, for the same reason, ascending order)
+
+  Former checkings removed because they were somehow redundant:
+    # check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
+      => checks 3 and 4 cover this
+    # should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
+      => ascending order (check 2) covers this
+    # should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
+      => suffice checking the first element (check 3), no need to check them all (because of ascending order)
+    # should not have elements greater than upper limit, which is n_elements - 1
+      => suffice checking the last element (check 4), idem
+
   Args:
-    cmbset:
-    n_elements:
+    cmbset: list the combination set
+    n_elements: int the number of elements in combination
 
   Returns:
-
+    False | True
   """
-  # check 1: cmbset should not be None or with size zero
-  if cmbset is None or n_elements < 1:
-    return False
-  # check 2: check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
-  if n_elements == 1 and list(cmbset) != [0]:
-    # errmsg = f"when n_elements == 1, cmbset must be [0]. It's = {cmbset}."
+  # check 1: cmbset should not be None or empty or with n_elements < 1
+  if cmbset is None or len(cmbset) == 0 or n_elements < 1:
+    # errmsg = f"combination (=[{cmbset}) is None or len(cmbset) == 0 or n_elements (={n_elements}) < 1."
     # raise ValueError(errmsg)
     return False
-  # check 3: should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
-  n_slots = len(cmbset)
-  cmbset_as_set = set(cmbset)
-  if n_slots != len(cmbset_as_set):
-    # errmsg = f"combination (=[{cmbset}) is invalid for having repeated elements (as_set={cmbset_as_set})."
-    # raise ValueError(errmsg)
-    return False
-  # check 4: should be in ascending order: valid [1,2,3], invalid [3,2,1]
+  n_slots = len(cmbset)  # n_slots is not a function's parameter, it's used for checking ascending order
+  # check 2: combset should be in ascending order: valid [1,2,3], invalid [3,2,1]
   bool_list_chk_asc_order = [cmbset[i] < cmbset[i+1] for i in range(n_slots-1)]
   if False in bool_list_chk_asc_order:
     # errmsg = f"combination (=[{cmbset}) is not in ascending order."
     # raise ValueError(errmsg)
     return False
-  # check 5: should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
-  bool_list_chk_non_negative = [cmbset[i] >= 0 for i in range(n_slots)]
-  if False in bool_list_chk_non_negative:
+  # check 3: first element should be greater than -1 (resulting in all of them being non-negative)
+  first_element = cmbset[0]
+  if first_element < 0:
     # errmsg = f"combination (=[{cmbset}) has negative numbers."
     # raise ValueError(errmsg)
     return False
-  # check 6: should not have elements greater than upper limit, which is n_elements - 1
-  bool_comb_chk_has_elements_below_nelements = [cmbset[i] < n_elements for i in range(n_slots)]
-  if False in bool_comb_chk_has_elements_below_nelements:
+  # check 4: last element should be lesser than n_elements
+  # (resulting in every element being less than n_elements)
+  last_element = cmbset[-1]
+  if last_element > n_elements - 1:
     # errmsg = f"combination (=[{cmbset}) has elements greater than upper limit."
     # raise ValueError(errmsg)
     return False
@@ -203,7 +196,7 @@ def calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements):
         in the nomeclature here, n_slots,
           and comb = [c1, c2, ..., c[ns-1], c[ns]]
 
-      2nd) the formula (or function) for finding the lgi_b1idx (n_elements=ne, n_slots=ns)
+      2nd) the formula (or function) for finding the lgi_b1idx (n_elements=né, n_slots=ns)
            is the following:
 
       parcial = c(60-c1, 6) + c(60-c2, 5) + c(60-c3, 4) + c(60-c4, 3) + c(60-c5, 2) + c(60-c6, 1)
@@ -442,9 +435,11 @@ def lgi_f_inv_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_co
     errmsg = f"lgi_remains {lgi_remains} > max_1based_combs_idx {max_1based_combs_idx}"
     raise ValueError(errmsg)
   acc_comb = [] if acc_comb is None else acc_comb
-  max_at_each_pos = icfs.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
-  min_at_each_pos = icfs.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
-  return lgi_f_inv_inner_from_b0idx_to_combination(lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos)
+  max_at_each_pos = iCfs.make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
+  min_at_each_pos = iCfs.make_the_first_or_minimum_combination(n_elements=n_elements, n_slots=n_slots)
+  return lgi_f_inv_inner_from_b0idx_to_combination(
+    lgi_remains, n_slots, n_elements, acc_comb, min_at_each_pos, max_at_each_pos
+  )
 
 
 def accompany_lgi():
@@ -502,21 +497,21 @@ def adhoc_test():
   lgi_o.process()
   """
   comb = [0, 1, 2]
-  nextcomb = icfs.add_one(comb, n_elements=4)
+  nextcomb = iCfs.add_one(comb, n_elements=4)
   print(comb, nextcomb)
   comb = list(nextcomb)
-  nextcomb = icfs.add_one(comb, n_elements=4)
+  nextcomb = iCfs.add_one(comb, n_elements=4)
   print(comb, nextcomb)
   comb = list(nextcomb)
-  nextcomb = icfs.add_one(comb, n_elements=4)
+  nextcomb = iCfs.add_one(comb, n_elements=4)
   print(comb, nextcomb)
   comb = list(nextcomb)
-  nextcomb = icfs.add_one(comb, n_elements=4)
+  nextcomb = iCfs.add_one(comb, n_elements=4)
   print(comb, nextcomb)
-  nextcomb = icfs.subtract_one(comb, n_elements=4)
+  nextcomb = iCfs.subtract_one(comb, n_elements=4)
   print('subtract', comb, nextcomb)
   comb = list(nextcomb)
-  nextcomb = icfs.subtract_one(comb, n_elements=4)
+  nextcomb = iCfs.subtract_one(comb, n_elements=4)
   print('subtract', comb, nextcomb)
 
 
