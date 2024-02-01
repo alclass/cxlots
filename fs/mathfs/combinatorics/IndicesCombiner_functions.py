@@ -81,9 +81,109 @@ def get_distance_from_the_summation_scheme(n_elements, pos):
   return distance_at_pos
 
 
-def add_one(numberlist, n_elements, lastcomb=None, pos=None):
+def is_combination_consistent_w_nelements(cmbset, n_elements):
   """
-    "Adds one" to a combinatory numberlist.
+
+  TO-DO: move this function out of this module, because it's duplicated
+        in the lgi_lexicographical_indices_to_from.py.
+        One idea is to move it "upstream" to avoid "circular importation".
+
+  # check 1: cmbset should not be None or empty or with n_elements < 1
+    (n_slots does not affect consistency though used for ordering checking)
+  # check 2: combset should be in ascending order: valid [1,2,3], invalid [3,2,1]
+  # check 3: first element should be greater than -1
+             (resulting in all of them being non-negative, because they are in ascending order)
+  # check 4: last element should be lesser than n_elements
+             (resulting in every element being less than n_elements, for the same reason, ascending order)
+
+  Former checkings removed because they were somehow redundant:
+    # check the 'unit' (or least sized) set, ie if n_elements == 1, set is [0]
+      => checks 3 and 4 cover this
+    # should not have repeated elements: valid [1,2,3], invalid [1,2,2,3]
+      => ascending order (check 2) covers this
+    # should not have negative numbers: invalid [-3,-2,-1], though valid in asc order
+      => suffice checking the first element (check 3), no need to check them all (because of ascending order)
+    # should not have elements greater than upper limit, which is n_elements - 1
+      => suffice checking the last element (check 4), idem
+
+  Args:
+    cmbset: list the combination set
+    n_elements: int the number of elements in combination
+
+  Returns:
+    False | True
+  """
+  # check 1: cmbset should not be None or empty or with n_elements < 1
+  if cmbset is None or len(cmbset) == 0 or n_elements < 1:
+    # errmsg = f"combination (=[{cmbset}) is None or len(cmbset) == 0 or n_elements (={n_elements}) < 1."
+    # raise ValueError(errmsg)
+    return False
+  n_slots = len(cmbset)  # n_slots is not a function's parameter, it's used for checking ascending order
+  # check 2: combset should be in ascending order: valid [1,2,3], invalid [3,2,1]
+  bool_list_chk_asc_order = [cmbset[i] < cmbset[i+1] for i in range(n_slots-1)]
+  if False in bool_list_chk_asc_order:
+    # errmsg = f"combination (=[{cmbset}) is not in ascending order."
+    # raise ValueError(errmsg)
+    return False
+  # check 3: first element should be greater than -1 (resulting in all of them being non-negative)
+  first_element = cmbset[0]
+  if first_element < 0:
+    # errmsg = f"combination (=[{cmbset}) has negative numbers."
+    # raise ValueError(errmsg)
+    return False
+  # check 4: last element should be lesser than n_elements
+  # (resulting in every element being less than n_elements)
+  last_element = cmbset[-1]
+  if last_element > n_elements - 1:
+    # errmsg = f"combination (=[{cmbset}) has elements greater than upper limit."
+    # raise ValueError(errmsg)
+    return False
+  return True
+
+
+def add_one_inner(numberlist, n_elements, lastcomb, pos):
+  """
+  @see also docstring for add_one()
+  This function add_one_inner() does the computation. On the other hand,
+    function add_one() takes care of input parameters and then calls this one.
+  Args:
+    numberlist: list - the combination set
+    n_elements: int - the number of elements in combination
+    lastcomb: list - the last combination set in its ascending (lexicographical) order
+    pos: int - the array index position in the combination set
+  Returns:
+    numberlist: list - resulted as the next combination after the input one
+  """
+  if numberlist == lastcomb:
+    return None  # it means it can't add one to the last one
+  max_at_pos = lastcomb[pos]
+  number_at_pos = numberlist[pos]
+  if number_at_pos == max_at_pos:
+    if pos > 0:
+      # recursive call traversing the indices leftwards
+      return add_one_inner(numberlist, n_elements, lastcomb, pos-1)
+    else:
+      # can't add to it anymore, ie, it's already the last one
+      # though this check is done above, this is the logical condtion here
+      return None
+  # from this point, number_at_pos < max_at_pos, then adding can happen
+  added_one = number_at_pos + 1
+  next_numberlist = copy.copy(numberlist)  # copy is necessary to avoid side effect
+  next_numberlist[pos] = added_one
+  n_slots = len(numberlist)
+  if pos == n_slots - 1:
+    return next_numberlist
+  for ipos in range(pos+1, n_slots):
+    # when an adding happens not at the last pos, an integer sequence follows for the pos being added rightwards
+    # example: 1[2]67 becomes 1[3]45 the integer sequence is 3, 4, 5 because 3 happened when "2 was added by one"
+    # the [] above are just to emphasize which number was added one
+    next_numberlist[ipos] = next_numberlist[ipos-1] + 1
+  return next_numberlist
+
+
+def add_one(numberlist, n_elements):
+  """
+    "Adds one" to a combinatory (or combination) numberlist.
     add_one() also means next()
 
   Example:
@@ -98,40 +198,14 @@ def add_one(numberlist, n_elements, lastcomb=None, pos=None):
     next([2, 3]) = None  # adding one to the last one results None
     next(None) = None  # adding one to None also results None
   """
-  # up_limit = n_elements - 1
-  if numberlist is None:
-    return None
-  if not isinstance(numberlist, list):
-    print(f'Error not isinstance(numberlist, list) numberlist = {numberlist}')
-    sys.exit(1)
+  is_comb_consistent = is_combination_consistent_w_nelements(numberlist, n_elements=n_elements)
+  if not is_comb_consistent:
+    errmsg = f'Combination numberlist = {numberlist} is not consistent to the formation rules.'
+    raise ValueError(errmsg)
   n_slots = len(numberlist)
-  elem_min, elem_max = n_elements - n_slots, n_elements - 1
-  lastcomb = lastcomb if lastcomb is not None else [i for i in range(elem_min, elem_max+1)]
-  if numberlist == lastcomb:
-    return None  # it means it can't add one to the last one
-  if pos is None:
-    pos = len(numberlist) - 1
-  max_at_pos = lastcomb[pos]
-  number_at_pos = numberlist[pos]
-  if number_at_pos == max_at_pos:
-    if pos > 0:
-      # recursive call traversing the indices leftwards
-      return add_one(numberlist, n_elements, lastcomb, pos-1)
-    else:
-      # can't add to it anymore, ie, it's already the last one
-      return None
-  # from this point, number_at_pos < max_at_pos, then adding can happen
-  added_one = number_at_pos + 1
-  next_numberlist = copy.copy(numberlist)
-  next_numberlist[pos] = added_one
-  if pos == n_slots - 1:
-    return next_numberlist
-  for ipos in range(pos+1, n_slots):
-    # when an adding happens not at the last pos, an integer sequence follows for the pos being added rightwards
-    # example: 1[2]67 becomes 1[3]45 the integer sequence is 3, 4, 5 because 3 happened when "2 was added by one"
-    # the [] above are just to emphasize which number was added one
-    next_numberlist[ipos] = next_numberlist[ipos-1] + 1
-  return next_numberlist
+  pos = n_slots - 1  # array index position starts at its rightmost place
+  lastcomb = make_the_last_or_maximum_combination(n_elements=n_elements, n_slots=n_slots)
+  return add_one_inner(numberlist, n_elements, lastcomb=lastcomb, pos=pos)
 
 
 def make_the_first_or_minimum_combination(n_elements, n_slots):
@@ -559,5 +633,6 @@ def adhoctest7():
 if __name__ == '__main__':
   """
   adhoctest2()
+  adhoctest6()
   """
   adhoctest7()
