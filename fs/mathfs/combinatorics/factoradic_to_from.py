@@ -65,11 +65,21 @@ import math
 
 def calc_placevalue_of_radix_n_highest_int_allowed(radixval):
   """
+    Calculates the "place value" and the highest digit allowed from a radix value.
 
+  The formula for the "place value":
+    place_value = math.factorial(radixval - 1)
+  The highest digit allowed is:
+    highest_int_allowed = radixval - 1
+
+  The context above is the one for factoradics, when there a composition
+    of a decimal number "inside" a factoradic number.
+  One application of these factoradic numbers are in permutation set generation
+    and their corresponding lgi's (lexicographical indices).
   """
   if radixval < 1:
     errmsg = f"radix of factoradic cannot be less than 1, it was {radixval}"
-    raise ValueError(radixval)
+    raise ValueError(errmsg)
   n_for_fact = radixval - 1
   place_value = math.factorial(n_for_fact)
   highest_int_allowed = n_for_fact
@@ -125,48 +135,64 @@ def calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset):
   return calc_permutation_from_lgib0idx_by_lehmercode_inner(lgi_b0idx, workset, perm_result)
 
 
+def calc_permutation_from_lgib0idx_by_lehmercode(lgi_b0idx, workset):
+  """
+    Computes the lgi_n_th permutation out of (original) workset
+    Dispatches to calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset)
+      that treats parameters, the latter dispatching to
+        calc_permutation_from_lgib0idx_by_lehmercode_inner()
+  Args:
+    lgi_b0idx: int - the integer value that represents the permutation's lexicographical index
+    workset: list - the permutation "base set"
+  Returns:
+    perm_result: list - the permutation "arrangement set" that corresponding to the input lgi
+  """
+  lgi_b1idx = lgi_b0idx + 1
+  return calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset)
+
+
 def calc_decimal_to_fatoradic(intval, radix=1, remainders=None):
   """
   Initial set: {0 1 2 3 4 5 6 7 8 9}
   979999 / 9! = 2, remainder 254,239
 
-  permutation 1st digit: 2
+  permutation 1st digit: 2 (appended to perm_result, the first one)
   set: {0 1 3 4 5 6 7 8 9} <= 2 (former idx 2) got out
   254239 / 8! = 6, remainder 12,319
 
-  permutation 2nd digit: 7
+  permutation 2nd digit: 7 (appended to perm_result)
   set: {0 1 3 4 5 6 8 9} <= 7 (former idx 6) got out
   12319 / 7! = 2, remainder 2,239
 
-  permutation 3rd digit: 3
+  permutation 3rd digit: 3 (appended to perm_result)
   set: {0 1 4 5 6 8 9} <= 3 (former idx 2) got out
   2239 / 6! = 3, remainder 79
 
-  permutation 4th digit: 5
+  permutation 4th digit: 5 (appended to perm_result)
   set: {0 1 4 6 8 9} <= 5 (former idx 3) got out
   79 / 5! = 0, remainder 79
 
-  permutation 5th digit: 0
+  permutation 5th digit: 0 (appended to perm_result)
   set: {1 4 6 8 9} <= 0 (former idx 0) got out
   79 / 4! = 3, remainder 7
 
-  permutation 6th digit: 8
+  permutation 6th digit: 8 (appended to perm_result)
   set: {1 4 6 9} <= 6 (former idx 3) got out
   7 / 3! = 1, remainder 1
 
-  permutation 7th digit: 4
+  permutation 7th digit: 4 (appended to perm_result)
   set: {1 6 9} <= 4 (former idx 1) got out
   1 / 2! = 0, remainder 1
 
-  permutation 8th digit: 1
+  permutation 8th digit: 1 (appended to perm_result)
   set: {6 9} <= 1 (former idx 0) got out
   1 / 1! = 1, remainder 0
 
-  permutation 9th digit: 9
+  permutation 9th digit: 9 (appended to perm_result)
   set: {6} <= 9 (former idx 1) got out, idx 0 is removed at this step
   0 / 0! = 0, remainder 0
 
-  permutation 10th digit: 6
+  permutation 10th digit: 6 (appended to perm_result, the last one)
   Returns:
   """
   remainders = [] if remainders is None else remainders
