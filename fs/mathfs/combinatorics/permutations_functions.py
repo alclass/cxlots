@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """
-fs/mathfs/combinatorics/permutations_n_lgis.py
+fs/mathfs/combinatorics/permutations_functions.py
 
 This module contains two small function from:
   algorithm for lexicographical permutation
   https://www.nayuki.io/res/next-lexicographical-permutation-algorithm/nextperm.py
 
 @see module:
-  fs/mathfs/combinatorics/factoradic_to_from.py
+  fs/mathfs/combinatorics/permutations_n_lgi_to_from.py
 for a more comprehension explanation to finding lgi's for permutations.
 
 Next lexicographical permutation algorithm (Python)
