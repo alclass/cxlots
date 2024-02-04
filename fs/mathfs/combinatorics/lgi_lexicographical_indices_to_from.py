@@ -25,6 +25,8 @@ The algorithm found in the Wikidepia (@see info and URL below) uses
     t2 the complement from the one described above
       (ie, in the example, 8 becomes 1 (which is 9-8) and 1 becomes 8 (9-1)
 """
+import math
+
 import fs.mathfs.combinatorics.IndicesCombiner_functions as iCfs  # icfs.add_one
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
 
@@ -118,6 +120,63 @@ class LgiToFromCombination:
   def __str__(self):
     outstr = f"LgiToFromComb {self.combset} | b0_idx={self.b0idx_lgi}"
     return outstr
+
+
+def factorial(n, prod=1):
+  if n < 2:
+    return prod
+  prod *= n
+  return factorial(n-1, prod)
+
+
+def find_multiplicand_for_permset_lgi(idxpos_for_factorial, n_elements):
+  n_for_factorial_limit = idxpos_for_factorial + 1
+  print('n_for_factorial_limit', n_for_factorial_limit)
+  upper_limit_value = factorial(n_for_factorial_limit) - 1
+  fact_multiplicand = factorial(idxpos_for_factorial)
+  multplicands_to_try = list(range(n_elements))
+  highest_multplicand = -1
+  # previous_parcel = -1
+  for multplicand in multplicands_to_try:
+    parcel = multplicand * fact_multiplicand
+    if parcel < upper_limit_value:
+      highest_multplicand = multplicand
+      # previous_parcel = parcel
+    else:
+      break
+  return highest_multplicand
+
+
+def from_permset_to_lgi(permset=None):
+  """
+    Finds the lgi (lexicographical index) of a permutation set
+  Example:
+     permset = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
+     from_ini_set = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+     has (after computation) lgi_b0idx = 979999  (above 3MM)
+  This is the 990000th permutation set in lexicographical order.
+  The total number of permutations, in this case (all elements are permuted), is n!
+  10! = 3628800 (above 3MM) | 979999 is below 1MM
+  """
+  permset = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6] if permset is None else permset
+  n_elements = len(permset)
+  ns_for_factorial_inv = list(range(n_elements))
+  multiplicands = [2, 6, 2, 3, 0, 3, 1, 0, 1, 6]
+  soma1, soma2 = 0, 0
+  for multiplicand2 in multiplicands:
+    rev_i = ns_for_factorial_inv.pop()
+    if rev_i == 0:
+      break
+    fact_of_inv_pos = math.factorial(rev_i)
+    multiplicand1 = find_multiplicand_for_permset_lgi(idxpos_for_factorial=rev_i, n_elements=n_elements)
+    parcel1 = multiplicand1 * fact_of_inv_pos
+    soma1 += parcel1
+    parcel2 = multiplicand2 * fact_of_inv_pos
+    soma2 += parcel2
+    scrmsg1 = f"1 {multiplicand1} * {fact_of_inv_pos} = {parcel1} soma1={soma1}"
+    scrmsg2 = f"2 {multiplicand2} * {fact_of_inv_pos} = {parcel2} soma2={soma2}"
+    print(scrmsg1)
+    print(scrmsg2)
 
 
 def is_combination_consistent_w_nelements(cmbset, n_elements):
@@ -515,12 +574,111 @@ def adhoc_test():
   print('subtract', comb, nextcomb)
 
 
+def check_highest_digit_allowed_in_factoradic(factoradic_as_str, raises=False):
+  """
+  the highest digit allowed is <= inverted_index_position ie n-1, n-2, ..., 2, 1, 0
+
+  Rule:
+    if factoradic_as_str is a n-digit number string (example below)
+    then, the highest digits allowed in their positions are: [n-1, n-2, ..., 2, 1, 0]
+
+  Example with n=6:
+    if factoradic_as_str is a 6-digit number string (instance below)
+    then, the highest digits allowed in their positions are: [5, 4, 3, 2, 1, 0]
+
+  Instance Example:
+    suppose factoradic_as_str = '341010' (this is a 6-digit string)
+    let's check one by one: 3 <= 5 ok, 4 <= 4 ok, 1 <= 3 ok, 0 <= 2 ok, 1 <= 1 ok, 0 <= 0 ok (all okay)
+
+  @see also the radix table
+  """
+  factoradic_list = list(map(int, list(factoradic_as_str)))
+  n_elements = len(factoradic_list)
+  highest_allowed_asc_order = list(range(n_elements-1, -1, -1))
+  for i, intval in enumerate(factoradic_list):
+    highest_allowed_at_pos = highest_allowed_asc_order[i]
+    if intval > highest_allowed_at_pos:
+      if raises:
+        errmsg = f"intval (={intval}) > highest_allowed_at_pos (={highest_allowed_at_pos})"
+        raise ValueError(errmsg)
+      else:
+        return False
+  return True
+
+
+def recover_intdecimal_from_factoradic_as_str(factoradic_as_str):
+  """
+  For example, 3:4:1:0:1:0! stands for
+      = 3*5! + 4*4! + 1*3! + 0*2! + 1*1! + 0*0!
+      = 3*120 + 4*24 + 1*6 + 0*2 + 1*1 + 0*1
+      =  463
+    orig_decimal = 463
+  """
+  check_highest_digit_allowed_in_factoradic(factoradic_as_str, raises=True)
+  factoradic_list = list(map(int, list(factoradic_as_str)))
+  factoradic_list_forpop = list(factoradic_list)
+  soma = 0
+  print(factoradic_as_str, factoradic_list_forpop, 'soma', soma, 'orig_decimal')
+  for i in range(len(factoradic_list)):
+    multiplicand = factoradic_list_forpop.pop()
+    multfact = factorial(i)
+    soma += multiplicand * multfact
+    print(multiplicand, '*', multfact, 'soma', soma, factoradic_list_forpop)
+  print('Result: recover_intdecimal_from_factoradic_as_str(', factoradic_as_str, ') =', soma)
+
+
+def find_lgi_from_permset_approach2(permset=None):
+  """
+  IMPORTANT: this is not the "canonical" lgi. The examples below show it:
+  (it was taken from a stackoverflow page, but it seems to be a 4-based number system example)
+  (ie not factoradic or similar)
+
+  Examples:
+    1)
+      input_perm = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
+      canonical lgi => expected_lgi_b0idx = 980000 - 1
+      The one that is found here: 2735084196
+    2)
+      input_perm = [2, 3, 0, 1]
+      canonical lgi => ?
+      The one that is found here: 177
+
+  """
+  permset = [2, 3, 0, 1] if permset is None else permset
+  size = len(permset)
+  base = size ** size
+  soma = 0
+  for i in range(size):
+    base = base / size
+    coef = base * permset[i]
+    soma += coef
+    print(permset, 'soma', soma, 'base', base, 'coef', coef)
+  result_list = []
+  for i in range(size):
+    divisor = (size ** (size - i - 1))
+    quoc = soma // divisor
+    remainder = quoc % size
+    print(soma, '/', divisor, quoc, remainder)
+    result_list.append(remainder)
+  print(result_list)
+
+
 if __name__ == '__main__':
   """
   adhoc_test()
   adhoc_test()
   accompany_lgi()
-
-  """
-  # table_combs_size()
   adhoctest_f_inv()
+  # table_combs_size()
+  from_permset_to_lgi()
+  """
+  factoradic_as_str = '341010'
+  recover_intdecimal_from_factoradic_as_str(factoradic_as_str)
+  # highest_digit_allowed_in_factoradic = inverted_index_position ie n-1, n-2, ..., 2, 1, 0
+  factoradic_as_str = '543210'  # intdec is 719
+  recover_intdecimal_from_factoradic_as_str(factoradic_as_str)
+  # the next one (added one) is 600000
+  factoradic_as_str = '1000000'  # intdec is 720 (or 6!)
+  recover_intdecimal_from_factoradic_as_str(factoradic_as_str)
+  input_perm = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
+  find_lgi_from_permset_approach2(input_perm)
