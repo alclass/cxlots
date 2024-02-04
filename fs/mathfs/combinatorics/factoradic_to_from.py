@@ -67,7 +67,17 @@ import math
 
 def calc_placevalue_of_radix_n_highest_int_allowed(radixval):
   """
+    Calculates the "place value" and the highest digit allowed from a radix value.
 
+  The formula for the "place value":
+    place_value = math.factorial(radixval - 1)
+  The highest digit allowed is:
+    highest_int_allowed = radixval - 1
+
+  The context above is the one for factoradics, when there a composition
+    of a decimal number "inside" a factoradic number.
+  One application of these factoradic numbers are in permutation set generation
+    and their corresponding lgi's (lexicographical indices).
   """
   if radixval < 1:
     errmsg = f"radix of factoradic cannot be less than 1, it was {radixval}"
@@ -127,6 +137,28 @@ def calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset):
   return calc_permutation_from_lgib0idx_by_lehmercode_inner(lgi_b0idx, workset, perm_result)
 
 
+"""
+def calc_decimal_to_factoradic(intval, radix=1, remainders=None):
+=======
+"""
+
+
+def calc_permutation_from_lgib0idx_by_lehmercode(lgi_b0idx, workset):
+  """
+    Computes the lgi_n_th permutation out of (original) workset
+    Dispatches to calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset)
+      that treats parameters, the latter dispatching to
+        calc_permutation_from_lgib0idx_by_lehmercode_inner()
+  Args:
+    lgi_b0idx: int - the integer value that represents the permutation's lexicographical index
+    workset: list - the permutation "base set"
+  Returns:
+    perm_result: list - the permutation "arrangement set" that corresponding to the input lgi
+  """
+  lgi_b1idx = lgi_b0idx + 1
+  return calc_permutation_from_lgib1idx_by_lehmercode(lgi_b1idx, workset)
+
+
 def calc_decimal_to_factoradic(intval, radix=1, remainders=None):
   """
   resulted_perm_arr = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
@@ -137,43 +169,53 @@ def calc_decimal_to_factoradic(intval, radix=1, remainders=None):
   979999 / 9! = 2, remainder 254239 (ie 979999 - 725760)
   permutation 1st digit: 2 | append it: ongoing_result = [2]
 
+  permutation 1st digit: 2 (appended to perm_result, the first one)
   set: {0 1 3 4 5 6 7 8 9} <= 2 (former idx 2) got out
   254239 / 8! = 6, remainder 12319 (ie 254239 - 241920)
   permutation 2nd digit: 7 | append it: ongoing_result = [2, 7]
 
+  permutation 2nd digit: 7 (appended to perm_result)
   set: {0 1 3 4 5 6 8 9} <= 7 (former idx 6) got out
   12319 / 7! = 2, remainder 2239 (ie 12319 - 10080)
   permutation 3rd digit: 3 | append it: ongoing_result = [2, 7, 3]
 
+  permutation 3rd digit: 3 (appended to perm_result)
   set: {0 1 4 5 6 8 9} <= 3 (former idx 2) got out
   2239 / 6! = 3, remainder 79 (ie 2239 - 2160)
   permutation 4th digit: 5 | append it: ongoing_result = [2, 7, 3, 5]
 
+  permutation 4th digit: 5 (appended to perm_result)
   set: {0 1 4 6 8 9} <= 5 (former idx 3) got out
   79 / 5! = 0, remainder 79 (ie 79 - 0)
   permutation 5th digit: 0 | append it: ongoing_result = [2, 7, 3, 5, 0]
 
+  permutation 5th digit: 0 (appended to perm_result)
   set: {1 4 6 8 9} <= 0 (former idx 0) got out
   79 / 4! = 3, remainder 7 (ie 79 - 72)
   permutation 6th digit: 8 | append it: ongoing_result = [2, 7, 3, 5, 0, 8]
 
+  permutation 6th digit: 8 (appended to perm_result)
   set: {1 4 6 9} <= 6 (former idx 3) got out
   7 / 3! = 1, remainder 1 (ie 7 - 6)
   permutation 7th digit: 4 | append it: ongoing_result = [2, 7, 3, 5, 0, 8, 4]
 
+  permutation 7th digit: 4 (appended to perm_result)
   set: {1 6 9} <= 4 (former idx 1) got out
   1 / 2! = 0, remainder 1 (ie 1 - 0)
   permutation 8th digit: 1 | append it: ongoing_result = [2, 7, 3, 5, 0, 8, 4, 1]
 
+  permutation 8th digit: 1 (appended to perm_result)
   set: {6 9} <= 1 (former idx 0) got out
   1 / 1! = 1, remainder 0 (ie 1 - 1)
   permutation 9th digit: 9 | append it: ongoing_result = [2, 7, 3, 5, 0, 8, 4, 1, 9]
 
+  permutation 9th digit: 9 (appended to perm_result)
   set: {6} <= 9 (former idx 1) got out, idx 0 is removed at this step
   0 / 0! = 0, remainder 0 (ie 0 - 0)
   permutation 10th digit: 6 | append it: ongoing_result = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
                                                           its lgi_b0idx is 979999
 
+  permutation 10th digit: 6 (appended to perm_result, the last one)
   Returns:
     int | the decimal int value corresponding to input fatoradic number
   """
