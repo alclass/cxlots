@@ -1,5 +1,31 @@
 #!/usr/bin/env python3
 """
+fs/mathfs/combinatorics/hanoi_like_tower_piecemover.py
+  Contains class HanoiLikeTowerPieceMover
+
+This HanoiLike moving is not the one of the classic Hannoi-Tower.
+This HanoiLike moving may be explained by an example:
+  @see also docstrings below
+
+ => Suppose an array with 3 columns (or rods or posts or towers).
+ => Suppose the first column (the leftmost one) has 4 pegs;
+    the other two have none.
+
+The objective is to find all "transitions" to take all 4 pegs,
+  one at a time, left to right tower by tower, to the last tower.
+
+Thus, the transitions are:
+
+    0 [4, 0, 0]  # all pieces begin at slot 1
+    1 [3, 1, 0]  # first step, one piece is moved from slot 1 to slot 2
+    2 [2, 2, 0]  # second step, another piece is moved from slot 1 to slot 2
+    3 [1, 3, 0]
+    4 [0, 4, 0]
+    5 [0, 3, 1]  # one piece is moved from slot 2 to slot 3
+    6 [0, 2, 2]  # another piece is moved from slot 2 to slot 3
+    7 [0, 1, 3]
+    8 [0, 0, 4]  # all pieces end up at slot 3
+
 """
 import copy
 
@@ -44,6 +70,7 @@ class HanoiLikeTowerPieceMover:
     self.from_slot = 0
     self.idx = 0
     self.traversal_combinations = [copy.copy(self.qtd_slot_array)]
+    self.has_been_processed = False
 
   @property
   def size(self):
@@ -60,7 +87,27 @@ class HanoiLikeTowerPieceMover:
     return self.size - 1
 
   @property
-  def whileloop_in_process_limit(self):
+  def all_combinations(self):
+    """
+    Returns self.traversal_combinations ie the list result of the HanoiLike traversal
+      Obs: property allcombs below is an alias for this property
+    Returns: list - the appended self.traversal_combinations
+
+    """
+    if not self.has_been_processed:
+      self.process()
+    return self.traversal_combinations
+
+  @property
+  def allcombs(self):
+    """
+    Same as property all_combinations
+    Returns: list - the appended self.traversal_combinations
+    """
+    return self.all_combinations
+
+  @property
+  def whileloop_size_limit(self):
     """
     This is an infinite loop protection for the while-loop in method process()
     """
@@ -91,8 +138,8 @@ class HanoiLikeTowerPieceMover:
     loop_iter_n = -1
     while self.qtd_slot_array[-1] < self.npieces:
       loop_iter_n += 1
-      if loop_iter_n > self.whileloop_in_process_limit:
-        errmsg = f'Exceeded whileloop_in_process_limit={self.whileloop_in_process_limit}'
+      if loop_iter_n > self.whileloop_size_limit:
+        errmsg = f'Exceeded whileloop_in_process_limit={self.whileloop_size_limit}'
         raise ValueError(errmsg)
         # break  # the while-loop
       for i in range(self.nslots):
@@ -107,6 +154,7 @@ class HanoiLikeTowerPieceMover:
       print(idx, patt)
     """
     self.mount_patterns_w_hanoilike_piece_moving()
+    self.has_been_processed = True
 
   def __str__(self):
     outstr = f"""HanoiLikeTowerMover
@@ -146,7 +194,7 @@ def adhoc_test():
   m = HanoiLikeTowerPieceMover(npieces, nslots)
   m.process()
   print(m)
-  npieces, nslots = 9, 5
+  npieces, nslots = 4, 3
   m = HanoiLikeTowerPieceMover(npieces, nslots)
   m.process()
   print(m)
