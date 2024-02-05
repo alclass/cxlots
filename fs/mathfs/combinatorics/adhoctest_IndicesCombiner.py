@@ -126,9 +126,9 @@ def adhoc_test3():
   """
   sc = SetsCombiner()
   worksetWithQuantity = ([1,2,3], 2)
-  sc.addSetWithQuantities(worksetWithQuantity)
+  sc.add_set_with_quantities(worksetWithQuantity)
   worksetWithQuantity = ([4,5,6], 2)
-  sc.addSetWithQuantities(worksetWithQuantity)
+  sc.add_set_with_quantities(worksetWithQuantity)
   for ws in sc.getAllSetsCombinationNonRecursively():
     print 'ws', ws
   """
@@ -188,6 +188,6 @@ def adhoctest_output_combinations_for_megasena_large_set():
 
 if __name__ == '__main__':
   """
-  adhoc_test()
+  adhoctest()
   """
   adhoctest_output_combinations_for_megasena_large_set()

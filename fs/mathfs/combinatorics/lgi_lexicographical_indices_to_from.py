@@ -665,8 +665,8 @@ def find_lgi_from_permset_approach2(permset=None):
 
 if __name__ == '__main__':
   """
-  adhoc_test()
-  adhoc_test()
+  adhoctest()
+  adhoctest()
   accompany_lgi()
   adhoctest_f_inv()
   # table_combs_size()

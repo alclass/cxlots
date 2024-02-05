@@ -311,10 +311,10 @@ class Gerador2(object):
         elif len(dezenas) == digit:
           sets = [dezenas]
         else:
-          sets = ic.setCombine(dezenas, digit)
+          sets = ic.set_combine(dezenas, digit)
         if len(sets) > 0:
           setsForMultiply.append(sets)
-      icSet = ic.setMultiply(setsForMultiply)
+      icSet = ic.set_multiply(setsForMultiply)
       jogosStrDict = extractJogosFrom3DList(icSet, jogosStrDict)
       #jogosEncDict = extractJogosFrom3DList(icSet, jogosEncDict)
     return jogosStrDict

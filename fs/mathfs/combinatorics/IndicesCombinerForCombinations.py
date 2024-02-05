@@ -21,7 +21,6 @@ In time, we hope to find out a 'technique' for the lexicographic index for the o
 
 @see also as a reference: http://en.wikipedia.org/wiki/Combinadic
 """
-import copy
 import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
 import fs.mathfs.combinatorics.IndicesCombiner_functions as ICf  # ICf.project_last_combinationlist
 
@@ -126,7 +125,7 @@ class IndicesCombinerForCombinations:
   (*) if upLimit or size enters negative, they are changed to the default,
       ie, upLimit=0 and size=1
 
-  Eg. upLimit = 2 and size = 3 :: this will result in
+  Eg upLimit = 2 and size = 3 :: this will result in
       only one combination [0,1,2] (with overlap=False)
   
   If the above fails, a ValueError Exception will be raised
@@ -271,7 +270,7 @@ class IndicesCombinerForCombinations:
       return False
     return True
 
-  def check_subset_asc_order_consistency(self, ini_comb, fim_comb, cut_off=10):
+  def check_subset_asc_order_consistency(self, ini_comb, fim_comb):
     """
     Checks the consistency of iArray
     Examples of inconsistent arrays of combinations:
@@ -487,11 +486,8 @@ class IndicesCombinerForCombinations:
       return self.curr_comb
     if self.curr_comb is None:  # this convention may be reviewd later one
       return self.move_curr_comb_to_last_or_fim()
-    pos = self.n_slots - 1
-    if self.overlap:
-      return copy.copy(self.minus_one_overlap(pos))
-    else:
-      return copy.copy(self.minus_one_non_overlap(pos))
+    self.curr_comb = ICf.subtract_one(self.curr_comb, n_elements=self.n_elements)
+    return self.curr_comb
 
   def next(self):
     """
@@ -499,7 +495,7 @@ class IndicesCombinerForCombinations:
     When the last one is current, a next() will move it to None that is also returned
     (thus, None becomes here a kind of convention of "after the last" or "parked after the last")
     """
-    self.curr_comb = ICf.add_one(self.curr_comb, up_limit=self.greatest_int_in_comb)
+    self.curr_comb = ICf.add_one(self.curr_comb, n_elements=self.n_elements)
     return self.curr_comb
 
   def __str__(self):
@@ -515,7 +511,7 @@ class IndicesCombinerForCombinations:
     return out_str
 
 
-def adhoc_test():
+def adhoctest():
   """
   n_elements, n_slots = 4, 3
   icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots)
@@ -529,7 +525,6 @@ def adhoc_test():
   n_elements, n_slots = 3, 2
   icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots)
   print(icc)
-
   """
   n_elements, n_slots = 3, 2
   icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots)
@@ -538,7 +533,8 @@ def adhoc_test():
   icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots)
   print(icc)
   n_elements, n_slots = 60, 6
-  icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots, ini_comb=[53, 55, 56, 57, 58, 59])
+  icc = IndicesCombinerForCombinations(
+    n_elements=n_elements, n_slots=n_slots, ini_comb=[53, 55, 56, 57, 58, 59])
   print(icc)
   c = 0
   for tupl in icc.gen_all_lgis_n_cmbs_or_those_bw_ini_fim_if_given():
@@ -550,6 +546,10 @@ def adhoc_test():
   icc = IndicesCombinerForCombinations(n_elements=n_elements, n_slots=n_slots)
   icc.move_curr_comb_to_last_or_fim()
   print(icc.curr_comb, icc.lgi_b1idx)
+  icc.previous()
+  print('previous', icc.curr_comb, icc.lgi_b1idx)
+  icc.previous()
+  print('previous', icc.curr_comb, icc.lgi_b1idx)
   icc.move_curr_comb_to_first_or_ini()
   print(icc.curr_comb, icc.lgi_b1idx)
 
@@ -557,4 +557,4 @@ def adhoc_test():
 if __name__ == '__main__':
   """
   """
-  adhoc_test()
+  adhoctest()

@@ -41,7 +41,7 @@ class GeneratorTilR(object):
         n_elems_in_the_slots = workSet[1]
         if n_elems_in_the_slots == 0:
           continue
-        sc.addSetWithQuantities(workSet)
+        sc.add_set_with_quantities(workSet)
       for self.combined in sc.next_combination():
         gencounter+=1
         self.save(self.combined)
@@ -64,8 +64,8 @@ class GeneratorTilR(object):
         n_elems_in_the_slots = workSet[1]
         if n_elems_in_the_slots == 0:
           continue
-        sc.addSetWithQuantities(workSet)
-      allCombinations = sc.getAllCombinations()
+        sc.add_set_with_quantities(workSet)
+      allCombinations = sc.get_all_combinations()
       for self.combined in allCombinations:
         gencounter+=1
         self.save(self.combined)
@@ -76,8 +76,8 @@ class GeneratorTilR(object):
     
 def adhoc_test2():
   sc = SetsCombiner()
-  sc.addSetWithQuantities(([1,2,3],2))
-  sc.addSetWithQuantities(([4,5,6],2))
+  sc.add_set_with_quantities(([1, 2, 3], 2))
+  sc.add_set_with_quantities(([4, 5, 6], 2))
   sc.combineSets()
   print sc.getAllCombinationsAfterCombine()
                           

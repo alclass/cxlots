@@ -21,28 +21,28 @@ def test1():
   print 'icObj.all_sets_first_to_last()', icObj.all_sets_first_to_last()
   
   icObj = ic.IndicesCombinerForCombinations(4, 3, False)
-  result = ic.createWorkSetsWithIndicesCombiner([12, 15, 19, 21, 32], icObj)
+  result = ic.create_work_sets_with_indices_combiner([12, 15, 19, 21, 32], icObj)
   print 'result', result
   
   tupleWorkSetPlusQuantity = ([11, 37], 1); workSet = tupleWorkSetPlusQuantity[0]; quantity=tupleWorkSetPlusQuantity[1]
   icObj = ic.IndicesCombinerForCombinations(len(workSet) - 1, quantity, False)
-  result = ic.createWorkSetsWithIndicesCombiner(workSet, icObj)
+  result = ic.create_work_sets_with_indices_combiner(workSet, icObj)
   print 'result', result
   
   print 'setCombinerObj = ic.SetsCombiner()'
   setCombinerObj = ic.SetsCombiner()
-  setCombinerObj.addSetWithQuantities(([12, 15, 19, 21, 32, 33, 45], 3))
-  setCombinerObj.addSetWithQuantities(([8, 25, 27, 28, 49], 2))
-  setCombinerObj.addSetWithQuantities(([11, 37], 1))
+  setCombinerObj.add_set_with_quantities(([12, 15, 19, 21, 32, 33, 45], 3))
+  setCombinerObj.add_set_with_quantities(([8, 25, 27, 28, 49], 2))
+  setCombinerObj.add_set_with_quantities(([11, 37], 1))
   print 'setCombinerObj.combineSets()'
   setCombinerObj.combineSets()
   totalOfSets = len(setCombinerObj)
-  print setCombinerObj.allCombinations
+  print setCombinerObj.all_combinations
   print 'totalOfSets = len(setCombinerObj) =', totalOfSets
   
 
 tilElement = fm.TilElement('03021')
 combinerObj = ic.SetsCombinerWithTils(tilElement)
 #print 'combinerObj.allCombinations', combinerObj.allCombinations
-print 'len combinerObj.allCombinations', len(combinerObj.allCombinations)
+print 'len combinerObj.allCombinations', len(combinerObj.all_combinations)
 

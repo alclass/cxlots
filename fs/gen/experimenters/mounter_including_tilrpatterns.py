@@ -38,7 +38,7 @@ def generate(wpattern):
     dozens = tilr.get_dozens_in_slot_n(slot_n)
     workSetWithQuantity = (dozens, quantity) 
     print 'Adding workSetWithQuantity', workSetWithQuantity
-    combiner.addSetWithQuantities(workSetWithQuantity)
+    combiner.add_set_with_quantities(workSetWithQuantity)
   total_combinations = combiner.get_total_combinations()
   all_generated += total_combinations
   print 'total_combinations', total_combinations

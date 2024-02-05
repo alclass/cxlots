@@ -5,21 +5,27 @@ fs/mathfs/combinatorics/zero_grafter_mixer.py
 
 The class ZeroesGraftAndCountsMixer may be explained by an example:
 
-Suppose basecomb is [3, 2, 1]
-  and 'mask' is [3, None, 2, None 1]
+Suppose basecomb is [3, 2, 1] and 'mask' is [3, None, 2, None 1]
   where None is a kind of placeholder for the later zero-grafting.
 Now, suppose the zeroes-amount is represented by [2, 1]
 Processing:
-  This means 2 zeroes being grafted to the first None in the mask and 1 zero to the second.
+  This means 2 zeroes being grafted into the first None in the mask and 1 zero to the second.
   The result in this case is [3, 0, 0, 2, 0, 1]
     Notice the substitution of None for the zeroes (2 zeroes for the 1st None, 1 zero for the 2nd None).
 
 The example above is for one single combination.
-  The [3, 2, 1] set may be expanded into many more combinations.
-  More examples: ['300021', '300201' (this is the one above), '302001', '320001', ...]
+  The [3, 2, 1] set may be expanded into many more combinations when n_slots is 6.
+    The other "graftings": [
+      '300021', '300201' (this is the one above), '302001', '320001',
+    ]
+    The first above ['300021'] has zeroes_amount [3, 0]
+    The second one is the example above [2, 1]
+    The third above ['302001'] has zeroes_amount [1, 2]
+    The fourth above ['320001'] has zeroes_amount [0, 3]
+
+  Notice that the zeroes-amount combinations are: [3, 0], [2, 1], [1, 2], [0, 3]
 """
 import copy
-
 import fs.mathfs.combinatorics.hanoi_like_tower_piecemover as pm  # pm.HanoiLikeTowerPieceMover
 
 
@@ -81,10 +87,27 @@ class ZeroesGraftAndCountsMixer:
           break
     return self._mask
 
+  @property
+  def graft_size_cmbs(self):
+    """
+    This property is a list of all possible combinations of zero graftings
+      It uses object 'hanoi_like_mover' with its list 'traversal_combinations'
+
+    Example:
+      for chunks ['300021', '300201', '302001', '320001'] & mask [3, None, 2, None, 1]
+      this list is:
+        hanoi_comb [3, 0]
+        hanoi_comb [2, 1]
+        hanoi_comb [1, 2]
+        hanoi_comb [0, 3]
+      ie the graft positions list, in the example above, is [[3, 0], [2, 1], [1, 2], [0, 3]]
+    """
+    return self.hanoi_like_mover.traversal_combinations
+
   def mix(self):
     chunks = []
-    for hanoi_comb in self.hanoi_like_mover.traversal_combinations:
-      print('hanoicomb', hanoi_comb)
+    for hanoi_comb in self.graft_size_cmbs:
+      # print('hanoicomb', hanoi_comb)
       hanoi_reversed_for_pop = list(reversed(hanoi_comb))
       outstr = ''
       for elem in self.mask:
