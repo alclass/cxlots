@@ -148,7 +148,7 @@ def test_yield():
     print(i)
 
 
-def adhoc_test():
+def adhoctest1():
   ic = iCmb.IndicesCombinerForCombinations(3, 2, False)
   print(ic)
   print('first', ic.first_comb, 'last', ic.last_comb,  'size', ic.size)
@@ -186,8 +186,24 @@ def adhoctest_output_combinations_for_megasena_large_set():
   print('time_elapsed', time_elapsed)
 
 
+def adhoctest_instantiate_indicescombiner():
+  """
+  """
+  n_elements, n_slots = 4, 2
+  ic = iCmb.IndicesCombinerForCombinations(n_elements, n_slots)
+  # print('IndicesCombiner object', ic)
+  print('first', ic.first_comb)
+  print('last', ic.last_comb)
+  print('total_cmbs()', ic.total_cmbs)
+  print('all_set()', ic.get_all_cmbs_or_those_bw_ini_fim_if_given())
+
+
+def adhoctest3():
+  adhoctest_instantiate_indicescombiner()
+
+
 if __name__ == '__main__':
   """
-  adhoctest()
-  """
   adhoctest_output_combinations_for_megasena_large_set()
+  """
+  adhoctest3()

@@ -30,7 +30,7 @@ class TestCase1(unittest.TestCase):
       and so on
     """
     basecomb, graft_idx_positions = [3, 2, 1], [1, 3]
-    zg = zgmx.ZeroesGraftAndCountsMixer(basecomb=basecomb, graft_idx_positions=graft_idx_positions)
+    zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, graft_idx_positions=graft_idx_positions)
     expected_mask = [3, None, 2, None, 1]
     returned_mask = zg.mask
     # t1 test mask
@@ -63,7 +63,7 @@ class TestCase1(unittest.TestCase):
       and so on
     """
     basecomb, graft_idx_positions = [3, 3], [4]
-    zg = zgmx.ZeroesGraftAndCountsMixer(basecomb=basecomb, graft_idx_positions=graft_idx_positions)
+    zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, graft_idx_positions=graft_idx_positions)
     expected_mask = [3, 3]  # [3, None, 3]
     returned_mask = zg.mask
     # t1 test mask

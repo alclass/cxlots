@@ -57,6 +57,120 @@ import copy
 import fs.mathfs.combinatorics.hanoi_like_tower_piecemover as pm  # pm.HanoiLikeTowerPieceMover
 
 
+def graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
+    zeroamount_tuplelist, gaphole_position_list, amounts_in_slots, n_elements, n_slots
+  ):
+  """
+  Example:
+    parameters:
+      zeroamount_tuplelist = [[3, 0], [2, 1], [1, 2], [0, 3]]
+      gaphole_position_list = [1, 2]
+      amounts_in_slots = [3, 2, 1]
+      n_elements = 6
+      n_slots = 6
+    results:
+      300021 300201 302001 320001
+  """
+  allcombs = []
+  zeroamount_tuplelist_pop = list(reversed(zeroamount_tuplelist))
+  while len(zeroamount_tuplelist_pop) > 0:
+    n_zeroes_list = zeroamount_tuplelist_pop.pop()
+    for i, gaphole_pos in enumerate(gaphole_position_list):
+      n_zeroes = n_zeroes_list[i]
+      if n_zeroes == 0:
+        continue
+      combstr = graft_zeroes_into_comb_with_n_zeroes(
+        amounts_in_slots, n_zeroes=n_zeroes, pos=gaphole_pos
+      )
+      allcombs.append(combstr)
+  return allcombs
+
+
+def get_gaphole_inbetween_indices_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
+  """
+  @see docstring for function get_n_holes_for_zerografting_with()
+  """
+  n_holes = get_n_holes_for_zerografting_with(amounts_in_slots, n_elements, n_slots)
+  gapholes = list(range(1, n_holes+1))
+  return gapholes
+
+
+def graft_zeroes_into_comb_with_n_zeroes(amounts_in_slots, n_zeroes, pos=1):
+  prestr = ''.join(map(str, amounts_in_slots[: pos]))
+  poststr = ''.join(map(str, amounts_in_slots[pos:]))
+  zeroes_str = '0' * n_zeroes
+  comb_zerografted_str = prestr + zeroes_str + poststr
+  return comb_zerografted_str
+
+
+def get_combs_with_decreasing_n_zeroes(amounts_in_slots, max_zeroes, n_slots, pos=1):
+  gaphole_combinations = []
+  prestr = ''.join(map(str, amounts_in_slots[: pos]))
+  poststr = ''.join(map(str, amounts_in_slots[pos: ]))
+  for n_zeroes in range(max_zeroes, 0, -1):
+    zeroes_str = '0' * n_zeroes
+    comb_zerografted_str = prestr + zeroes_str + poststr
+    gaphole_combinations.append(comb_zerografted_str)
+  return gaphole_combinations
+
+
+def get_n_holes_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
+  """
+  Calculates how many grafting holes there might occur in the scheme (amounts_in_slots, n_elements, n_slots)
+
+  The function may be explained by an example.
+
+  Example: suppose n_elements=6, n_slots=6
+    Combine all possible amounts in the slots, we have:
+
+    6 6 if amounts_in_slots=[6] => result ghindices=[]
+    6 6 if amounts_in_slots=[5, 1] => result ghindices=[1]
+    6 6 if amounts_in_slots=[4, 1, 1] => result ghindices=[1, 2]
+    6 6 if amounts_in_slots=[4, 2] => result ghindices=[1]
+    6 6 if amounts_in_slots=[3, 2, 1] => result ghindices=[1, 2]
+    6 6 if amounts_in_slots=[2, 2, 2] => result ghindices=[1, 2]
+    6 6 if amounts_in_slots=[2, 2, 1, 1] => result ghindices=[1, 2, 3]
+    6 6 if amounts_in_slots=[2, 1, 1, 1, 1] => result ghindices=[1, 2, 3, 4]
+    6 6 if amounts_in_slots=[1, 1, 1, 1, 1, 1] => result ghindices=[]
+
+  Interpretation for the gaphole indices:
+    i1 Let's take this instance:
+      6 6 amounts_in_slots=[2, 2, 1, 1] => result ghindices=[1, 2, 3]
+    so, in the result [1, 2, 3]:
+      the first element, 1, means that between [2, 2], there may occur a gaphole: [2, None, 2]
+      the second element, 2, means that between [2, 1], there may occur a gaphole: [2, None, 1]
+      the third element, 3, means that between [1, 1], there may occur a gaphole: [1, None, 1]
+    * None above symbolizes a gaphole
+    Notice that the last element (3) in ghindices also characterizes it (gapholes are always a sequence),
+      ie, instead of returning [1, 2, ..., 'n'], it suffices to return 'n';
+
+    i2 Let's take this other instance:
+      6 6 if amounts_in_slots=[5, 1] => result ghindices=[1]
+    this means that there can occur only one gaphole: [5, None, 1]
+
+    Also notice that this function does not combine the gapholes themselves,
+      ie when more than one can occur,
+      nonetheless, this extra functionality is left for another function.
+  """
+  if amounts_in_slots[0] == n_elements:
+    return 0
+  if len(amounts_in_slots) == n_slots:
+    return 0
+  soma = sum(amounts_in_slots)
+  if soma != n_elements:
+    errmsg = f"soma (={soma}) != n_elements (={n_elements})"
+    raise ValueError(errmsg)
+  amounts_for_pop = list(reversed(amounts_in_slots))
+  n_holes = 0
+  while 1:
+    _ = amounts_for_pop.pop()
+    if len(amounts_for_pop) >= 1:
+      n_holes += 1
+    else:
+      break
+  return n_holes
+
+
 class ZeroesGraftAndCountsMixer:
   """
     # TO-DO: change from the HanoiLikeTowerPieceMover to the DecrescentCombinerZerografter
@@ -81,7 +195,7 @@ class ZeroesGraftAndCountsMixer:
     ie the result is to combine all 'shapes' (@see also metric 'shape').
   """
 
-  def __init__(self, basecomb, graft_idx_positions, n_slots=6):
+  def __init__(self, amounts_in_slots, n_elements=6, n_slots=6):
     """
     Consider the case where n_slots=6 and n_elements=6
 
@@ -128,32 +242,81 @@ class ZeroesGraftAndCountsMixer:
         ] : 9 altogether
 
     Args:
-      basecomb:
+      amounts_in_slots:
       graft_idx_positions:
       n_slots:
     """
-    self.basecomb, self.graft_idx_positions = basecomb, graft_idx_positions
-    self.nslots = n_slots
+    self.amounts_in_slots = amounts_in_slots
+    self.n_elements = n_elements
+    self.n_slots = n_slots
+    self._gaphole_position_list = None
+    self.graft_idx_positions = None
     self._mask = None
-    self.max_zeroes_size = self.nslots - len(basecomb)
-    self.graft_slots_size = len(graft_idx_positions)
+    self.max_zeroes_size = self.n_slots - len(amounts_in_slots)
+    self.graft_slots_size = []  # len(graft_idx_positions)
     # TO-DO: change from the HanoiLikeTowerPieceMover to the DecrescentCombinerZerografter
-    self.hanoi_like_mover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes_size, nslots=self.graft_slots_size)
-    self.hanoi_like_mover.process()
+    # self.hanoi_like_mover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes_size, nslots=self.graft_slots_size)
+    # self.hanoi_like_mover.process()
     self.countdict = {}
     self.gap_ranges_tuplelist = []
     self.grafted_combs = []
+    self._next_gaphole = -1
+
+  @property
+  def n_gapholes(self):
+    return len(self.gaphole_position_list)
+
+  @property
+  def gaphole_position_list(self):
+    """
+    Gaphole is in relation to self.amounts_in_slots
+    """
+    if self._gaphole_position_list is None:
+      self._gaphole_position_list = get_gaphole_inbetween_indices_for_zerografting_with(
+        self.amounts_in_slots, n_elements=self.n_elements, n_slots=self.n_slots
+      )
+    return self._gaphole_position_list
+
+  @property
+  def max_zeroes(self):
+    return self.n_slots - len(self.amounts_in_slots)
+
+  def get_gaphole_combinations(self):
+    # gaphole_combinations = []
+    if self.n_gapholes == 0:
+      return []
+    if self.n_gapholes == 1:
+      gaphole_combinations = get_combs_with_decreasing_n_zeroes(self.amounts_in_slots, self.max_zeroes, pos=1)
+      return gaphole_combinations
+      # suppose [5, 1] with [1] and (n_elements=6, n_slots=6)
+      # all possible zero-graftings are: ['501', '5001', '50001', '500001
+    gaphole_combinations = []
+    for i, gaphole_position in enumerate(self.gaphole_position_list):  # ex position list [1, 2]
+      for n_zeroes in range(self.max_zeroes, 0, -1):
+        gaphole_combinations += get_combs_with_decreasing_n_zeroes(
+          self.amounts_in_slots, self.max_zeroes, gaphole_position
+        )
+      # suppose [3, 2, 1] with [1, 2] and (n_elements=6, n_slots=6)
+      # all possible zero-graftings are:
+      # '300021' (ie [3, 0]), '300201' (ie [2, 1]), and so on
+    hmover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes, nslots=self.n_gapholes)
+    for zeroamountlist in hmover.allcombs:
+      gaphole_combinations += graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
+        zeroamountlist, self.gaphole_position_list
+      )
+
+    return gaphole_combinations
 
   @property
   def mask(self):
     if self._mask is None:
-      basecomb = copy.copy(self.basecomb)
+      basecomb = copy.copy(self.amounts_in_slots)
       self._mask = []
       if len(basecomb) > 0:
         elem = basecomb[0]
         del basecomb[0]
         self._mask.append(elem)
-      for i in range(1, self.nslots):
+      for i in range(1, self.n_slots):
         if i in self.graft_idx_positions:
           self._mask.append(None)
           continue
@@ -235,21 +398,61 @@ def adhoc_test():
   """
   """
   basecomb, graft_idx_positions = [3, 2, 1], [1, 3]
-  zg = ZeroesGraftAndCountsMixer(basecomb=basecomb, graft_idx_positions=graft_idx_positions)
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, graft_idx_positions=graft_idx_positions)
   chunks = zg.mix()
   print('chunks', chunks, 'mask', zg.mask)
 
 
-def adhoc_test2():
+def adhoctest2():
   basecomb = [3, 1, 1, 1]
-  graft_idx_positions = [1, 2, 3, 4]
-  zg = ZeroesGraftAndCountsMixer(basecomb=basecomb, graft_idx_positions=graft_idx_positions)
+  n_slots = 6
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, n_slots=n_slots)
   chunks = zg.mix()
   print('chunks', chunks, 'mask', zg.mask)
+
+
+def adhoctest3():
+  n_elements, n_slots = 6, 6
+  amounts_in_slots = [3, 2, 1]
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=6, n_slots=6)
+  zg.calc_gaphole_indices()
+  gaps = zg.gaphole_indices
+  print('='*20, amounts_in_slots, gaps)
+  amounts_in_slots = [4, 1, 1, 1]
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=6, n_slots=6)
+  zg.calc_gaphole_indices()
+  gaps = zg.gaphole_indices
+  print('='*20, amounts_in_slots, gaps)
+  amounts_in_slots = [3, 3]
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=6, n_slots=6)
+  zg.calc_gaphole_indices()
+  gaps = zg.gaphole_indices
+  print('='*20, amounts_in_slots, gaps)
+  amounts_in_slots = [6]
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=6, n_slots=6)
+  zg.calc_gaphole_indices()
+  gaps = zg.gaphole_indices
+  print('='*20, amounts_in_slots, gaps)
+
+
+def adhoctest4():
+  """
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots, n_elements, n_slots)
+  ghcombs = zg.get_gaphole_combinations()
+  print(ghcombs)
+  """
+  amounts_in_slots = [3, 2, 1]
+  n_elements, n_slots = 6, 6
+  zeroamount_tuplelist = [[3, 0], [2, 1], [1, 2], [0, 3]]
+  gaphole_position_list = [1, 2]
+  allcombs = graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
+    zeroamount_tuplelist, gaphole_position_list, amounts_in_slots, n_elements, n_slots
+  )
+  print(allcombs)
 
 
 if __name__ == '__main__':
   """
   list_dist_xysum_metric_thru_ms_history()
   """
-  adhoc_test2()
+  adhoctest4()
