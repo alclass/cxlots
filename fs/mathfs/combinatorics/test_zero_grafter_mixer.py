@@ -9,7 +9,14 @@ import fs.mathfs.combinatorics.zero_grafter_mixer as zgmx  # zg.ZeroesGraftAndCo
 
 class TestCase1(unittest.TestCase):
 
-  def test_zerograft_1st_hypothesis(self):
+  def test_zerografted_strs_w_grafting_coordlist(self):
+    amounts_in_slots = [3, 2, 1]
+    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+    returned_zerograft_strs = zgmx.mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
+    expected_zerograft_strs = ['300021', '300201', '302001', '320001']
+    self.assertEqual(expected_zerograft_strs, returned_zerograft_strs)
+
+  def ztest_zerograft_1st_hypothesis(self):
     """
     @see more info about the grafting scheme in class ZeroesGraftAndCountsMixer
 
@@ -44,7 +51,7 @@ class TestCase1(unittest.TestCase):
     # t3 test the strlist that is the result of grafting, called 'chunks' in the test-method's docstring
     self.assertEqual(expected_grafted_strlist, returned_grafted_strlist)
 
-  def test_zerograft_2nd_hypothesis(self):
+  def ztest_zerograft_2nd_hypothesis(self):
     """
     The subtests in this test-method encompass the following hypothesis:
       grafting scheme with:

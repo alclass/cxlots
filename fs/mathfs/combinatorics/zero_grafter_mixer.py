@@ -57,6 +57,42 @@ import copy
 import fs.mathfs.combinatorics.hanoi_like_tower_piecemover as pm  # pm.HanoiLikeTowerPieceMover
 
 
+def mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots):
+  """
+  Example:
+    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+      which means:
+        the first combination (element/item) has 3 zeroes at betweenpos 1
+          ie a000bc from [(1, 3)]
+        the second combination (element/item) has 2 zeroes at bwpos 1 & 1 at bwpos 2
+          ie a00b0c from [(1, 2), (2, 1)]
+        the third combination (element/item) has 1 zero at bwpos 1 & 2 at bwpos 2
+          ie a0b00c from [(1, 1), (2, 2)]
+        the fouth combination (element/item) has 3 zeroes at betweenpos 2
+          ie ab000c from [(2, 3)]
+  Args:
+    grafting_coordlist: list - a tuple list containing positions with number of graftzeroes
+    amounts_in_slots: list - the base list that will form the zerografted_strs
+  Returns:
+    zerografted_strs: list - the result with the zerografted combined strings
+  """
+  total_graft_pos = 0
+  combstrs = []
+  for graftcoordunit in grafting_coordlist:
+    ongo_amounts = list(amounts_in_slots)
+    total_graft_pos = 0
+    for graftcoord in graftcoordunit:
+      # example  graftcoord=[(1, 2), (2, 1)]
+      pos = graftcoord[0]
+      n_zeroes = graftcoord[1]
+      zeroes_str = '0' * n_zeroes
+      ongo_amounts.insert(pos + total_graft_pos, zeroes_str)
+      total_graft_pos += 1
+    combstr = ''.join(map(str, ongo_amounts))
+    combstrs.append(combstr)
+  return combstrs
+
+
 def graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
     zeroamount_tuplelist, gaphole_position_list, amounts_in_slots, n_elements, n_slots
   ):
@@ -75,14 +111,9 @@ def graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
   zeroamount_tuplelist_pop = list(reversed(zeroamount_tuplelist))
   while len(zeroamount_tuplelist_pop) > 0:
     n_zeroes_list = zeroamount_tuplelist_pop.pop()
-    for i, gaphole_pos in enumerate(gaphole_position_list):
-      n_zeroes = n_zeroes_list[i]
-      if n_zeroes == 0:
-        continue
-      combstr = graft_zeroes_into_comb_with_n_zeroes(
-        amounts_in_slots, n_zeroes=n_zeroes, pos=gaphole_pos
-      )
-      allcombs.append(combstr)
+    pairs_for_grafting = zip(zeroamount_tuplelist_pop, gaphole_position_list)
+    graftcombs = mount_zerografted_strs_w_grafting_coordlist(pairs_for_grafting)
+    allcombs += graftcombs
   return allcombs
 
 
@@ -451,8 +482,15 @@ def adhoctest4():
   print(allcombs)
 
 
+def adhoctest5():
+  amounts_in_slots = [3, 2, 1]
+  grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+  combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
+  print(combstrs)
+
+
 if __name__ == '__main__':
   """
   list_dist_xysum_metric_thru_ms_history()
   """
-  adhoctest4()
+  adhoctest5()
