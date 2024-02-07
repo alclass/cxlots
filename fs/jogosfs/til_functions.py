@@ -31,7 +31,7 @@ def sum_digits(pattern):
   # raise ValueError(errmsg)
 
 
-def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
+def get_all_possible_til_patterns_for(elemsum=6, n_slots=5):
   """
   The Til Patterns are found with the help of finding first the "Integer Partitions"
     @see module combinations.py
@@ -42,11 +42,11 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
   The result set corresponds to the wanted Til Patterns
 
   Example:
-  eg1 getTilPatternsFor(patternSize=2, patternSoma=6) results in a 7-element array, ie:
+  eg1 getTilPatternsFor(elemsum=6, n_slots=2) results in a 7-element array, ie:
   ----------------------------  
   06  60  15  51  24  42  33
   ----------------------------  
-  eg1 getTilPatternsFor(patternSize=5, patternSoma=6) results in a 210-element array, ie:
+  eg1 getTilPatternsFor(elemsum=6, n_slots=5) results in a 210-element array, ie:
   ----------------------------  
   00006 00060 00600 06000 60000 00015 00051 00105 00150 00501 00510 01005 01050 01500 05001
   05010 05100 10005 10050 10500 15000 50001 50010 50100 51000 00024 00042 00204 00240 00402
@@ -63,16 +63,15 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
   02211 10122 10212 10221 11022 11202 11220 12012 12021 12102 12120 12201 12210 20112 20121
   20211 21012 21021 21102 21120 21201 21210 22011 22101 22110 11112 11121 11211 12111 21111
   ----------------------------  
-  
   """
   if n_slots == 0:
     return []
   if n_slots == 1:
-    if psoma < 10:
-      return [str(psoma)]
+    if elemsum < 10:
+      return [str(elemsum)]
     else:
       return []
-  subtokens = combinatorics.mount_all_integer_partitions_for(psoma)
+  subtokens = combinatorics.mount_all_integer_partitions_for(elemsum)
   subtokens = ["".join(map(str, subtoken)) for subtoken in subtokens]
   subtokens = combinatorics.fill_right_zeroes_to_eachstr_in_list(subtokens, n_slots)
   subtokens = combinatorics.filter_out_strings_greater_than_size(subtokens, n_slots)
@@ -80,7 +79,7 @@ def get_all_possible_til_patterns_for(n_slots=5, psoma=6):
 
 
 def adhoctest():
-  res = get_all_possible_til_patterns_for(n_slots=5, psoma=6)
+  res = get_all_possible_til_patterns_for(elemsum=6, n_slots=5)
   print(res)
   print('size', len(res))
 

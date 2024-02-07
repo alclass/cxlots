@@ -31,8 +31,8 @@ class TilStats(TilProducer):
      so they will come up in the difference set.
   '''
   
-  def __init__(self, n_slots=None, soma=None):
-    super(TilStats, self).__init__(n_slots, soma)
+  def __init__(self, n_slots=None, elemsum=None):
+    super(TilStats, self).__init__(n_slots, elemsum)
     self.wpatterndict = Dict2()
     self.wpatterns = []
  

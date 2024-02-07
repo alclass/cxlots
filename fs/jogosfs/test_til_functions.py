@@ -26,38 +26,38 @@ class Test(unittest.TestCase):
     # t1
     n_slots, psoma = 0, 3
     expected_tilpattern = []
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t2
     n_slots, psoma = 1, 9
     expected_tilpattern = ['9']
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t3
     n_slots, psoma = 1, 10
     expected_tilpattern = []
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t4
     n_slots, psoma = 2, 10
     expected_tilpattern = ['']
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t4
     n_slots, psoma = 2, 6
     expected_tilpattern = ['06', '60', '15', '51', '24', '42', '33']
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t2 get_all_possible_til_patterns_for()
     n_slots, psoma = 2, 5
     expected_tilpattern = ['05', '50', '14', '41', '23', '32']
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t3 get_all_possible_til_patterns_for()
     n_slots, psoma = 3, 3
     # sorted is used because the expected tilpattern has not been put in the function order
     expected_tilpattern = sorted(['003', '030', '300', '012', '102', '120', '210', '201', '021', '111'])
-    returned_tilpattern = sorted(tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma))
+    returned_tilpattern = sorted(tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma))
     self.assertEqual(expected_tilpattern, returned_tilpattern)
     # t4 get_all_possible_til_patterns_for()
     n_slots, psoma = 5, 6
@@ -81,5 +81,5 @@ class Test(unittest.TestCase):
         '02211', '10122', '10212', '10221', '11022', '11202', '11220', '12012', '12021', '12102', '12120', '12201',
         '12210', '20112', '20121', '20211', '21012', '21021', '21102', '21120', '21201', '21210', '22011', '22101',
         '22110', '11112', '11121', '11211', '12111', '21111']
-    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, psoma=psoma)
+    returned_tilpattern = tf.get_all_possible_til_patterns_for(n_slots=n_slots, elemsum=psoma)
     self.assertEqual(expected_tilpattern, returned_tilpattern)

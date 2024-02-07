@@ -353,8 +353,8 @@ def get_tilr_from_pool(n_slots = None, history_nDoConc_range = None, volante_car
 def run_history():
   slider = ConcursoExt()
   volante_caract = VolanteCharacteristics(n_dezenas_no_volante=60, n_dezenas_no_sorteio=6)
-  tilfstats = TilStats(n_slots=5, soma=volante_caract.n_dezenas_no_sorteio)
-  tilrstats = TilStats(n_slots=5, soma=volante_caract.n_dezenas_no_sorteio)
+  tilfstats = TilStats(n_slots=5, elemsum=volante_caract.n_dezenas_no_sorteio)
+  tilrstats = TilStats(n_slots=5, elemsum=volante_caract.n_dezenas_no_sorteio)
   tilfobj   = TilF(n_slots=5, history_ini_fin_range = None, volante_caract=volante_caract)
   tilrobj   = TilR(n_slots=5, history_ini_fin_range = None, volante_caract=volante_caract)
   for nDoConc in xrange(101, slider.get_n_last_concurso()+1):

@@ -105,7 +105,7 @@ def showTilsForConcursos(concFrom=None, concTo=None, tilN=None):
       tilPatternDict[tilPatternStr]=1
     nDoConc = concursoExt['nDoConc']
     dezenasStr = concursoExt.getDezenasPrintableInOrder()
-    print nDoConc, dezenasStr, tilPatternStr, 'sum =', tilMod.sumUpTilPattern(tilPatternStr)  
+    print nDoConc, dezenasStr, tilPatternStr, 'sum =', tilMod.sum_up_til_pattern(tilPatternStr)
     #concursoExt.concurso.getTilN =
   patterns = tilPatternDict.keys()
   patterns.sort()
