@@ -117,9 +117,14 @@ def graft_zeroes_with_zeroamountlist_n_gapholepositionlist(
   return allcombs
 
 
-def get_gaphole_inbetween_indices_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
+def get_gaphole_idxpos_list_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
   """
   @see docstring for function get_n_holes_for_zerografting_with()
+  Example:
+    input:
+      amounts_in_slots = [3,2,1]
+    output:
+      gapholes = [1, 2]
   """
   n_holes = get_n_holes_for_zerografting_with(amounts_in_slots, n_elements, n_slots)
   gapholes = list(range(1, n_holes+1))
@@ -127,6 +132,14 @@ def get_gaphole_inbetween_indices_for_zerografting_with(amounts_in_slots, n_elem
 
 
 def graft_zeroes_into_comb_with_n_zeroes(amounts_in_slots, n_zeroes, pos=1):
+  """
+  @see docstring for function get_n_holes_for_zerografting_with()
+  Example:
+    input:
+      amounts_in_slots = [3,2,1];  n_zeroes = 3;  pos = 1
+    output:
+      comb_zerografted_str = '300021'  # ie 3 zeroes grafted into index position 1
+  """
   prestr = ''.join(map(str, amounts_in_slots[: pos]))
   poststr = ''.join(map(str, amounts_in_slots[pos:]))
   zeroes_str = '0' * n_zeroes
@@ -135,6 +148,25 @@ def graft_zeroes_into_comb_with_n_zeroes(amounts_in_slots, n_zeroes, pos=1):
 
 
 def get_combs_with_decreasing_n_zeroes(amounts_in_slots, max_zeroes, n_slots, pos=1):
+  """
+  Example:
+    input:
+      amounts_in_slots: [3, 2, 1]
+      max_zeroes: 3
+      n_slots: 6
+      pos: 1
+    output:
+      gaphole_combinations: [3, '000', 2, 1]
+
+  Args:
+    amounts_in_slots: list - informs quantities in slots
+    max_zeroes: int - informs the maximum of zeroes to be grafted into postion
+    n_slots: int - informs the slot size (number of slots)
+    pos: int - informs the array index position into which the zeroes_str will be grafted
+
+  Returns:
+    gaphole_combinations: list - it's amounts_in_slots zeroes-grafted
+  """
   gaphole_combinations = []
   prestr = ''.join(map(str, amounts_in_slots[: pos]))
   poststr = ''.join(map(str, amounts_in_slots[pos: ]))
@@ -147,9 +179,17 @@ def get_combs_with_decreasing_n_zeroes(amounts_in_slots, max_zeroes, n_slots, po
 
 def get_n_holes_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
   """
-  Calculates how many grafting holes there might occur in the scheme (amounts_in_slots, n_elements, n_slots)
+  Calculates how many grafting holes there might occur
+    in the scheme (amounts_in_slots, n_elements, n_slots)
 
-  The function may be explained by an example.
+  The general rule is: n_holes = len(amounts_in_slots) - 1
+
+  -------------------------------
+  The docstring below is to be moved to its more appropriate place...
+  -------------------------------
+  This function may be explained by an example.
+    Notice also that number of holes is an int, but, conceptionally,
+      it may be a like in the form list(range(1, n_holes+1))
 
   Example: suppose n_elements=6, n_slots=6
     Combine all possible amounts in the slots, we have:
@@ -191,15 +231,44 @@ def get_n_holes_for_zerografting_with(amounts_in_slots, n_elements, n_slots):
   if soma != n_elements:
     errmsg = f"soma (={soma}) != n_elements (={n_elements})"
     raise ValueError(errmsg)
-  amounts_for_pop = list(reversed(amounts_in_slots))
-  n_holes = 0
-  while 1:
-    _ = amounts_for_pop.pop()
-    if len(amounts_for_pop) >= 1:
-      n_holes += 1
-    else:
-      break
-  return n_holes
+  return len(amounts_in_slots) - 1
+  # amounts_for_pop = list(reversed(amounts_in_slots))
+  # n_holes = 0
+  # while 1:
+  #   _ = amounts_for_pop.pop()
+  #   if len(amounts_for_pop) >= 1:
+  #     n_holes += 1
+  #   else:
+  #     break
+  # return n_holes
+
+
+def fuse_combination_list_w_poslist(
+  gaphole_position_list, graftzeroes_combination_list
+):
+  """
+  Example:
+    input:
+      gaphole_position_list=[1, 2]
+      graftzeroes_combination_list=[[3, 0], [2, 1], [1, 2], [0, 3]]
+    output:
+      grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+
+  Args:
+    gaphole_position_list:
+    graftzeroes_combination_list:
+  Returns:
+  """
+  pairs_list = []
+  for comb in graftzeroes_combination_list:
+    for n_zeroes in comb:
+      grafting_oper_pairs = []
+      for pos in gaphole_position_list:
+        if pos > 0:
+          pair = (pos, n_zeroes)
+          grafting_oper_pairs.append(pair)
+      pairs_list.append(grafting_oper_pairs)
+  return pairs_list
 
 
 class ZeroesGraftAndCountsMixer:
@@ -272,10 +341,6 @@ class ZeroesGraftAndCountsMixer:
           320001, 302001, 300201, 300021,
         ] : 9 altogether
 
-    Args:
-      amounts_in_slots:
-      graft_idx_positions:
-      n_slots:
     """
     self.amounts_in_slots = amounts_in_slots
     self.n_elements = n_elements
@@ -283,6 +348,7 @@ class ZeroesGraftAndCountsMixer:
     self._gaphole_position_list = None
     self.graft_idx_positions = None
     self._mask = None
+    self._graftzeroes_combination_list = None
     self.max_zeroes_size = self.n_slots - len(amounts_in_slots)
     self.graft_slots_size = []  # len(graft_idx_positions)
     # TO-DO: change from the HanoiLikeTowerPieceMover to the DecrescentCombinerZerografter
@@ -292,6 +358,25 @@ class ZeroesGraftAndCountsMixer:
     self.gap_ranges_tuplelist = []
     self.grafted_combs = []
     self._next_gaphole = -1
+    # example [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+    self._grafting_coordlist = None
+
+  @property
+  def graftzeroes_combination_list(self):
+    """
+    This list is obtained by the combination of the Hanoi Like Mover class.
+    """
+    if self._graftzeroes_combination_list is None:
+      hmover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes_size, nslots=self.n_gapholes)
+      self._graftzeroes_combination_list = hmover.allcombs
+    return self._graftzeroes_combination_list
+
+  @property
+  def grafting_coordlist(self):
+    self._grafting_coordlist = fuse_combination_list_w_poslist(
+      self.gaphole_position_list, self.graftzeroes_combination_list
+    )
+    return self._grafting_coordlist
 
   @property
   def n_gapholes(self):
@@ -303,7 +388,7 @@ class ZeroesGraftAndCountsMixer:
     Gaphole is in relation to self.amounts_in_slots
     """
     if self._gaphole_position_list is None:
-      self._gaphole_position_list = get_gaphole_inbetween_indices_for_zerografting_with(
+      self._gaphole_position_list = get_gaphole_idxpos_list_for_zerografting_with(
         self.amounts_in_slots, n_elements=self.n_elements, n_slots=self.n_slots
       )
     return self._gaphole_position_list
@@ -396,7 +481,19 @@ class ZeroesGraftAndCountsMixer:
       chunks.append(outstr)
     return chunks
 
-  def determine_graft_ranges(self, countdict):
+  @property
+  def zerografting_pos_n_amt_tuplelist(self, countdict):
+    """
+
+    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+    combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
+    Args:
+      countdict:
+
+    Returns:
+
+    """
+
     self.countdict = countdict
     indices = self.countdict.keys()
     sorted(indices)
@@ -412,6 +509,14 @@ class ZeroesGraftAndCountsMixer:
         self.gap_ranges_tuplelist.append(trange)
 
   def graft_zeroes(self):
+    """
+
+    Returns:
+
+    """
+    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+    combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
+
     self.grafted_combs = []
     indices = self.countdict.keys()
     sorted(indices)
@@ -423,6 +528,14 @@ class ZeroesGraftAndCountsMixer:
         zeroes_str = '0' * nzeroes
         # trange = self.gap_ranges_tuplelist[i]
         out_str_combs.append(zeroes_str)
+
+  def __str__(self):
+    outstr = f"""ZeroesGraftAndCountsMixer
+    gaphole_position_list={self.gaphole_position_list}
+     graftzeroes_combination_list={self.graftzeroes_combination_list}
+     grafting_coordlist={self.grafting_coordlist}
+    """
+    return outstr
 
 
 def adhoc_test():
@@ -487,6 +600,17 @@ def adhoctest5():
   grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
   combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
   print(combstrs)
+  n_elements, n_slots = 6, 6
+  # amounts_in_slots = [6]
+  # res = get_n_holes_for_zerografting_with(amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
+  # scrmg = f"n_elements={n_elements} n_slots={n_slots} res={res}"
+  # print(scrmg)
+  # zg = ZeroesGraftAndCountsMixer(amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
+  # print('zg', zg)
+  gaphole_position_list = [1, 2]
+  graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
+  res = fuse_combination_list_w_poslist(gaphole_position_list, graftzeroes_combination_list)
+  print(res)
 
 
 if __name__ == '__main__':

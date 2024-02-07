@@ -37,7 +37,8 @@ class TestCase1(unittest.TestCase):
       and so on
     """
     basecomb, graft_idx_positions = [3, 2, 1], [1, 3]
-    zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, graft_idx_positions=graft_idx_positions)
+    n_elements, n_slots = 6, 6
+    zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, n_elements=n_elements, n_slots=n_slots)
     expected_mask = [3, None, 2, None, 1]
     returned_mask = zg.mask
     # t1 test mask
