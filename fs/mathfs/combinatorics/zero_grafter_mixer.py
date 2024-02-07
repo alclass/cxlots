@@ -247,28 +247,30 @@ def fuse_combination_list_w_poslist(
   gaphole_position_list, graftzeroes_combination_list
 ):
   """
+  Mounts a tuple list that composed a coordinate pair with index-position & zeroes amount at it
   Example:
     input:
-      gaphole_position_list=[1, 2]
-      graftzeroes_combination_list=[[3, 0], [2, 1], [1, 2], [0, 3]]
+      gaphole_position_list = [1, 2]
+      graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
     output:
       grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+        ie meaning:
+         one 'go' (first sublist) with 3 zeroes at pos 1,
+         another 'go' with 1 zero at pos 1 and 2 zeroes at pos 2
+         another 'go' with 2 zeroes at pos 1 and 2 zeroeat pos 2
+         another 'go' (last sublist) with 3 zeroes at pos 2
 
   Args:
     gaphole_position_list:
     graftzeroes_combination_list:
   Returns:
   """
-  pairs_list = []
-  for comb in graftzeroes_combination_list:
-    for n_zeroes in comb:
-      grafting_oper_pairs = []
-      for pos in gaphole_position_list:
-        if pos > 0:
-          pair = (pos, n_zeroes)
-          grafting_oper_pairs.append(pair)
-      pairs_list.append(grafting_oper_pairs)
-  return pairs_list
+  traversal_grafting_pairs = []
+  for slot_list in graftzeroes_combination_list:  # ex [[3, 0], [2, 1], [1, 2], [0, 3]]
+    grafting_pairs = zip(gaphole_position_list, slot_list)
+    grafting_pairs = list(filter(lambda coordpair: coordpair[1] != 0, grafting_pairs))
+    traversal_grafting_pairs.append(grafting_pairs)
+  return traversal_grafting_pairs
 
 
 class ZeroesGraftAndCountsMixer:
@@ -345,21 +347,12 @@ class ZeroesGraftAndCountsMixer:
     self.amounts_in_slots = amounts_in_slots
     self.n_elements = n_elements
     self.n_slots = n_slots
-    self._gaphole_position_list = None
-    self.graft_idx_positions = None
-    self._mask = None
-    self._graftzeroes_combination_list = None
     self.max_zeroes_size = self.n_slots - len(amounts_in_slots)
-    self.graft_slots_size = []  # len(graft_idx_positions)
-    # TO-DO: change from the HanoiLikeTowerPieceMover to the DecrescentCombinerZerografter
-    # self.hanoi_like_mover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes_size, nslots=self.graft_slots_size)
-    # self.hanoi_like_mover.process()
-    self.countdict = {}
-    self.gap_ranges_tuplelist = []
-    self.grafted_combs = []
-    self._next_gaphole = -1
-    # example [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
-    self._grafting_coordlist = None
+    self._grafting_pos_n_zeroes_travlist = None  # example [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
+    self._gaphole_position_list = None  # eg [1, 2]
+    self._graftzeroes_combination_list = None  # eg the HanoiLike [[3, 0], [2, 1], [1, 2], [0, 3]]
+    self._zerograft_strs = None
+
 
   @property
   def graftzeroes_combination_list(self):
@@ -370,13 +363,6 @@ class ZeroesGraftAndCountsMixer:
       hmover = pm.HanoiLikeTowerPieceMover(npieces=self.max_zeroes_size, nslots=self.n_gapholes)
       self._graftzeroes_combination_list = hmover.allcombs
     return self._graftzeroes_combination_list
-
-  @property
-  def grafting_coordlist(self):
-    self._grafting_coordlist = fuse_combination_list_w_poslist(
-      self.gaphole_position_list, self.graftzeroes_combination_list
-    )
-    return self._grafting_coordlist
 
   @property
   def n_gapholes(self):
@@ -424,28 +410,7 @@ class ZeroesGraftAndCountsMixer:
     return gaphole_combinations
 
   @property
-  def mask(self):
-    if self._mask is None:
-      basecomb = copy.copy(self.amounts_in_slots)
-      self._mask = []
-      if len(basecomb) > 0:
-        elem = basecomb[0]
-        del basecomb[0]
-        self._mask.append(elem)
-      for i in range(1, self.n_slots):
-        if i in self.graft_idx_positions:
-          self._mask.append(None)
-          continue
-        if len(basecomb) > 0:
-          elem = basecomb[0]
-          del basecomb[0]
-          self._mask.append(elem)
-        else:
-          break
-    return self._mask
-
-  @property
-  def graft_size_cmbs(self):
+  def grafting_pos_n_zeroes_travlist(self):
     """
     This property is a list of all possible combinations of zero graftings
       It uses object 'hanoi_like_mover' with its list 'traversal_combinations'
@@ -459,82 +424,41 @@ class ZeroesGraftAndCountsMixer:
         hanoi_comb [0, 3]
       ie the graft positions list, in the example above, is [[3, 0], [2, 1], [1, 2], [0, 3]]
     """
-    return self.hanoi_like_mover.traversal_combinations
-
-  def mix(self):
-    chunks = []
-    for hanoi_comb in self.graft_size_cmbs:
-      # print('hanoicomb', hanoi_comb)
-      hanoi_reversed_for_pop = list(reversed(hanoi_comb))
-      outstr = ''
-      for elem in self.mask:
-        if elem is None:
-          if len(hanoi_reversed_for_pop) == 0:
-            break
-          n_zeroes = hanoi_reversed_for_pop.pop()
-          if n_zeroes == 0:
-            continue
-          zeroes_str = '0' * n_zeroes
-          outstr += zeroes_str
-          continue
-        outstr += str(elem)
-      chunks.append(outstr)
-    return chunks
+    if self._grafting_pos_n_zeroes_travlist is None:
+      self._grafting_pos_n_zeroes_travlist = fuse_combination_list_w_poslist(
+        gaphole_position_list=self.gaphole_position_list, graftzeroes_combination_list=self.graftzeroes_combination_list
+    )
+    return self._grafting_pos_n_zeroes_travlist
 
   @property
-  def zerografting_pos_n_amt_tuplelist(self, countdict):
+  def zerograft_strs(self):
+    if self._zerograft_strs is None:
+      self._zerograft_strs = mount_zerografted_strs_w_grafting_coordlist(
+        grafting_coordlist=self.grafting_pos_n_zeroes_travlist, amounts_in_slots=self.amounts_in_slots
+      )
+    return self._zerograft_strs
+
+  def produce_the_zerografted_strs(self):
     """
-
-    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
-    combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
-    Args:
-      countdict:
-
+    Example:
+      amounts_in_slots = [3, 2, 1]
+      grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
     Returns:
 
     """
-
-    self.countdict = countdict
-    indices = self.countdict.keys()
-    sorted(indices)
-    prev_idx = -1
-    self.gap_ranges_tuplelist = []
-    while len(indices) > 0:
-      idx = indices.pop()
-      if prev_idx < 0:
-        prev_idx = idx
-        continue
-      if idx - prev_idx > 1:
-        trange = (prev_idx+1, idx-1)
-        self.gap_ranges_tuplelist.append(trange)
-
-  def graft_zeroes(self):
-    """
-
-    Returns:
-
-    """
-    grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
-    combstrs = mount_zerografted_strs_w_grafting_coordlist(grafting_coordlist, amounts_in_slots)
-
-    self.grafted_combs = []
-    indices = self.countdict.keys()
-    sorted(indices)
-    # countlist = [self.countdict[i] for i in indices]
-    out_str_combs = []
-    for comb in self.hanoi_like_mover.allcombs:
-      # patt = ''.join(comb)
-      for i, nzeroes in enumerate(comb):
-        zeroes_str = '0' * nzeroes
-        # trange = self.gap_ranges_tuplelist[i]
-        out_str_combs.append(zeroes_str)
+    combstrs = mount_zerografted_strs_w_grafting_coordlist(
+      grafting_coordlist=self.grafting_pos_n_zeroes_travlist, amounts_in_slots=self.amounts_in_slots
+    )
+    return combstrs
 
   def __str__(self):
-    outstr = f"""ZeroesGraftAndCountsMixer
-    gaphole_position_list={self.gaphole_position_list}
-     graftzeroes_combination_list={self.graftzeroes_combination_list}
-     grafting_coordlist={self.grafting_coordlist}
-    """
+    qtdzeroes = self.max_zeroes
+    outstr = f"""ZeroesGraftAndCountsMixer n_elem={self.n_elements} | n_slots={self.n_slots} | qtdzeroes={qtdzeroes}
+    amounts_in_slots={self.amounts_in_slots} | gaphole_position_list={self.gaphole_position_list}
+    graftzeroes_combination_list={self.graftzeroes_combination_list}
+    grafting_coordlist={self.grafting_pos_n_zeroes_travlist}
+    zerograft strs={self.zerograft_strs}
+"""
     return outstr
 
 
@@ -543,7 +467,7 @@ def adhoc_test():
   """
   basecomb, graft_idx_positions = [3, 2, 1], [1, 3]
   zg = ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, graft_idx_positions=graft_idx_positions)
-  chunks = zg.mix()
+  chunks = zg.produce_the_zerografted_strs()
   print('chunks', chunks, 'mask', zg.mask)
 
 
@@ -551,7 +475,7 @@ def adhoctest2():
   basecomb = [3, 1, 1, 1]
   n_slots = 6
   zg = ZeroesGraftAndCountsMixer(amounts_in_slots=basecomb, n_slots=n_slots)
-  chunks = zg.mix()
+  chunks = zg.produce_the_zerografted_strs()
   print('chunks', chunks, 'mask', zg.mask)
 
 
@@ -611,10 +535,22 @@ def adhoctest5():
   graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
   res = fuse_combination_list_w_poslist(gaphole_position_list, graftzeroes_combination_list)
   print(res)
+  fused = fuse_combination_list_w_poslist(
+    gaphole_position_list=gaphole_position_list, graftzeroes_combination_list=graftzeroes_combination_list
+  )
+  print('fused', fused)
+
+
+def adhoctest6():
+  amounts_in_slots = [3, 2, 1]
+  n_elements, n_slots = 6, 6
+  zg = ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
+  print(zg)
 
 
 if __name__ == '__main__':
   """
   list_dist_xysum_metric_thru_ms_history()
   """
+  adhoctest6()
   adhoctest5()
