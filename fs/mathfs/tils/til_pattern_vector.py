@@ -1,10 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
-Til.py
-'''
+#!/usr/bin/env python3
+"""
+fs/mathfs/tils/til_pattern_vector.py
+  Contains class TilPatternVector
+"""
 # import numpy, time, sys
 import os, sys
+import fs.mathfs.tils.til_element as te  # te.TilElement
 folder_relpath = os.path.dirname(__file__)
 folder_abspath = os.path.abspath(folder_relpath)
 app_root_abspath = folder_abspath [ : -len('maths2/frequencies') ]
@@ -26,177 +27,116 @@ import HistoryFrequency as hf
 
 
 
-class TilPatternVector():
-  '''
+class TilPatternVector:
+  """
   This class is a helper around Til Patterns.
   
   Objects can be created two ways:
-  
-  1) without the 'wordPattern' parameter
-  2) with the 'wordPattern' parameter
-  
-  
-  1) without the 'wordPattern' parameter
+    1) without the 'wordPattern' parameter
+    2) with the 'wordPattern' parameter
 
-    Eg.
+  1) without the 'wordPattern' parameter
+    Eg
     1.1) 1233 has 12 permutions
     1.2) the complete set of til pattern for patternSize=10 and soma=6
          is 5005
     
   2) with the 'wordPattern' parameter
-  
-    Eg. 'xyyzzzzzzz' ie 1 x, 2 y's and 7 z's
+    Eg 'xyyzzzzzzz' ie 1 x, 2 y's and 7 z's
     2.1) This is the same as 1223333333 or 0112222222
     2.2) It has 360 permutations
-  
-  '''
+  """
 
-  def __init__(self, patternSize, soma, wordPattern=None):
-    self.wordPattern = wordPattern
-    if wordPattern == None:
-      self.patternSize = patternSize
+  def __init__(self, pattern_size, soma, word_pattern=None):
+    self.wordPattern = word_pattern
+    if word_pattern is None:
+      self.patternSize = pattern_size
       self.soma   = soma
       self.vector = None
-      self.initVector()
+      self.init_vector()
     else:
-      self.initVectorViaWordPattern(wordPattern)
+      self.init_vector_via_word_pattern(word_pattern)
 
-  def initVector(self):
+  def init_vector(self):
     self.vector = fsPerm.getTilPatternsFor(self.patternSize, self.soma)
   
-  def initVectorViaWordPattern(self, wordPattern):
+  def init_vector_via_word_pattern(self, word_pattern):
     # second case, a initialPattern was entered
-    if type(wordPattern) == list:
-      if len(wordPattern) > 0:
-        wordPattern = wordPattern[0]
-    if type(wordPattern) <> str:
-        errorMsg = 'wordPattern should be a str <> ' + str(wordPattern)
-        raise ValueError, errorMsg
-    if len(wordPattern) == 0:
-      errorMsg = 'wordPattern is empty. It should have at least one char'
-      raise ValueError, errorMsg
-    chrDict = {}
-    for c in wordPattern:
-      chrDict[c]=1
-    self.soma = sum(range(len(chrDict)))
-    self.patternSize = len(wordPattern)
-    listPattern = [wordPattern]
-    self.vector = fsPerm.get_permutations(listPattern)
+    if type(word_pattern) == list:
+      if len(word_pattern) > 0:
+        word_pattern = word_pattern[0]
+    if type(word_pattern) != str:
+        errmsg = 'wordPattern should be a str <> ' + str(word_pattern)
+        raise ValueError(errmsg)
+    if len(word_pattern) == 0:
+      errmsg = 'wordPattern is empty. It should have at least one char'
+      raise ValueError(errmsg)
+    chr_dict = {}
+    for c in word_pattern:
+      chr_dict[c] = 1
+    self.soma = sum(range(len(chr_dict)))
+    self.patternSize = len(word_pattern)
+    list_pattern = [word_pattern]
+    self.vector = fsPerm.get_permutations(list_pattern)
 
-  def getVectorSize(self):
+  def get_vector_size(self):
     if self.vector:
       return len(self.vector)
     return 0
   
-  def getIndex(self, pattern):
+  def get_index(self, pattern):
     if len(pattern) == self.patternSize:
       return self.vector.index(pattern)
     return -1
   
-  def loadDict(self, historyPatterns, baseObj):
+  def load_dict(self, history_patterns, baseObj):
     #getDBField('pattern10')
-    for pattern in historyPatterns:
+    for pattern in history_patterns:
       pattern
       pass
   
   def __str__(self):
-    outStr = 'TilPatternVector(patternSize=%d soma=%d vectorSize=%d)' %(self.patternSize, self.soma, self.getVectorSize())
+    out_str = ('TilPatternVector(patternSize=%d soma=%d vectorSize=%d)'
+               %(self.patternSize, self.soma, self.get_vector_size()))
     if self.wordPattern:
-      outStr += ' wordPattern=%s' %(self.wordPattern)
-    return outStr
+      out_str += ' wordPattern=%s' % self.wordPattern
+    return out_str
 
-def testAdHocTilPatternVector():
-  patternSize = 5; soma = 6
-  tpvObj = TilPatternVector(patternSize, soma)
-  print 'tpvObj', tpvObj 
-#testAdHocTilPatternVector()
+def test_ad_hoc_til_pattern_vector():
+  pattern_size, soma = 5, 6
+  tpv_obj = TilPatternVector(pattern_size, soma)
+  print('tpv_obj', tpv_obj)
+  # test_ad_hoc_til_pattern_vector()
 
 
-def spread2DListTo1DList(list2D):
-  newSet = []
-  for list1D in list2D:
+def spread2_d_list_to1_d_list(list2_d):
+  new_set = []
+  for list1D in list2_d:
     for element in list1D:
-      newSet.append(element)
-  return newSet
+      new_set.append(element)
+  return new_set
 
-def sumUpTilPattern(pattern):
+def sum_up_til_pattern(pattern):
   soma=0
   for c in pattern:
     soma+=int(c)
   return soma
 
-class TilElement():
-  '''
-  This class covers a Til Element
 
-  A Til Element is instantiated with a pattern (eg '03021')
-  From any pattern, length and sum can be derived.  Length is the pattern string size
-    ( in the example above len('03021')=5 )
-    and sum is the summing up of its digits (in the example above 0+3+0+2+1=6)
+def test_til_element():
+  til_element = te.TilElement('03021')
+  work_sets_with_quantities = til_element.get_worksets_w_quantities()
+  for ws in work_sets_with_quantities:
+    print(ws[0], 'size', len(ws[0]), 'ncomb', ws[1])  # work_sets_with_quantities
+  #test_til_element()
   
-  It implements a method called getWorkSetsWithQuantities() which does the following:
-    it gets the frequency-til-positioned dezenas and joins this set with the quantity expressed in the digit
-    
-    Let's see this in the example above '03021'
-    -- 0, the first digit, means 0 dezenas in the first quintil
-    -- 3 means 3 dezenas in the second quintil which may have x dezenas altogether
-    -- the pair (tuple) to form is this set of x dezenas, together with the quantity 3
-    -- this tuple will be used elsewhere for combinations of this til(size=5, index=1) 3 by 3
 
-    index 1 is because pattern[1]=3
-    
-    So this method is applied in a calling routine that produces these combinations
-    
-  '''
+def adhoctest():
+  test_til_element()
 
-  def __init__(self, pattern):
-    '''
-    init() set the attributes pattern and its two derivatives length and sum
-    '''
-    self.pattern = pattern
-    self.setLengthAndSum()
-
-  def setLengthAndSum(self):
-    '''
-    called by init() to set the attributes derived by pattern, ie length and sum
-    '''
-    self.length = len(self.pattern)
-    self.sum    = sumUpTilPattern(self.pattern)
-
-  def getWorkSetsWithQuantities(self):
-    '''
-    This method returns a list of tuples
-    -- the 2D-tuple has 1) a list of dezenas and 2) quantity
-    -- -- the dezenas are picked up via method tilObj.getTilSets() given the til index (eg. 0123 are indices for the four quartils)
-    -- -- the quantity is the digit in the pattern itself (eg. 03021 says 3 dezenas in quintil 2, 2 dezenas in quintil 4 and 1 dezena in quintil 5)    
-    '''
-    workSetsWithQuantities = []
-    tilObj = TilMaker(self.length)
-    for i in range(len(self.pattern)):
-      quantity = int(self.pattern[i])
-      if quantity > 0:
-        dezenas = tilObj.getTilSets()[i]
-        workSetWithQuantity = (dezenas, quantity)
-        workSetsWithQuantities.append(workSetWithQuantity)
-    return workSetsWithQuantities
-
-def testTilElement():
-  tilElement = TilElement('03021')
-  workSetsWithQuantities = tilElement.getWorkSetsWithQuantities()
-  for ws in workSetsWithQuantities:
-    print ws[0], 'size', len(ws[0]), 'ncomb', ws[1] # workSetsWithQuantities
-#testTilElement()
-  
-def adhoc_test():
-  testTilElement()
-
-def look_for_adhoctest_arg():
-  for arg in sys.argv:
-    if arg.startswith('-t'):
-      adhoc_test()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  adhoctest()
 
 # ================================================================================
 # ========= Below: Older Alternatives =========

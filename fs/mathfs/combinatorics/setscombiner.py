@@ -359,7 +359,7 @@ class SetsCombinerWithTils(SetsCombiner):
     self.combineSets() # a parent class's method
 
   def unpack_til_obj(self):
-    self.workSetsWithQuantities = self.til_element.getWorkSetsWithQuantities()
+    self.workSetsWithQuantities = self.til_element.get_worksets_w_quantities()
 
 def create_work_sets_with_indices_combiner(work_set, ic_obj):
   work_sets = []

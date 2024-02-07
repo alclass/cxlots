@@ -6,8 +6,6 @@ TilPattern.py
 import sys
 
 import __init__
-__init__.setlocalpythonpath()
-
 import fs.jogosfs.til_functions as ffTil
 
 class TilDefiner(object):
@@ -132,8 +130,8 @@ class TilPattern(TilDefiner):
       then lowercase a to z are used.
   '''
 
-  def __init__(self, n_slots=None, soma=None):
-    super(TilPattern, self).__init__(n_slots, soma)
+  def __init__(self, elemsum=None, n_slots=None):
+    super(TilPattern, self).__init__(n_slots, elemsum)
     self.wpattern = None
     #self.tilnumber = int(tilnumber)
     #self.freqsoma  = int(freqsoma)
@@ -144,27 +142,30 @@ class TilPattern(TilDefiner):
 
   def is_self_consistent(self):
     if len(self.wpattern) != self.n_slots:
-      error_msg = 'len(self.wpattern)=%d != self.tilnumber=%d' %(len(self.wpattern), self.n_slots)
-      raise TypeError, error_msg 
+      errmsg = 'len(self.wpattern)=%d != self.tilnumber=%d' %(len(self.wpattern), self.n_slots)
+      raise TypeError(errmsg)
     freqsoma_to_compare = 0
     for char in self.wpattern:
       freqsoma_to_compare += int(char)
     if self.soma != freqsoma_to_compare:
-      error_msg = 'self.freqsoma=%d != freqsoma_to_compare=%d' %(self.soma, freqsoma_to_compare)
-      raise TypeError, error_msg
+      errmsg = 'self.freqsoma=%d != freqsoma_to_compare=%d' %(self.soma, freqsoma_to_compare)
+      raise TypeError(errmsg)
     
   def __eq__(self, tilpattern):
-    # DeMorgan to improve performance if case wpattern differs right away (believed to be most of the cases in filtering processing)
-    if tilpattern == None:
+    # DeMorgan to improve performance if case wpattern differs right away
+    # (believed to be most of the cases in filtering processing)
+    if tilpattern is None:
       return False
     if (self.wpattern != tilpattern.wpattern or  
-          self.n_slots != tilpattern.n_slots or 
-           self.soma != tilpattern.soma):
+        self.n_slots != tilpattern.n_slots or
+        self.soma != tilpattern.soma
+    ):
       return False
     return True
   
   def __str__(self):
     return "'<TilPattern(%d,%d,'%s')>" %(self.n_slots, self.soma, self.wpattern)
+
 
 class TilAllPatternsBuffer(object):
   
@@ -182,23 +183,23 @@ class TilAllPatternsBuffer(object):
     self.add_alltilpatterns_to_buffer(tildefiner, alltilpatterns)
     return alltilpatterns
 
+
 tilallpatterns = None
+
+
 def get_tilallpatterns(tildefiner):
-  if tilallpatterns == None:
+  if tilallpatterns is None:
     tilallpatterns = TilAllPatternsBuffer()
   return tilallpatterns(tildefiner) 
 
 
-def adhoc_test():
-  print 'list_dist_xysum_metric_thru_ms_history()'
-  tilpattern = TilPattern(5, 6)
+def adhoctest():
+  print('list_dist_xysum_metric_thru_ms_history()')
+  elemsum, n_slots = 6, 12
+  tilpattern = TilPattern(elemsum=elemsum, n_slots=n_slots)
   tilpattern.set_wpattern('02220')
-  print 'tilpattern', tilpattern
+  print('tilpattern', tilpattern)
   
-def look_for_adhoctest_arg():
-  for arg in sys.argv:
-    if arg.startswith('-t'):
-      adhoc_test()
 
 if __name__ == '__main__':
-  look_for_adhoctest_arg()
+  adhoctest()
