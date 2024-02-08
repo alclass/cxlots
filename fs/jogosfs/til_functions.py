@@ -3,7 +3,6 @@
 fs/jogosfs/til_functions.py
 
 """
-import sys
 import fs.mathfs.combinatorics.combinatoric_algorithms as combinatorics
 
 
@@ -72,10 +71,17 @@ def get_all_possible_til_patterns_for(elemsum=6, n_slots=5):
     else:
       return []
   subtokens = combinatorics.mount_all_integer_partitions_for(elemsum)
+  # [[6], [5, 1], [4, 2], [4, 1, 1], [3, 3], [3, 2, 1], [3, 1, 1, 1],
+  # [2, 2, 2], [2, 2, 1, 1], [2, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]]
   subtokens = ["".join(map(str, subtoken)) for subtoken in subtokens]
+  # ['6', '51', '42', '411', '33', '321', '3111', '222', '2211', '21111', '111111']
   subtokens = combinatorics.fill_right_zeroes_to_eachstr_in_list(subtokens, n_slots)
+  # ['60000', '51000', '42000', '41100', '33000', '32100', '31110', '22200', '22110', '21111', '111111']
   subtokens = combinatorics.filter_out_strings_greater_than_size(subtokens, n_slots)
-  return combinatorics.get_permutations(subtokens)
+  # in the case n_slots=5, only the last one ('111111') is removed because it takes 6 slots
+  subtokens = combinatorics.get_permutations(subtokens)
+  # ['00006', '00060', '00600', '06000', '60000', '00015', '00051', '00105', '00150', ..., '12111', '21111']
+  return subtokens
 
 
 def adhoctest():

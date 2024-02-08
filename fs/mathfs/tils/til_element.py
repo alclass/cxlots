@@ -31,18 +31,34 @@ def sum_up_til_pattern(pattern):
 
 class TilElement:
   """
-  This class covers a Til Element
+  This class covers a Til Element.
 
-  A Til Element is instantiated with a pattern (eg '03021')
-  From any pattern, attributes n_slots (formerly length) and elemsum can be derived.
-    n_slots is the pattern's string size ( in the example above len('03021')=5
+  The 'til' in the name comes from the idea (or paradigm or entity or...) of quartil, percentil etc.
+  The til then is a sort of instanced n-til, when n is an integer ranging from 2 to 100 (or even more than 100).
+    It will be quartil (4-til) if the frequencies are in four groups,
+    a sixtil (6-til) if frequencies are in six groupings,
+    a tentil (10-til), if frequencies are in ten groups, a percentil (100-til) if in one hundred groupings.
+  So, a 'til' is a frequency placement of a datum among others in a sample (or a population).
+  For instance, in quartils:
+    q1 the first quartil takes all elements (items) that belong to the first 25% most frequent;
+    q2 the second quartil encompasses all elements (items) that belong to the second 25%
+      (or within 25% to 50%) most frequent;
+    q3 the third quartil considers all elements (items) that belong to the third 25% (or within 50% to 75%);
+    q4 the fourth and last quartil engulfs the elements (items) that belong to the fourth 25% (or within 75% to 100%);
+
+  So, the til-metric ends up being more than a metric, in fact, it's a statistic,
+    ie a measure that depends on sample or population.
+
+  A Til Element is instantiated with a pattern (eg '03021'): the numbers represent quantities or frequencies.
+  From any pattern (these numbers), the two attributes n_slots (formerly length) and elemsum can be derived.
+    n_slots is the pattern's string size (in the example above len('03021')=5
     and sum is the summing up of its digits (in the example above 0+3+0+2+1=6)
   
   It implements a method called get_worksets_w_quantities() which does the following:
     it gets the frequency-til-positioned dezenas and joins this set with the quantity
-    expressed in the digit
+    expressed in the digit.
     
-    Let's see this in the example above '03021'
+    Let's see this in the example above '03021':
     -- 0, the first digit, means 0 dezenas in the first quintil
     -- 3 means 3 dezenas in the second quintil which may have x dezenas altogether
     -- the pair (tuple) to form is this set of x dezenas, together with the quantity 3
