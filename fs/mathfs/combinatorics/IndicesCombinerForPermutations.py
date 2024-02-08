@@ -4,6 +4,7 @@ fs/mathfs/combinatorics/IndicesCombinerForPermutations.py
   Contains the class IndicesCombinerForPermutations
 
 History Notice:
+
   In previous versions of this system, the main class IndicesCombiner had a paramater
     called overlap (either True or False) that represented one of two schemes,
     these two are:
@@ -418,24 +419,13 @@ class IndicesCombinerForPermutations:
     Moves iArray to its previous consistent position and returns the array
     When the first one is current, None will be returned
     """
-    if self.curr_comb == self.comb_before_first:
-      return self.curr_comb
-    if self.curr_comb == self.first_comb:
-      self.curr_comb = list(self.comb_before_first)
-      return self.curr_comb
-    if self.curr_comb is None:  # this convention may be reviewd later one
-      return self.move_curr_comb_to_last_or_fim()
-    pos = self.n_slots - 1
-    if self.overlap:
-      return copy.copy(self.minus_one_overlap(pos))
-    else:
-      return copy.copy(self.minus_one_non_overlap(pos))
+    pass
 
   def next_under_overlap(self):
     pass
 
   def next_under_nonoverlap(self):
-    self.curr_comb = ICf.add_one(self.curr_comb, up_limit=self.greatest_int_in_comb)
+    self.curr_comb = next_in_overlap(self.curr_comb)
     return self.curr_comb
 
   def next(self, pos=-1):
@@ -470,11 +460,63 @@ class IndicesCombinerForPermutations:
     return out_str
 
 
-def adhoc_test():
+def correct_right_side(alist, pos):
   pass
+
+
+def next_in_overlap(alist, n_elements, pos=None):
+  """
+  n_elements=4 | n_slots=2
+  00 01 02 03 11 12 13 22 23 33 : total=10
+  Notice that the combination here follows the rule
+    xy where x <= y, ie combinations such as 10 and 21 are not this rule-compliant
+  Curiosity: the overlap-mode is the composed of the "combinations"
+    plus "xx" where the two digits are repeated (00 11 22 33)
+
+  """
+  n_slots = len(alist)
+  pos = n_slots - 1 if pos is None else pos
+  upperlimit = n_elements - 1
+  # min_vals = [0] * n_slots
+  max_vals = [upperlimit] * n_slots
+  max_val_at_pos = max_vals[pos]
+  if alist == max_vals:
+    return None
+  val_at_pos = alist[pos]
+  if val_at_pos < max_val_at_pos:
+    val_at_pos += 1
+    alist[pos] = val_at_pos
+    correct_right_side(alist, pos)
+    return alist
+  # vai um if possible
+  pos -= 1
+  return next_in_overlap(alist, n_elements, pos)
+
+
+def gen_overlap_combs(n_elements, n_slots):
+  first = '0'*len(n_slots)
+  curr = list(first)
+  while curr is not None:
+    print(curr)
+    curr = next_in_overlap(curr)
+    yield curr
+  return None
+
+
+def adhoctest2():
+  exp_overlap_combs = ['00', '01', '02', '03', '11', '12', '13', '22', '23', '33']
+
+
+def adhoctest():
+  exp_overlap_combs = ['00', '01', '02', '03', '11', '12', '13', '22', '23', '33']
+  alist, n_elements = [0, 1], 4
+  for i in range(20):
+    previous = list(alist)
+    alist = next_in_overlap(alist, n_elements, pos=None)
+    print(previous, alist)
 
 
 if __name__ == '__main__':
   """
   """
-  adhoc_test()
+  adhoctest()
