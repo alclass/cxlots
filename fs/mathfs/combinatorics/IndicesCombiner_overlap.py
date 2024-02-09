@@ -10,77 +10,6 @@ import sys
 """
 
 
-def correct_remaining_to_the_right_overlap_case(self, pos):
-  """
-  Recursive method
-    When vaiUm() happens, the logical consistency of iArray should be kept.
-    In a way, it's similar to the adding algorithm we learn at school.
-  Example:
-    vaiUm(pos=1) for [0,3,3] will result [0,4,3]
-  This needs the "goes one" to [0,4,4]
-  """
-  if pos+1 >= self.n_slots:
-    return
-  if self._combset[pos] > self.greatest_int_in_comb:
-    errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.greatest_int_in_comb, pos, self._combset[pos])
-    errmsg += str(self)
-    raise ValueError(errmsg)
-  self._combset[pos + 1] = self._combset[pos]
-  return self.correct_remaining_to_the_right_overlap_case(pos + 1)
-
-
-def correct_remaining_to_the_right_non_overlap_case(self, pos):
-  """
-  Recursive method
-    When vaiUm() happens, the logical consistency of iArray should be kept.
-    In a way, it's similar to the adding algorithm we learn at school.
-  Example:
-    vaiUm(pos=1) for [0,3,4] will result [0,4,4]
-    This needs the "goes one" to [0,4,5]
-  """
-  if pos+1 >= self.n_slots:
-    return
-  # notice back_pos here is POSITIVE ie eg. [0,1,3,...,10] back_pos's are [10,9,...,0]
-  back_pos = self.n_slots - pos - 1
-  if self._combset[pos] > self.greatest_int_in_comb - back_pos:
-    errmsg = 'Index in Combiner exceeds upLimit(=%d). There is probably a bug. self.iArray[%d]=%d :: ' %(self.greatest_int_in_comb, pos, self._combset[pos])
-    errmsg += str(self)
-    raise ValueError(errmsg)
-  self._combset[pos + 1] = self._combset[pos] + 1
-  return self.correct_remaining_to_the_right_non_overlap_case(pos + 1)
-
-
-def foward_n_positions(self, pos=-1):  # , nOfPos=-1
-  """
-  Left-shifts curr_comb (formerly iArray)
-  Eg
-    overlap=True, size=3, upLimit=15
-      [1,1,1].foward_n_positions(1) ==>> [2,2,2]
-    overlap=False, size=4, upLimit=33
-      [1,2,3,4].foward_n_positions(2) ==>> [1,3,4,5]
-  """
-  if pos == -1:
-    pos = self.n_slots - 1
-  if pos == 0:
-    # well, it's the last one, a left-shift can't happen,
-    # so it goes to the last one
-    return self.move_curr_comb_to_last_or_fim()  # iArrayToDiscard = self.move_to_last_one()
-  if self.overlap:
-    if self._combset[pos - 1] == self.greatest_int_in_comb:
-      return self.foward_n_positions(pos - 1)
-    self._combset[pos - 1] += 1
-    self.correct_remaining_to_the_right_overlap_case(pos - 1)
-    return self._combset
-  else:
-    pos_ant = pos - 1
-    back_pos_ant = self.n_slots - pos_ant - 1
-    if self._combset[pos_ant] == self.greatest_int_in_comb - back_pos_ant:
-      return self.foward_n_positions(pos - 1)
-    self._combset[pos - 1] += 1
-    self.correct_remaining_to_the_right_non_overlap_case(pos - 1)
-    return self._combset
-
-
 def vai_um_in_place_overlap_case(self, pos):
   """
   Case of "goes one" when overlap=True
@@ -145,28 +74,7 @@ def minus_one_overlap(self, pos):
     return self._combset
 
 
-def minus_one_non_overlap(self, pos):
-  """
-  Inner implementation of previous() for the overlap=False case
-  see @previous()
-  """
-  if pos == 0:
-    if self._combset[pos] > 0:
-      self._combset[pos] -= 1
-      return self._combset
-  if self._combset[pos] == pos:
-    self.move_curr_comb_to_first_or_ini()
-    return None
-  if self._combset[pos - 1]+1 == self._combset[pos]:
-    debit_to_up_limit = self.n_slots - pos - 1
-    self._combset[pos] = self.greatest_int_in_comb - debit_to_up_limit
-    return self.minus_one_non_overlap(pos - 1)
-  else:
-    self._combset[pos] -= 1
-  return self._combset
-
-
-def next_under_overlap(self):
+def next_under_overlap(self, pos):
   # check before first element
   if self._combset is not None and self._combset == [-1] * self.n_slots:
     # switch it off independently of next if's result
@@ -195,15 +103,6 @@ def next_under_nonoverlap(self):
   self._combset = ICf.add_one(self._combset, up_limit=self.greatest_int_in_comb)
   return self._combset
 
-def next(self, pos=-1):
-  """
-  Moves curr_comb position to the next consistent one and returns it
-  When the last one is current, a None will be returned
-  (thus, None becomes here a kind of convention of "after the last" or "parked after the last")
-  """
-  if not self.overlap:
-    return self.next_under_nonoverlap()
-  return self.next_under_nonoverlap()
 
 def next_zeroless(self):
   """
@@ -229,6 +128,7 @@ def next_zeroless(self):
     return zeroless
   return self._combset
 
+
 def get_first_elements(self, upto=10):
   if upto > self.total_cmbs:
     upto = self.total_cmbs
@@ -239,6 +139,7 @@ def get_first_elements(self, upto=10):
       return
     yield i_array
     i_array = other.next()
+
 
 def __str__(self):
   """
@@ -270,52 +171,39 @@ def all_sets(self):
       work_set = list(s)
   return array
 
-def gen_all_sets(self):
-  """
-  This method, though it's still here, should be used with caution in the sense the it's memory-hungry, so to say.
-  It while-loops all self.next()'s into an output array.
-  Because output may become very big, according to the size involved the process,
-    a better approach is to "yield" each "work_set", one at a time, without buffering them into the "output array"
-    This better approach is done by the following next method gen_all_sets()
-  """
-  work_set = self.first
-  while work_set:
-    yield list(work_set)  # hard-copy
-    work_set = self.next()
-
-def recurse_indices_with_overlap(self, p_pos):
-  """
-  This is an inner recursive help method
-  For the case when overlap=True
-  """
-  if p_pos == 0 and self._combset[p_pos] + 1 > self.greatest_int_in_comb:
-    return None
-  if self._combset[p_pos] + 1 > self.greatest_int_in_comb:
-    if self._combset[p_pos - 1] + 1 > self.greatest_int_in_comb:
-      # self.iArray[pos]=self.iArray[pos-1]
-      return self.recurse_indices_with_overlap(p_pos - 1)
-    self._combset[p_pos - 1] += 1
-    self._combset[p_pos] = self._combset[p_pos - 1]
-    return self._combset[p_pos - 1]
-  return self._combset[p_pos] + 1
-
-def recurse_indices_without_overlap(self, p_pos):
-  """
-  This is an inner recursive help method
-  For the case when overlap=False
-  """
-  if p_pos is None:
-    return None
-  if p_pos == 0 and self._combset[p_pos] + 1 > self.greatest_int_in_comb - (self.n_slots - p_pos - 1):
-    return None
-  if self._combset[p_pos] + 1 > self.greatest_int_in_comb - (self.n_slots - p_pos - 1):
-    tmp = self.recurse_indices_without_overlap(p_pos - 1)
-    if tmp is None:
+  def recurse_indices_with_overlap(self, p_pos):
+    """
+    This is an inner recursive help method
+    For the case when overlap=True
+    """
+    if p_pos == 0 and self._combset[p_pos] + 1 > self.greatest_int_in_comb:
       return None
-    self._combset[p_pos] = tmp + 1
+    if self._combset[p_pos] + 1 > self.greatest_int_in_comb:
+      if self._combset[p_pos - 1] + 1 > self.greatest_int_in_comb:
+        # self.iArray[pos]=self.iArray[pos-1]
+        return self.recurse_indices_with_overlap(p_pos - 1)
+      self._combset[p_pos - 1] += 1
+      self._combset[p_pos] = self._combset[p_pos - 1]
+      return self._combset[p_pos - 1]
+    return self._combset[p_pos] + 1
+
+  def recurse_indices_without_overlap(self, p_pos):
+    """
+    This is an inner recursive help method
+    For the case when overlap=False
+    """
+    if p_pos is None:
+      return None
+    if p_pos == 0 and self._combset[p_pos] + 1 > self.greatest_int_in_comb - (self.n_slots - p_pos - 1):
+      return None
+    if self._combset[p_pos] + 1 > self.greatest_int_in_comb - (self.n_slots - p_pos - 1):
+      tmp = self.recurse_indices_without_overlap(p_pos - 1)
+      if tmp is None:
+        return None
+      self._combset[p_pos] = tmp + 1
+      return self._combset[p_pos]
+    self._combset[p_pos] += 1
     return self._combset[p_pos]
-  self._combset[p_pos] += 1
-  return self._combset[p_pos]
 
 
 def adhoc_test():

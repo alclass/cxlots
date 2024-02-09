@@ -115,15 +115,19 @@ class TestCase1(unittest.TestCase):
     amounts_in_slots = [6]
     n_elements, n_slots = 6, 6
     zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
-    # 1 graftzeroes_combination_list
+    # 1 gapholes
+    expected_gaphole_position_list = []
+    returned_gaphole_position_list = zg.gaphole_position_list
+    self.assertEqual(expected_gaphole_position_list, returned_gaphole_position_list)
+    # 2 graftzeroes_combination_list
     expected_graftzeroes_combination_list = []
     returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
     self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
-    # 2 grafting_pos_n_zeroes_travlist
+    # 3 grafting_pos_n_zeroes_travlist
     expected_grafting_pos_n_zeroes_travlist = []
     returned_grafting_pos_n_zeroes_travlist = zg.grafting_pos_n_zeroes_travlist
     self.assertEqual(expected_grafting_pos_n_zeroes_travlist, returned_grafting_pos_n_zeroes_travlist)
-    # 3 zerografted_strs
+    # 4 zerografted_strs
     expected_zerografted_strs = []
     returned_grafted_strlist = zg.zerograft_strs
     self.assertEqual(expected_zerografted_strs, returned_grafted_strlist)
@@ -135,9 +139,19 @@ class TestCase1(unittest.TestCase):
     """
     amounts_in_slots = [5, 1]  # this means 5 elements in one row and 1 in another
     zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
+    # 1 gapholes
+    expected_gaphole_position_list = [1]
+    returned_gaphole_position_list = zg.gaphole_position_list
+    self.assertEqual(expected_gaphole_position_list, returned_gaphole_position_list)
+    # 2 graftzeroes_combination_list
     expected_graftzeroes_combination_list = [[4]]
     returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
     self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
+    # 3 grafting_pos_n_zeroes_travlist
+    expected_grafting_pos_n_zeroes_travlist = [[(1, 4)]]
+    returned_grafting_pos_n_zeroes_travlist = zg.grafting_pos_n_zeroes_travlist
+    self.assertEqual(expected_grafting_pos_n_zeroes_travlist, returned_grafting_pos_n_zeroes_travlist)
+    # 4 zerografted_strs
     expected_grafted_strlist = ['500001']
     returned_grafted_strlist = zg.zerograft_strs
     self.assertEqual(expected_grafted_strlist, returned_grafted_strlist)
@@ -149,33 +163,46 @@ class TestCase1(unittest.TestCase):
     """
     amounts_in_slots = [4, 1, 1]
     zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
+    # 1 gapholes
+    expected_gaphole_position_list = [1, 2]
+    returned_gaphole_position_list = zg.gaphole_position_list
+    self.assertEqual(expected_gaphole_position_list, returned_gaphole_position_list)
+    # 2 graftzeroes_combination_list
     expected_graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
     returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
     self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
+    # 3 grafting_pos_n_zeroes_travlist
     expected_grafting_pos_n_zeroes_travlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
     returned_grafting_pos_n_zeroes_travlist = zg.grafting_pos_n_zeroes_travlist
     self.assertEqual(expected_grafting_pos_n_zeroes_travlist, returned_grafting_pos_n_zeroes_travlist)
+    # 4 zerografted_strs
     expected_zerografted_strs = ['400011', '400101', '401001', '410001']
     returned_grafted_strlist = zg.zerograft_strs
     self.assertEqual(expected_zerografted_strs, returned_grafted_strlist)
-
     # Hypothesis 4
     """
     amounts=[4, 2], gapholes=[1], zerograft_comblist=[[4]]
     ne=6, ns=6, coords=[[(1, 4)]]
     zerografted_strs = ['400002']    
     """
-    amounts_in_slots = [4, 1, 1]  # this means 4 elements in one row, 1 in another, 1 in yet another
+    amounts_in_slots = [4, 2]  # this means 4 elements in one row, 1 in another, 1 in yet another
     zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
-    # t1 test mask
+    # 1 gapholes
+    expected_gaphole_position_list = [1]
+    returned_gaphole_position_list = zg.gaphole_position_list
+    self.assertEqual(expected_gaphole_position_list, returned_gaphole_position_list)
+    # 2 graftzeroes_combination_list
     expected_graftzeroes_combination_list = [[4]]
-    expected_grafting_coordlist = [[(1, 4)]]
-    expected_zerografted_strs = ['400011', '400101', '401001', '410001']
-    # self.assertEqual(expected_mask, returned_mask)
-    # self.assertEqual(expected_grafted_strlist, returned_grafted_strlist)
+    returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
+    self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
+    # 3 grafting_pos_n_zeroes_travlist
+    expected_grafting_pos_n_zeroes_travlist = [[(1, 4)]]
+    returned_grafting_pos_n_zeroes_travlist = zg.grafting_pos_n_zeroes_travlist
+    self.assertEqual(expected_grafting_pos_n_zeroes_travlist, returned_grafting_pos_n_zeroes_travlist)
+    # 4 zerografted_strs
+    expected_zerografted_strs = ['400002']
     returned_grafted_strlist = zg.zerograft_strs
     self.assertEqual(expected_zerografted_strs, returned_grafted_strlist)
-
     # Hypothesis 6
     """
     amounts=[3, 2, 1], gapholes=[1, 2], comblist=[[3, 0], [2, 1], [1, 2], [0, 3]]
@@ -185,16 +212,19 @@ class TestCase1(unittest.TestCase):
     amounts_in_slots = [3, 2, 1]
     n_elements, n_slots = 6, 6
     zg = zgmx.ZeroesGraftAndCountsMixer(amounts_in_slots=amounts_in_slots, n_elements=n_elements, n_slots=n_slots)
-    # t1 test mask
-    expected_graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
-    returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
-    self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
+    # 1 gapholes
     expected_gaphole_position_list = [1, 2]
     returned_gaphole_position_list = zg.gaphole_position_list
     self.assertEqual(expected_gaphole_position_list, returned_gaphole_position_list)
+    # 1 graftzeroes_combination_list
+    expected_graftzeroes_combination_list = [[3, 0], [2, 1], [1, 2], [0, 3]]
+    returned_graftzeroes_combination_list = zg.graftzeroes_combination_list
+    self.assertEqual(expected_graftzeroes_combination_list, returned_graftzeroes_combination_list)
+    # 2 grafting_pos_n_zeroes_travlist
     expected_grafting_coordlist = [[(1, 3)], [(1, 2), (2, 1)], [(1, 1), (2, 2)], [(2, 3)]]
     returned_grafting_coordlist = zg.grafting_pos_n_zeroes_travlist
     self.assertEqual(expected_grafting_coordlist, returned_grafting_coordlist)
+    # 3 zerografted_strs
     expected_zerografted_strs = ['300021', '300201', '302001', '320001']
     returned_grafted_strlist = zg.zerograft_strs
     self.assertEqual(expected_zerografted_strs, returned_grafted_strlist)

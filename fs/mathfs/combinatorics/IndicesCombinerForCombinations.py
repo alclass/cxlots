@@ -6,7 +6,7 @@ fs/mathfs/combinatorics/IndicesCombinerForCombinations.py
 
 History Notice:
   In previous versions of this system, the main class IndicesCombiner had a paramater
-    called overlap (either True or False) that represented one of two schemes, these two are.
+    called overlap (either True or False) that represented one of two schemes, these two are:
       overlap True meant an ascending ordered permutation
         example: [0, 0, 0], [0, 0, 1], ..., [3, 3, 3]
       overlap False meant an ascending ordered combination
@@ -16,7 +16,8 @@ History Notice:
     the class was split into two, one for the overlap case and the other for the not-overlap.
 
 As a side notice, the 'technique' of the lexicographic index, at the time of this writing,
-   is known only for the combination case (ie, the non-overlap case mentioned here).
+   was known only for the combination case (ie, the non-overlap case mentioned here which
+   is, in fact, a lexicographical combination).
 In time, we hope to find out a 'technique' for the lexicographic index for the overlap case
 
 @see also as a reference: http://en.wikipedia.org/wiki/Combinadic
@@ -89,6 +90,17 @@ class IndicesCombinerForCombinations:
   [0, 0, 1]   [0, 0, 2]   [0, 0, 3]   [0, 0, 4]   [0, 0, 5]
   [0, 1, 1]   [0, 1, 2]   [0, 1, 3]   [0, 1, 4]   [0, 1, 5]
   [0, 2, 2] ... the last one is [5,5,5] after that, a None will be returned
+
+Obs:
+  looking at the evolution of the sets above, two things are observed, ie:
+
+  o1) the combinations follow an ascending order, ie 001 < 002 < ... < 011 < 012 < ... < 022 < ... < 555;
+
+  o2) visually, the combinations above (from 000 to 555) are numbers in base 6,
+    the only difference is the filling-in of left zeroes;
+
+  o3) because o2, the overlap term will be dropped and this class will be named
+     something like 'NumberSystemWithLeftZeroes'
 
   When ini_comb and fim_comb are given:
 
