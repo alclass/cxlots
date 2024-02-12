@@ -252,7 +252,7 @@ def unpickleJogosDataFile(pickleFilename, nDeDezenasSorteadas, nOfBits):
   binDecReprJogos = pickle.load(open(pickleFilename))
   jogos = []
   for binDecReprJogo in binDecReprJogos:
-    jogo = takeOut11.unpackJogoFromBinaryDecRepr(binDecReprJogo, nDeDezenasSorteadas, nOfBits)
+    jogo = takeOut11.unpack_jogo_from_binary_dec_repr(binDecReprJogo, nDeDezenasSorteadas, nOfBits)
     jogos.append(jogo)
   #print jogosfs
   print 'unpickled', len(jogos), 'jogosfs'
