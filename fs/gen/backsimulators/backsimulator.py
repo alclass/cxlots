@@ -1,10 +1,23 @@
 #!/usr/bin/env python3
 """
 gen/backsimulators/backsimulator.py
+  The idea of a backsimulator is to compare past results with a strategy of metrics that generate combinations.
 
-# numpy, os, pickle,
+For example, suppose one delimitates a strategy defined by metrics such as:
+  - all games with such and such metric x (even_numbers, columnpatters, rowpatterns, graphshapes etc.)
+  - all games with such and such historic metric y (til-frequencies, depth-repeats, maxacertos_backwards)
+
+With such a definition, a backsimulator might go looking for past 'concursos' and compare them with the 'filter' above,
+  giving statistical results as to 'how far' such combinations may get close to, if anywhere,
+  as it's previously expected for the whole 'thing' to be random.
+
+---------
+Notice: for the time being (Fev 2024) no backsimulator in this system (and package) is completed or fully functional,
+        ie, working is ongoing, maybe a bit slowly...
+---------
+
+# numpy, os, pickle, sys
 """
-import sys
 from fs.jogosfs import jogos_functions
 from models.Files.ReadConcursosHistory import ConcursosHistoryMetrics  # ConcursosHistoryPickledStorage
 from models.Concursos.concurso_extended import ConcursoExt

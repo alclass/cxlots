@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """
+commands/cards/conferidores/reg_vols_pgs_por_conc.py
+  Registers 'volantes' (ie cardgames) that were made (paid) into a lotteric house (or maybe via the Internet).
+  This registration is done into a database
+    (which may be a SQL one or, perhaps, a simple textfile, or the two -- this definition is found here).
+  The db formed here may be used for two purposes, ie:
+    p1 checking results 'immediately' after its public drawing
+    p2 checking comparisons with past or (when happen) later 'concursos'
 
 in_between_1_and_60 = lambda x : x >= 1 and x <= 60
 import fs.system_wide_lambdas as swlambdas
+import sys  # os, random
 """
-import sys, time # os, random, sys
+import time
 
 
 class LineToDezenas(object):
@@ -24,8 +32,8 @@ class LineToDezenas(object):
   def decide_which_splitline(self):
     """
     Decides via 3 options, ie:
-    o1 either it's a 12-char string with 2-digit each dozen eg "010203040506"
-    o2 or it's a comma-separated number string eg "1, 2, 3, 4, 5, 6"
+    o1 either it's a 12-char string with 2-digit each dozen eg "010203040506".
+    o2 or it's a comma-separated number string eg "1, 2, 3, 4, 5, 6".
     o3 or it's a space-separated number string eg "1 2 3 4 5 6"
     """
     self.dezenas_str_list = []
@@ -50,17 +58,17 @@ class LineToDezenas(object):
     """
     self.dezenas = list(map(int, self.dezenas_str_list))
     if len(self.dezenas) != 6:
-      errmsg = 'Number of entered dozens not equal to 6 :: %s ' %(str(self.dezenas))
+      errmsg = 'Number of entered dozens not equal to 6 :: %s ' % (str(self.dezenas))
       raise ValueError(errmsg)
     if False in map(lambda n: n >= 1 & n <= 60, self.dezenas):
       errmsg = 'There is one or more dozens out of range 1 to 60 :: %s ' % str(self.dezenas)
       raise ValueError(errmsg)
-    #===========================================================================
+    # ===========================================================================
     # except ValueError:
     #  if error_msg == '':
     #    error_msg = 'error with %s' %(str(self.dezenas))
     #  print 'Error:', error_msg
-    #===========================================================================
+    # ===========================================================================
       # self.finalize()
       # sys.exit(1)
 

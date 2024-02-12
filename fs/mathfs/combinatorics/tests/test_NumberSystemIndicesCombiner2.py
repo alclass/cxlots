@@ -14,6 +14,8 @@ import fs.mathfs.combinatorics.NumberSystemIndicesCombiner2 as nsic  # nsic.Numb
 class TestCase1(unittest.TestCase):
 
   def test_1(self):
+    # the first expected combination list is in descending order,
+    # on ahead, this list is reversed for testing it in the ascending order
     expect_nscomb_arr = [
        [3, 3], [3, 2], [3, 1], [3, 0],
        [2, 3], [2, 2], [2, 1], [2, 0],
@@ -35,4 +37,3 @@ class TestCase1(unittest.TestCase):
       resulted_nscomb_arr.append(list(ic.curr_comb))
     # t3 equality of asc expect_nscomb_arr with resulted_nscomb_arr
     self.assertEqual(expect_nscomb_arr, resulted_nscomb_arr)
-

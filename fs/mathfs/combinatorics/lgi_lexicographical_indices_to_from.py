@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
 fs/mathfs/combinatorics/lgi_lexicographical_indices_to_from.py
+  Contains related 'lgi' functions and the two main ones are:
 
-Main functions here:
-  calc_lgi_b0idx_from_comb_where_ints_start_at_0()
-    Calculates the lexicographical index from a combination (n_elements, n_slots)
-  calc_comb_from_lgi_b1idx_where_ints_start_at_0()
+Main functions in this module:
+  m1 calc_lgi_b0idx_from_comb_where_ints_start_at_0()
+    Calculates the lexicographical index from a combination (n_elements, n_slots),
+      @see its docstring for more info
+  m2 calc_comb_from_lgi_b1idx_where_ints_start_at_0()
     Calculates, from the lexicographical index, a combination (n_elements, n_slots)
+      @see its docstring for more info
 
 As hinted above, the relation (lgi, comb) forms a bijection, ie:
   f(lgi) = comb
@@ -18,12 +21,14 @@ The algorithm found in the Wikidepia (@see info and URL below) uses
 
   Example:
     In combiner(n_elements=4, n_slots=3)
-    the first combination, [0, 1, 2], has lgi 8 (which is also the total combinations)
-    the last combination, [1, 2, 3], has lgi 1;
+    the first combination, [0, 1, 2], has lgi (1-based) 8 (which is also the total combinations)
+    the last combination, [1, 2, 3], has lgi (1-based) 1;
   Because of that, this system has chosen to use two index-types, they are:
     t1 the one described above (also the one found in Wikipedia)
-    t2 the complement from the one described above
+    t2 the complement (modulo simmetrical) from the one described above
       (ie, in the example, 8 becomes 1 (which is 9-8) and 1 becomes 8 (9-1)
+      this 'inversion' is for having both ascending (instead of descending) indices
+        and ascending ordered combinations
 """
 import math
 
@@ -62,11 +67,18 @@ class LgiToFromCombination:
 
   @property
   def combset(self):
+    """
+    Represents an individual combination. It has a 'setter' method to verify
+      (or 'protect') its input and also synchronize the getting of its associated lgi.
+    """
     return self._combset
 
   @combset.setter
   def combset(self, p_combset):
     """
+    Represents an individual combination. This 'setter' method is to verify
+      (or 'protect') its input and also synchronize the getting of its associated lgi.
+
     calls the "inverse lgi function"
       b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
       setting both combset and its associated lgi
@@ -80,12 +92,16 @@ class LgiToFromCombination:
 
   @property
   def b0idx_lgi(self):
+    """
+    getter of the 0-based index (the one that starts with 0 instead of 1)
+    """
     return self._b0idx_lgi
 
   @b0idx_lgi.setter
   def b0idx_lgi(self, p_b0idx_lgi):
     """
-    calls the "forward lgi function"
+    setter of the 0-based index (the one that starts as 0 instead of 1)
+    it calls the "forward lgi function"
       b0idx_lgi = calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements)
       setting both combset and its associated lgi
     """
@@ -97,18 +113,27 @@ class LgiToFromCombination:
 
   @property
   def b1idx_lgi(self):
+    """
+    getter of the 1-based index (the one that starts as 1 instead of 0)
+    """
     if self._b0idx_lgi is not None:
       return self._b0idx_lgi + 1
     return None
 
   @property
   def b0idx_lgisimm(self):
+    """
+    getter of the 0-based index modulo-simmetric, ie it's total_combs - b0_idx
+    """
     if self._b0idx_lgi is not None:
       return self.size - self._b0idx_lgi
     return None
 
   @property
   def b1idx_lgisimm(self):
+    """
+    getter of the 1-based index modulo-simmetric, ie it's total_combs - b1_idx
+    """
     if self._b0idx_lgi is not None:
       return self.size - self.b1idx_lgisimm
     return None
@@ -123,6 +148,10 @@ class LgiToFromCombination:
 
 
 def factorial(n, prod=1):
+  """
+  Calculates the factorial of n.
+  Built-in function math.factorial() may be preferred to instead of this.
+  """
   if n < 2:
     return prod
   prod *= n
@@ -130,18 +159,26 @@ def factorial(n, prod=1):
 
 
 def find_multiplicand_for_permset_lgi(idxpos_for_factorial, n_elements):
+  """
+  Finds the highest multipland for the inversion-lgi (*) algorithm in this module.
+  (*) 'inversion-lgi' means finding the set from its lgi
+  This piece of the whole (larger) algorithm is responsible for finding the element
+    at its position in the combination.
+  As the 'larger algorithm' runs, the lgi (as a sum) is 'debted' at each position jump,
+    until all sum is consumed up
+    (ie all integers in the combination are found when its lgi-sum becomes zero).
+    @see the docstring of calling function for more details.
+  """
   n_for_factorial_limit = idxpos_for_factorial + 1
-  print('n_for_factorial_limit', n_for_factorial_limit)
+  # print('n_for_factorial_limit', n_for_factorial_limit)
   upper_limit_value = factorial(n_for_factorial_limit) - 1
   fact_multiplicand = factorial(idxpos_for_factorial)
   multplicands_to_try = list(range(n_elements))
   highest_multplicand = -1
-  # previous_parcel = -1
   for multplicand in multplicands_to_try:
     parcel = multplicand * fact_multiplicand
     if parcel < upper_limit_value:
       highest_multplicand = multplicand
-      # previous_parcel = parcel
     else:
       break
   return highest_multplicand
@@ -243,9 +280,14 @@ def calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements):
       i2 the version here uses ascending order (lexicographical order) for combinations;
       i3 it also establishes ascending order for the lexicographical index itself;
 
-    ie, in the case n_elements=60, n_slots=6:
-      the first combination [1, 2, 3, 4, 5, 6] should have (1-based) index 1
+    ie, in the case: n_elements=60, n_slots=6:
+      the first combination [1, 2, 3, 4, 5, 6] should have (1-based) index 1 (*)
       the last combination [54, 55, 56, 57, 58, 59, 60] should have (1-based) index 50063860
+
+    (*) Notice:
+      n1 [1, 2, 3, 4, 5, 6] this combination should be input as [0, 1, 2, 3, 4, 5]
+        @see variable adjusted_plus1_cmb below
+      n2 the index calculated is a 0-based one, ie indices go from 0 to totalcombs-1
 
     The algorithm for finding the lgi_b1idx:
 
@@ -629,9 +671,12 @@ def recover_intdecimal_from_factoradic_as_str(factoradic_as_str):
 
 def find_lgi_from_permset_approach2(permset=None):
   """
-  IMPORTANT: this is not the "canonical" lgi. The examples below show it:
-  (it was taken from a stackoverflow page, but it seems to be a 4-based number system example)
-  (ie not factoradic or similar)
+  Though calculates lgi from a permutation set this function is NOT used in this system.
+
+  IMPORTANT:
+    it was taken from a stackoverflow page and seems to be a 4-based number system example)
+    ie, at the understanding of this moment, this function is not 'factoradic' or similar
+    the examples below may show it:
 
   Examples:
     1)
@@ -643,6 +688,15 @@ def find_lgi_from_permset_approach2(permset=None):
       canonical lgi => ?
       The one that is found here: 177
 
+  result_list = []
+  for i in range(size):
+    divisor = (size ** (size - i - 1))
+    quoc = soma // divisor
+    remainder = quoc % size
+    # print(soma, '/', divisor, quoc, remainder)
+    result_list.append(remainder)
+  # print(result_list)
+
   """
   permset = [2, 3, 0, 1] if permset is None else permset
   size = len(permset)
@@ -652,26 +706,11 @@ def find_lgi_from_permset_approach2(permset=None):
     base = base / size
     coef = base * permset[i]
     soma += coef
-    print(permset, 'soma', soma, 'base', base, 'coef', coef)
-  result_list = []
-  for i in range(size):
-    divisor = (size ** (size - i - 1))
-    quoc = soma // divisor
-    remainder = quoc % size
-    print(soma, '/', divisor, quoc, remainder)
-    result_list.append(remainder)
-  print(result_list)
+    # print(permset, 'soma', soma, 'base', base, 'coef', coef)
+  return soma
 
 
-if __name__ == '__main__':
-  """
-  adhoctest()
-  adhoctest()
-  accompany_lgi()
-  adhoctest_f_inv()
-  # table_combs_size()
-  from_permset_to_lgi()
-  """
+def adhoctest1():
   factoradic_as_str = '341010'
   recover_intdecimal_from_factoradic_as_str(factoradic_as_str)
   # highest_digit_allowed_in_factoradic = inverted_index_position ie n-1, n-2, ..., 2, 1, 0
@@ -680,5 +719,18 @@ if __name__ == '__main__':
   # the next one (added one) is 600000
   factoradic_as_str = '1000000'  # intdec is 720 (or 6!)
   recover_intdecimal_from_factoradic_as_str(factoradic_as_str)
-  input_perm = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
-  find_lgi_from_permset_approach2(input_perm)
+
+
+def adhoctest2():
+  # input_perm = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
+  input_perm = [2, 7, 3, 5]
+  lgi2 = find_lgi_from_permset_approach2(input_perm)
+  scrmsg = f"input {input_perm} | lgi approach2 {lgi2}"
+  print(scrmsg)
+
+
+if __name__ == '__main__':
+  """
+  adhoctest()
+  """
+  adhoctest2()
