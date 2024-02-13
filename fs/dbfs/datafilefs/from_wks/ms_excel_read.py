@@ -9,7 +9,7 @@ import pandas as pd
 import local_settings as ls
 filename_to_interpolate = "megasena_asloterias-com-br_ate_conc{nconc}_sorteio.xlsx"
 glob_asterisco_sorteio_xlsx = "*_sorteio.xlsx"
-aslots_foldername_u_appsdatafolder = 'asloterias-com-br'
+aslots_foldername_u_appsdatafolder = 'DB asloterias-com-br et al'
 
 
 def get_ms_dados_folderpath():
@@ -41,7 +41,7 @@ def get_pandas_df_from_ms_history_excelfile(excel_filepath=None):
   _, excel_filename = os.path.split(excel_filepath)
   scrmsg = f'Reading file {excel_filename}'
   print(scrmsg)
-  columns = ['nconc', 'date', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6']
+  columns = ['nconc', 'concdate', 'd1', 'd2', 'd3', 'd4', 'd5', 'd6']
   df = pd.read_excel(excel_filepath, header=None, names=columns)
   df = df.dropna()
   # print(df.to_string())

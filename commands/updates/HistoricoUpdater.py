@@ -1,17 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+#!/usr/bin/env python3
+"""
 This module altogether (HistoricoUpdater.py) is outdated. New code has replaced it.
   (As this comment is written, sqlLayer.py does the new code.)
-'''
-import datetime, sys
 
-a=1
+"""
+import datetime, sys
 import CLClasses
 import funcsForDates as fDates
-import funcsForSql   as fSql
-#import funcs
-import proprieties   as props
+import funcsForSql as fSql
+import proprieties as props
 from   cardprint import pprint
 
 
@@ -39,10 +36,7 @@ class HistoricoUpdater(object):
     self.maiorDezenaNoVolante    = jogosBaseObj.getMaiorDezenaNoVolante()
     self.totalDeDezenasNoVolante = jogosBaseObj.totalDeDezenasNoVolante
     self.nDeDezenasSorteadas     = jogosBaseObj.nDeDezenasSorteadas
-    #self.nOfBits                 = jogosBaseObj.nOfBits
     self.htmlDataFilename    = jogosBaseObj.getFilename('htm')
-    #self.txtDataFilename     = jogosBaseObj.getFilename('txt')
-    #self.pickleFilename      = jogosBaseObj.getFilename('obj')
     self.standard2LetterName = jogosBaseObj.standard2LetterName
     self.sqlTable            = self.standard2LetterName.lower()
     self.dbFields = DbFields(self.standard2LetterName)

@@ -271,6 +271,16 @@ def is_combination_consistent_w_nelements(cmbset, n_elements):
   return True
 
 
+def calc_lgi_b0idx_from_comb_where_ints_start_at_1(cmbset, n_elements):
+  adjusted_minus1_cmb = list(map(lambda e: e-1, cmbset))
+  return calc_lgi_b0idx_from_comb_where_ints_start_at_0(adjusted_minus1_cmb, n_elements)
+
+
+def calc_lgisimm_b0idx_from_comb_where_ints_start_at_1(cmbset, n_elements):
+  adjusted_minus1_cmb = list(map(lambda e: e-1, cmbset))
+  return calc_lgisimm_b0idx_from_comb_where_ints_start_at_0(adjusted_minus1_cmb, n_elements)
+
+
 def calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements):
   """
     Outputs the lexicographical index representing the current_combination in the instance object
@@ -319,6 +329,7 @@ def calc_lgi_b0idx_from_comb_where_ints_start_at_0(cmbset, n_elements):
       @see also the above algorithm in the module where its function is located.
 
   """
+  cmbset.sort()
   n_slots = len(cmbset)
   if not is_combination_consistent_w_nelements(cmbset, n_elements):
     errmsg = f"combination (={cmbset}) is not consistent with scheme:"
