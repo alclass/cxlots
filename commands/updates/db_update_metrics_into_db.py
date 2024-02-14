@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-commands/updates/update_metrics_into_db.py
+commands/updates/db_update_metrics_into_db.py
 
     soma INT,
     media_mult100 INT,
