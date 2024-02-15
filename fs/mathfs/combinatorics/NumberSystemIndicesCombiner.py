@@ -28,6 +28,19 @@ import fs.mathfs.combinatorics.combinatoric_algorithms as ca  # ca.fact(n)
 import fs.mathfs.combinatorics.IndicesCombiner_functions as ICf  # ICf.project_last_combinationlist
 
 
+def recover_arr_from_int_as_numbersystem_base(soma, base=base):
+
+
+
+def add_one_as_array(arr, base):
+  soma = 0
+  n_slots = len(arr)
+  for i in range(arr):
+    expo_inv_i = n_slots - i - 1
+    soma += arr[i] * base ** expo_inv_i
+  recover_arr_from_int_as_numbersystem_base(soma, base=base)
+
+
 def is_first_comb_lexicographacally_less_than_the_second(first_comb, second_comb):
   two_by_2 = zip(first_comb, second_comb)
   bool_list = list(map(lambda tupl: tupl[0] < tupl[1], two_by_2))
@@ -63,11 +76,23 @@ def verify_lexicographical_comb_must_be_within_first_n_last_or_raise(inbetween_c
     raise ValueError(errmsg)
 
 
-class IndicesCombinerForPermutations:
+class NumberSystemIndicesCombiner:
   """
+  Implements an "indices combiner" under a number system approach.
+  Here follows an example with n_element=5 & n_slots=3:
+    [0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3], [0, 0, 4],
+    [0, 1, 0], [0, 1, 1], [0, 1, 2], [0, 1, 3], [0, 1, 4]
+    [0, 2, 0], up to the last one that is [3, 3, 3]
+
+  Its size (with an analytical formula) is = ne**(ns+1) - 1
+  where ne_ is n_element=5 & ns is n_slots
+
+  For the example above (n_element=5 & n_slots=3):
+   size = ne ** ns - 1 = 5 ** 3 - 1 = 124
+
+
   This class is explained by examples
   ===================================
-
   Example 1:
     indComb = IndicesCombiner(5, 3, False)
     indComb.first() results [0, 1, 2]
@@ -177,18 +202,21 @@ class IndicesCombinerForPermutations:
          one for each overlap kind.
   """
 
-  def __init__(self, n_elements=1, n_slots=1, overlap=True, ini_comb=None, fim_comb=None):
+  def __init__(self, n_elements=1, n_slots=1):
     self.n_elements = n_elements
     self.n_slots = n_slots
-    self.ini_comb = ini_comb
-    self.fim_comb = fim_comb
-    self.curr_comb = None
+    self.curr_comb = [0]*self.n_slots
     self._first_comb = None
     self._last_comb = None
     self.comb_before_first = None  # [-1] * self.n_slots
-    self.overlap = bool(overlap)
-    self.check_consistency_of_nelements_n_nslots()
-    self.check_consistency_of_ini_comb_n_fim_comb()
+    # self.check_consistency_of_nelements_n_nslots()
+
+  def next(self):
+    soma = 0
+    self.curr_comb = add_one_as_array(self.curr_comb)
+
+
+
 
   def check_consistency_of_nelements_n_nslots(self):
     """
