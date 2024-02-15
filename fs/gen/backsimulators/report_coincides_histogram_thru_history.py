@@ -42,7 +42,7 @@ def report():
     aggregated_histogram[i] = []
   for i in range(10):
     print i, concurso.n_conc, concurso.get_dezenas()
-    coincides_histogram = jogos_fd.get_coincides_histogram_against_a_lookup_depth(concurso.get_dezenas(), up_to_nDoConc=concurso.n_conc - 1, LOOKUP_DEPTH=1000)
+    coincides_histogram = jogos_fd.get_coincides_histogram_against_a_lookup_depth(concurso.get_dezenas(), up_to_n_do_conc=concurso.n_conc - 1, lookup_depth=1000)
     if coincides_histogram == None:
       continue 
     print coincides_histogram

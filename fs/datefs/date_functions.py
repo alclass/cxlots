@@ -38,9 +38,9 @@ def transform_bar_ddmmyyyy_date_into_datetime(date_to_translate):
   if date_to_translate[5] != '/':
     return None
   pp = date_to_translate.split('/')
-  year  = int(pp[2])
+  year = int(pp[2])
   month = int(pp[1])
-  day   = int(pp[0])
+  day = int(pp[0])
   date = datetime.date(year, month, day)
   return date
 

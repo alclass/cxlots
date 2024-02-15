@@ -2,7 +2,7 @@
 # import time # os, random, sys
 import os.path
 
-from paidGamesInput import *
+from reg_vols_pgs_por_conc import *
 
 
 def get_jogos_from_file(filepath=None):

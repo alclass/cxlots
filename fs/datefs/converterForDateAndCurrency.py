@@ -1,9 +1,13 @@
-'''
-Created on 12/11/2011
+#!/usr/bin/env python3
+"""
+commands/updates/db_update_concdates.py
+  Updates the MS db-table in column 'concdates'
 
-@author: friend
-'''
+Created on 12/11/2011
+@author: Luiz Lewis
+"""
 import datetime
+
 
 def convertToFloatAMoneyCurrencyNotInEnglishFormat(value):
   if type(value) == unicode:
@@ -66,6 +70,7 @@ def convertYyyyMmDDToDatetimeDate(value):
   dateObj = datetime.date(ano, mes, dia)
   #print ' INSIDE convertToDatetimeDate ==>> dateObj = %s' %str(dateObj)
   return dateObj
+
 
 def convertToDatetimeDate(dateStr, dateStrFormat='DD-MM-YYYY'):
   if dateStrFormat == 'YYYY-MM-DD':

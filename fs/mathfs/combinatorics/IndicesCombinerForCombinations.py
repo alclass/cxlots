@@ -451,12 +451,12 @@ Obs:
     """
     self.move_curr_comb_to_first_or_ini()
     while self.curr_comb is not None:
+      # but, if fim_comb was given at __init__, that becomes a second while-loop exit condition
+      if self.is_curr_comb_lexicographacally_greater_than_given_fim_comb():
+        # get back "one point" because curr_comb overtook fimcomb, if it exists and is not None
+        self.previous()
+        break
       yield self.curr_comb
-      # when next() hits last_comb, curr_comb becomes None, which is a while-loop exit condition
-      if self.fim_comb:
-        # but, if fim_comb was given at __init__, that becomes a second while-loop exit condition
-        if self.is_curr_comb_lexicographacally_greater_than_given_fim_comb():
-          break
       self.next()
 
   def get_all_cmbs_or_those_bw_ini_fim_if_given(self, cut_off=1000):

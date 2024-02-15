@@ -68,6 +68,24 @@ class MSHistorySlider:
       return True
     return False
 
+  def make_dz_n_appearance_depth_dict_for_dozenlist(self, downfrom_nconc, p_dozenlist):
+    """
+    Finds the appearance depth for each dozen in input list and output it as a dict
+    """
+    nconc = downfrom_nconc
+    dozenlist = sorted(p_dozenlist)
+    dz_w_appearance_depth_dict = {dz: -1 for dz in dozenlist}
+    while nconc > 0:
+      downward_dzs = self.get_in_asc_ord(nconc)
+      for dz in downward_dzs:
+        if dz in dozenlist:
+          dozenlist.remove(dz)
+          dz_w_appearance_depth_dict[dz] = downfrom_nconc - nconc + 1
+      if len(dozenlist) == 0:
+        break  # break out of the while-loop
+      nconc -= 1
+    return dz_w_appearance_depth_dict
+
 
 def check_nconc_consistency():
   ms_slider = MSHistorySlider()

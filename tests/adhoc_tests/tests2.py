@@ -15,13 +15,13 @@ def testRefactoredPackUnpack():
   jogo = [1,2,3,4,5,6]
   shouldBeHex = 0x420c4146
   nDeDezenasNoVolante = 60
-  nOfBits = takeOut11.minNOfBits(nDeDezenasNoVolante)
+  nOfBits = takeOut11.min_n_of_bits(nDeDezenasNoVolante)
   print 'nDeDezenasNoVolante', nDeDezenasNoVolante, 'nOfBits', nOfBits
-  stuff = takeOut11.packJogoToBinaryDecRepr(jogo, nOfBits)
+  stuff = takeOut11.pack_jogo_to_binary_dec_repr(jogo, nOfBits)
   print jogo, 'stuff', stuff
   print 'shouldBeHex',  shouldBeHex # 0x820c8186
 
-  jogoUnpacked = takeOut11.unpackJogoFromBinaryDecRepr(stuff, len(jogo), nOfBits)
+  jogoUnpacked = takeOut11.unpack_jogo_from_binary_dec_repr(stuff, len(jogo), nOfBits)
   print 'jogoUnpacked', jogoUnpacked
 
 def testBinStr():

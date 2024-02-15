@@ -53,11 +53,11 @@ Updates:
 3) coinc_w_prev_count should become (or be renamed to) morethan_1repeat_semicoloncommasep
   Example:
     e1 '10:2,27:3' means
-      dozen 10 had two repeats in-depth (3 altogether with current conc)
-      dozen 27 had three repeats in-depth (4 altogether with current conc)
+      a dozen 10 had two repeats in-depth (3 altogether with current conc)
+      a dozen 27 had three repeats in-depth (4 altogether with current conc)
     e2 '5:1,33:5' means
-      dozen 5 had one immediate reccurrence  (2 altogether with current conc)
-      dozen 33 has five immediate reccurrences (6 altogether with current conc)
+      a dozen 5 had one immediate reccurrence  (2 altogether with current conc)
+      a dozen 33 has five immediate reccurrences (6 altogether with current conc)
   formerly: repeat_depth_commasep => the number of concs down history until
    a specified dozen had a repeat (ie happened previously)
    (this method is related to histogram, though not it)

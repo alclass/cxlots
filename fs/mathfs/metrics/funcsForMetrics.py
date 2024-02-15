@@ -192,43 +192,43 @@ def generateSampleBet(quant):
 def testPackAndUnpack():
   jogosObj = LFClasses.getJogosObj()
   jogo = jogosObj.getJogos()[0]
-  stuff = packJogoToBinaryDecRepr(jogo)
-  dezenas = unpackJogoFromBinaryDecRepr(stuff)
+  stuff = pack_jogo_to_binary_dec_repr(jogo)
+  dezenas = unpack_jogo_from_binary_dec_repr(stuff)
   print dezenas
   jogo = jogosObj.getJogos()[-1]
-  stuff = packJogoToBinaryDecRepr(jogo)
-  dezenas = unpackJogoFromBinaryDecRepr(stuff)
+  stuff = pack_jogo_to_binary_dec_repr(jogo)
+  dezenas = unpack_jogo_from_binary_dec_repr(stuff)
   print dezenas  
 '''
 def testMinNOfBits():
   n = 25; expect = 5
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
   n = 60; expect = 6
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
   n = 1024; expect = 10
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
   n = 1; expect = 1
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
   n = 0; expect = 0
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
   n = -1; expect = None
   r = minNOfBits(n)
-  print 'minNOfBits(',n,') ==>>', r
+  print 'min_n_of_bits(',n,') ==>>', r
   assert(r == expect)
   # =====================================
 

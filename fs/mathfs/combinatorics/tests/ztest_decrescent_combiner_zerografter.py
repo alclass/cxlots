@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """
+fs/mathfs/combinatorics/tests/ztest_decrescent_combiner_zerografter.py
+  Unit-tests for fs/mathfs/combinatorics/tests/decrescent_combiner_zerografter.py
 
 """
 import fs.mathfs.combinatorics.decrescent_combiner_zerografter as zg  # zg.PartitionsHanoiTowerCombiner
@@ -37,6 +39,7 @@ class Test1(unittest.TestCase):
     self.assertEqual(expected_zeroesgraft_combs, returned_zeroesgraft_combs)
 
 
-expected_zeroesgraft_combs = [
-  [3, 0, 0, 0], [2, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 1], [0, 0, 1, 2], [2, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]
+zexpected_zeroesgraft_combs = [
+  [3, 0, 0, 0], [2, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 1], [0, 0, 1, 2], [2, 0, 0, 0],
+  [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]
 ]

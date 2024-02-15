@@ -1,8 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''
+#!/usr/bin/env python3
+"""
+commands/updates/downloadZippedHistory.py
 
-'''
+"""
 import os
 import sys
 # import urllib

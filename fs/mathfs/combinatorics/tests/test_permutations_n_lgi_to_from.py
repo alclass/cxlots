@@ -45,6 +45,7 @@ class TestForFactoradicsEtAl(unittest.TestCase):
     # t3 uses a larger workset and calls the "inner" version with given_lgi_b0idx (index 0-based)
     workset = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     given_lgi_b0idx = 980000 - 1
+    # the 'inner' function issued below should be considered 'private', but it's tested here as a variation
     ret_perm_result = ftf.calc_permutation_from_lgib0idx_by_lehmercode_inner(given_lgi_b0idx, workset=workset)
     expected_perm_result = [2, 7, 3, 5, 0, 8, 4, 1, 9, 6]
     self.assertEqual(expected_perm_result, ret_perm_result)

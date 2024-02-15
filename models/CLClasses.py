@@ -74,7 +74,7 @@ class Base(object):
     return binDec.get_n_of_bytes_for_packer(nOfCombs)
 
   def getNOfBits(self):
-    return binDec.minNOfBits(self.totalDeDezenasNoVolante)
+    return binDec.min_n_of_bits(self.totalDeDezenasNoVolante)
 
   def getMaiorDezenaNoVolante(self):
     if self.primeiraDezenaNoVolante == 0:
@@ -244,9 +244,9 @@ class Jogo(Base):
     self.jogo.sort()
 
   def setBinDecRepr(self):
-    binDecRepr = binDec.packJogoToBinaryDecRepr(self.jogo, self.getNOfBits())
+    binDecRepr = binDec.pack_jogo_to_binary_dec_repr(self.jogo, self.getNOfBits())
     # test in here
-    jogo = binDec.unpackJogoFromBinaryDecRepr(binDecRepr, self.nDeDezenasSorteadas, self.getNOfBits())
+    jogo = binDec.unpack_jogo_from_binary_dec_repr(binDecRepr, self.nDeDezenasSorteadas, self.getNOfBits())
     if jogo <> self.jogo:
       errorMsg = 'Inconsistency of jogo %s with self.jogo %s and its binDecRepr %d' %(str(jogo), str(self.jogo), binDecRepr)
       raise ValueError, errorMsg
@@ -312,7 +312,7 @@ class Jogo(Base):
 
 
   def setJogoFromBinDecRepr(self, binDecRepr):
-    jogo = takeOut11.unpackJogoFromBinaryDecRepr(binDecRepr, self.nDeDezenasSorteadas, self.nOfBits)
+    jogo = takeOut11.unpack_jogo_from_binary_dec_repr(binDecRepr, self.nDeDezenasSorteadas, self.nOfBits)
     self.validateJogo(jogo)
     # if an exception was not raised, okay, binDecRepr will also become an attribute
     self.binDecRepr = binDecRepr
@@ -379,7 +379,7 @@ class Jogos(Base):
   '''
   def unpickelHistoricoDosJogosSorteados(self):
     filename = self.getFilename('obj')
-    nOfBits = takeOut11.minNOfBits(self.totalDeDezenasNoVolante)
+    nOfBits = takeOut11.min_n_of_bits(self.totalDeDezenasNoVolante)
     self.jogosfs = du.unpickleJogosDataFile(filename, self.nDeDezenasSorteadas, nOfBits)
 
   def getTable(self):
