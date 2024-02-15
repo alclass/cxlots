@@ -55,7 +55,7 @@ def adhoctest():
 def process():
   fp = get_ms_history_excelfilepath()
   df = get_pandas_df_from_ms_history_excelfile(fp)
-  # print(df)
+  print(df.to_string())
 
 
 if __name__ == '__main__':

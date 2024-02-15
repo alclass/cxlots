@@ -57,6 +57,7 @@ def create_table_if_not_exists():
   """
   sql = f"""CREATE TABLE IF NOT EXISTS {MS_TABLENAME} (
     nconc INT PRIMARY KEY,
+    concdate DATE,
     ds_ord_sor_str CHAR(12) NOT NULL,
     lexicographicalindex INT,
     soma INT,

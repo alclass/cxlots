@@ -30,146 +30,11 @@ commands/updates/db_update_histogram_n_repeatdepth.py
 import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # for mer.get_pandas_df_from_ms_history_excelfile()
 """
 import sqlite3
+import time
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
+import fs.mathfs.numberfs.numberfunctions as nfs  #
 MS_N_ELEMENTS = 60
-
-
-def trans_dzs6number12charstr_into_dzslist(dzs6number12charstr):
-  try:
-    dzslist = [int(dzs6number12charstr[i:i + 1]) for i in range(0, 12, 2)]
-    return dzslist
-  except (TypeError, ValueError):
-    pass
-  return []
-
-
-class HistogramNRepeatAtDepthFinder:
-  """
-  This class aims to find the following two 'metrics' of a conc, ie:
-    dzs_acc_hstgrm_n_gentot_cs & dzs_repeatdepth_ci
-    In terms of db-fetching them, the two are connected,
-      ie fetching histogram also fetches repeat_at_depth.
-
-  Testing notice:
-    Because this class and its methods depend on a database (at the time of this writing it's a sqlite db)
-      an adhoctest module will be elaborated for testing correctness of sql-selection/data fetching routines
-      instead of a unit-test approach, this is due to the fact that one doesn't have
-      a mock-interface that could unit-test it in case db is empty
-      or unaccessible from where the unit-tests are run.
-  """
-
-  def __init__(self, curr_nconc):
-    self.conn = None
-    self.dzs_w_freq_hstgrm_dict = {}
-    self.dz_n_appearance_depth_dict = {}
-    self.curr_nconc = curr_nconc
-    self._gentotal_updated = -1
-    self.ms_hist_slider = msh.MSHistorySlider()
-    self.dzs_sor_ord = self.ms_hist_slider.get_in_sor_ord(self.curr_nconc)
-    self.process()
-
-  def fetch_hstgrm_from_known_repeat_at_depth_for_nconc(self, nconc):
-    self.conn = sqlc.get_sqlite_connection()
-    self.conn.row_factory = sqlite3.Row
-    cursor = self.conn.cursor()
-    # dzs_sor_ord is not needed because the ms_hist_slider has it
-    sql = f"""
-    SELECT dzs_acc_hstgrm_n_gentot_cs  FROM {sqlc.MS_TABLENAME}
-    WHERE nconc = ?;
-    """
-    dzs_acc_hstgrm_n_gentot_cs = None
-    sqltuplevalues = (nconc, )
-    ro = cursor.execute(sql, sqltuplevalues)
-    if ro:
-      row = ro.fetchone()
-      dzs_acc_hstgrm_n_gentot_cs = row['dzs_acc_hstgrm_n_gentot_cs']
-      if nconc == self.curr_nconc - 1:
-        self.set_generaltotal_w_dzs_acc_hstgrm_n_gentot_cs(dzs_acc_hstgrm_n_gentot_cs)
-    cursor.close()
-    self.conn.close()
-    return dzs_acc_hstgrm_n_gentot_cs
-
-  def set_generaltotal_w_dzs_acc_hstgrm_n_gentot_cs(self, dzs_acc_hstgrm_n_gentot_cs):
-    """
-    This set-method is called when the SELECT method meets the immediate previous nconc
-    """
-    dzs_acc_hstgrm_n_gentot_intstrs = dzs_acc_hstgrm_n_gentot_cs.split(',')
-    dzs_acc_hstgrm_n_gentot_ints = list(map(int, dzs_acc_hstgrm_n_gentot_intstrs))
-    previous_gentotal = dzs_acc_hstgrm_n_gentot_ints[-1]
-    self._gentotal_updated = previous_gentotal + 6
-
-  @property
-  def gentotal_updated(self):
-    if self._gentotal_updated == -1:
-      self.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(self.curr_nconc - 1)
-    return self._gentotal_updated
-
-  @property
-  def dzs_w_freq_known_list(self):
-    return list(self.dzs_w_freq_hstgrm_dict.keys())
-
-  @property
-  def dzs_asc_ord(self):
-    return sorted(self.dzs_sor_ord)
-
-  @property
-  def dzs_repeatdepth_ci(self):
-    _repeat_at_depth_ci = ''
-    for dz in self.dzs_sor_ord:
-      repeat_at_depth = self.dz_n_appearance_depth_dict[dz]
-      _repeat_at_depth_ci += str(repeat_at_depth) + ','
-    _repeat_at_depth_ci = _repeat_at_depth_ci.rstrip(',')
-    return _repeat_at_depth_ci
-
-  @property
-  def dzs_acc_hstgrm_n_gentot_cs(self):
-    _dzs_acc_hstgrm_n_gentot_cs = ''
-    for dz in self.dzs_sor_ord:
-      dz_freq = self.dzs_w_freq_hstgrm_dict[dz]
-      _dzs_acc_hstgrm_n_gentot_cs += str(dz_freq) + ','
-    _dzs_acc_hstgrm_n_gentot_cs += str(self.gentotal_updated)
-    return _dzs_acc_hstgrm_n_gentot_cs
-
-  def accumulate_dict_of_dzs_acc_hstgrm_n_gentot_cs_w_dzs_sor_ord(
-      self, nconc, dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs, dzs_repeatdepth_ci
-  ):
-    hstgrm_n_gentot_list = list(map(int, dzs_acc_hstgrm_n_gentot_cs.split(',')))
-    repeat_at_depth_n_gentot_list = list(map(int, dzs_repeatdepth_ci.split(',')))
-    for i in range(len(dzs_sor_ord)):
-      if dzs_sor_ord[i] not in self.dzs_asc_ord:
-        continue
-      self.dzs_w_freq_hstgrm_dict[dzs_sor_ord[i]] = hstgrm_n_gentot_list[i]
-    if nconc == self.curr_nconc - 1:
-      self.gentotal_updated = hstgrm_n_gentot_list[-1] + 6
-    return
-
-  def fetch_acumfreq_for_dz_at_nconc(self, dz, nconc, pos):
-    dzs_acc_hstgrm_n_gentot_cs = self.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(nconc)
-    acumfreqs_as_str = dzs_acc_hstgrm_n_gentot_cs.split(',')
-    acumfreqs = list(map(int, acumfreqs_as_str))
-    acumfreq = acumfreqs[pos]
-    self.dzs_w_freq_hstgrm_dict[dz] = acumfreq
-
-  def fetch_histogram_from_history_for_each_curr_dozenlist(self):
-    for pos, dz in enumerate(self.dzs_sor_ord):
-      repeat_at_depth = self.dz_n_appearance_depth_dict[dz]
-      trg_nconc = self.curr_nconc - repeat_at_depth
-      self.fetch_acumfreq_for_dz_at_nconc(dz, trg_nconc, pos)
-
-  def get_dz_n_appearance_depth_dict_for_curr_conc(self):
-    self.dz_n_appearance_depth_dict = self.ms_hist_slider.make_dz_n_appearance_depth_dict_for_dozenlist(
-      self.curr_nconc-1, self.dzs_sor_ord
-    )
-
-  def process(self):
-    self.get_dz_n_appearance_depth_dict_for_curr_conc()
-    self.fetch_histogram_from_history_for_each_curr_dozenlist()
-
-  def __str__(self):
-    outstr = f"""{self.__class__.__name__} | nconc={self.curr_nconc} dzs={self.dzs_sor_ord} dzs={self.dzs_asc_ord}   
-    histogram={self.dzs_acc_hstgrm_n_gentot_cs} | repeat@depth={self.dzs_repeatdepth_ci}"""
-    return outstr
 
 
 def find_repeat_at_depth_of(dz, nconc, allconcs_in_hist_order):
@@ -217,7 +82,7 @@ class HistogramNRepeatsUpdater:
     self.n_updated = 0
     self.conn = None
     self.cursor = None
-    # self.process()
+    self.process()
 
   @property
   def opsize(self):
@@ -258,18 +123,20 @@ class HistogramNRepeatsUpdater:
     self.conn.close()
 
   def dbupdate_row_w_histogram_n_repeat_at_depth_if_needed(self, nconc, dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs):
+    modified_at = time.time()
     sql = f"""UPDATE {self.tablename} 
     SET 
       dzs_repeatdepth_ci = ?,
-      dzs_acc_hstgrm_n_gentot_cs = ?
+      dzs_acc_hstgrm_n_gentot_cs = ?,
+      modified_at = ?
     WHERE
       nconc = ?;
     """
-    tuplevalues = (dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs, nconc)
+    tuplevalues = (dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs, modified_at, nconc)
     retval = self.cursor.execute(sql, tuplevalues)
     if retval:
       self.n_updated += 1
-      print('updated', self.n_updated)
+      print('updated', self.n_updated, tuplevalues)
 
   def dbupdate_histogram_n_repeat_at_depth_if_needed(self):
     self.open_connection()
@@ -330,9 +197,10 @@ class HistogramNRepeatsUpdater:
     print(self.hstgrm_per_dozen)
     print(self.repeat_at_depth_dict)
     """
+    # self.form_histogram_n_repeat_at_depth_bottom_up_start_at(lastconc_w_freqs)
     self.form_histogram_n_repeat_at_depth_bottom_up()
     # TO-DO: before uncommenting out next line, it's necessary to sql-query db
-    # for knowing which rows having missing histogram & repeat_at_depth
+    # for knowing which rows have missing histogram & repeat_at_depth
     # self.dbupdate_histogram_n_repeat_at_depth_if_needed()
 
   def __str__(self):
@@ -345,7 +213,7 @@ def adhoctest():
   hst.process()
   print(hst)
   """
-  histo = HistogramNRepeatAtDepthFinder(curr_nconc=2500)
+  histo = HistogramNRepeatsUpdater()
   print(histo)
 
 

@@ -32,14 +32,16 @@ The n in n-dozen mostly used here is 6 as the MS has 6 drawn dozens for each 'co
 TO-DO: unit-tests!
 """
 import fs.jogosfs.jogos_functions as jf
+import fs.datefs.date_functions as dtfs
 
 
 class JogoMetrics:
   NDOZENS = 6
 
-  def __init__(self, nconc, tupledezenas):
+  def __init__(self, nconc, concdate, tupledezenas):
     self.diag_matrix = jf.form_diag_matrix_positions()
     self.nconc = nconc
+    self.concdate = dtfs.transform_bar_ddmmyyyy_date_into_datetime(concdate)
     self._tup_dez_ord_sor = None
     self._tupledezenas = None
     self._ds_ord_sor_str = None

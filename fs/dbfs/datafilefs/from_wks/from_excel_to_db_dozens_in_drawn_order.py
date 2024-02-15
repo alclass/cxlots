@@ -4,10 +4,9 @@ fs/dbfs/datafilefs/from_wks/from_excel_to_db_dozens_in_drawn_order.py
 
 import fs.jogosfs.jogos_functions as jf
 """
-import sqlite3
-
 import pandas as pd
-
+import sqlite3
+import time
 import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # for mer.get_pandas_df_from_ms_history_excelfile()
 import fs.jogosfs.jogos_metrics as jm
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
@@ -48,8 +47,12 @@ class RecentMSRowsFromDataFrameDBInsertor:
     self.cursor = self.conn.cursor()
 
   def close_connection(self):
-    self.cursor.close()
-    self.conn.close()
+    try:
+      self.cursor.close()
+      self.conn.close()
+    except sqlite3.ProgrammingError:
+      # TO-DO: might there be a more elegant solution for testing closed connection?
+      pass
 
   def commit(self):
     print('n_inserted', self.n_inserted)
@@ -73,9 +76,14 @@ class RecentMSRowsFromDataFrameDBInsertor:
 
   def read_data_as_pandas_df(self):
     self.df = mer.get_pandas_df_from_ms_history_excelfile()
-    if self.last_nconc > 0:
+    if self.last_nconc and self.last_nconc > 0:
       self.df = cut_down_df_above_given_nconc(self.df, self.last_nconc)
     print(self.df.to_string())
+    n_concs_to_update = self.df.shape[0]
+    submsg_if_no_concs = '' if n_concs_to_update > 0 else '- ie, no concs to update.'
+    print('\t', '-'*30)
+    print('\tNumber of concs to update:', n_concs_to_update, submsg_if_no_concs)
+    print('\t', '-'*30)
 
   def insert_nconc_n_dezenas_into_db(self, nconc, concdate, ds_ord_sor_str):
     """
@@ -83,11 +91,12 @@ class RecentMSRowsFromDataFrameDBInsertor:
     The caller must open db-connection before calling this
     A commit will happen later at the caller if at least a row has been inserted
     """
+    created_at = time.time()
     sql = f"""INSERT OR IGNORE INTO {self.tablename}
-      (nconc, concdate, ds_ord_sor_str)
-      VALUES (?, ?, ?);
+      (nconc, concdate, ds_ord_sor_str, created_at)
+      VALUES (?, ?, ?, ?);
     """
-    tuplevalues = (nconc, concdate, ds_ord_sor_str)
+    tuplevalues = (nconc, concdate, ds_ord_sor_str, created_at)
     retval = self.cursor.execute(sql, tuplevalues)
     if retval:
       self.n_inserted += 1
@@ -112,9 +121,10 @@ class RecentMSRowsFromDataFrameDBInsertor:
         continue
       if r.d1 < 0:
         continue
-      jmetr = jm.JogoMetrics(nconc, tupledozens)
-      print(jmetr.nconc, concdate, jmetr.ds_ord_sor_str)
-      self.insert_nconc_n_dezenas_into_db(jmetr.nconc, concdate, jmetr.ds_ord_sor_str)
+      # JogoMetrics adjusts concdate to a Python-date & tupledozens to its concatenated str
+      jmetr = jm.JogoMetrics(nconc, concdate, tupledozens)
+      print(jmetr.nconc, jmetr.concdate, jmetr.ds_ord_sor_str)
+      self.insert_nconc_n_dezenas_into_db(jmetr.nconc, jmetr.concdate, jmetr.ds_ord_sor_str)
     self.commit_if_needed_n_close_dbconn()
 
   def commit_if_needed_n_close_dbconn(self):

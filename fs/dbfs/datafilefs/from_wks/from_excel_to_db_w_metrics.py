@@ -16,7 +16,7 @@ def get_data_n_build_metrics():
     r = row[1]  # the series part
     nconc = r.nconc
     tupledozens = r.d1, r.d2, r.d3, r.d4, r.d5, r.d6
-    jmetr = jm.JogoMetrics(nconc, tupledozens)
+    jmetr = jm.JogoMetrics(nconc, None, tupledozens)
     print(jmetr)
     if i > 3:
       break

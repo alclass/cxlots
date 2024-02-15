@@ -17,8 +17,8 @@ def transf_6number12charstr_into_dozenlist(number6char12str):
       dezenas = [17, 49, 15, 33, 39, 23]
   """
   try:
-    dezenas = [int(number6char12str[i:i + 2]) for i in range(0, 11, 2)]
-    return dezenas
+    dzslist = [int(number6char12str[i:i + 2]) for i in range(0, 11, 2)]
+    return dzslist
   except (TypeError, ValueError):
     pass
   return []
