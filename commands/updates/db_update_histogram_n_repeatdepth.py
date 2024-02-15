@@ -48,26 +48,34 @@ class HistogramNRepeatAtDepthFinder:
   """
   This class aims to find the following two 'metrics' of a conc, ie:
     dzs_acc_hstgrm_n_gentot_cs & dzs_repeatdepth_ci
+    In terms of db-fetching them, the two are connected,
+      ie fetching histogram also fetches repeat_at_depth.
+
+  Testing notice:
+    Because this class and its methods depend on a database (at the time of this writing it's a sqlite db)
+      an adhoctest module will be elaborated for testing correctness of sql-selection/data fetching routines
+      instead of a unit-test approach, this is due to the fact that one doesn't have
+      a mock-interface that could unit-test it in case db is empty
+      or unaccessible from where the unit-tests are run.
   """
 
   def __init__(self, curr_nconc):
     self.conn = None
     self.dzs_w_freq_hstgrm_dict = {}
+    self.dz_n_appearance_depth_dict = {}
     self.curr_nconc = curr_nconc
-    self.dzs_acc_hstgrm_n_gentot_cs = None
-    self.dzs_repeatdepth_ci = None
-    self.gentotal_updated = -1
+    self._gentotal_updated = -1
     self.ms_hist_slider = msh.MSHistorySlider()
     self.dzs_sor_ord = self.ms_hist_slider.get_in_sor_ord(self.curr_nconc)
     self.process()
 
-  def fetch_dzs_acc_hstgrm_n_gentot_cs_for_nconc(self, nconc):
+  def fetch_hstgrm_from_known_repeat_at_depth_for_nconc(self, nconc):
     self.conn = sqlc.get_sqlite_connection()
     self.conn.row_factory = sqlite3.Row
     cursor = self.conn.cursor()
     # dzs_sor_ord is not needed because the ms_hist_slider has it
     sql = f"""
-    SELECT dzs_acc_hstgrm_n_gentot_cs FROM {sqlc.MS_TABLENAME}
+    SELECT dzs_acc_hstgrm_n_gentot_cs  FROM {sqlc.MS_TABLENAME}
     WHERE nconc = ?;
     """
     dzs_acc_hstgrm_n_gentot_cs = None
@@ -76,9 +84,26 @@ class HistogramNRepeatAtDepthFinder:
     if ro:
       row = ro.fetchone()
       dzs_acc_hstgrm_n_gentot_cs = row['dzs_acc_hstgrm_n_gentot_cs']
+      if nconc == self.curr_nconc - 1:
+        self.set_generaltotal_w_dzs_acc_hstgrm_n_gentot_cs(dzs_acc_hstgrm_n_gentot_cs)
     cursor.close()
     self.conn.close()
     return dzs_acc_hstgrm_n_gentot_cs
+
+  def set_generaltotal_w_dzs_acc_hstgrm_n_gentot_cs(self, dzs_acc_hstgrm_n_gentot_cs):
+    """
+    This set-method is called when the SELECT method meets the immediate previous nconc
+    """
+    dzs_acc_hstgrm_n_gentot_intstrs = dzs_acc_hstgrm_n_gentot_cs.split(',')
+    dzs_acc_hstgrm_n_gentot_ints = list(map(int, dzs_acc_hstgrm_n_gentot_intstrs))
+    previous_gentotal = dzs_acc_hstgrm_n_gentot_ints[-1]
+    self._gentotal_updated = previous_gentotal + 6
+
+  @property
+  def gentotal_updated(self):
+    if self._gentotal_updated == -1:
+      self.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(self.curr_nconc - 1)
+    return self._gentotal_updated
 
   @property
   def dzs_w_freq_known_list(self):
@@ -88,48 +113,58 @@ class HistogramNRepeatAtDepthFinder:
   def dzs_asc_ord(self):
     return sorted(self.dzs_sor_ord)
 
-  def accumulate_dict_of_dzs_acc_hstgrm_n_gentot_cs_w_dzs_sor_ord(self, nconc, dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs):
+  @property
+  def dzs_repeatdepth_ci(self):
+    _repeat_at_depth_ci = ''
+    for dz in self.dzs_sor_ord:
+      repeat_at_depth = self.dz_n_appearance_depth_dict[dz]
+      _repeat_at_depth_ci += str(repeat_at_depth) + ','
+    _repeat_at_depth_ci = _repeat_at_depth_ci.rstrip(',')
+    return _repeat_at_depth_ci
+
+  @property
+  def dzs_acc_hstgrm_n_gentot_cs(self):
+    _dzs_acc_hstgrm_n_gentot_cs = ''
+    for dz in self.dzs_sor_ord:
+      dz_freq = self.dzs_w_freq_hstgrm_dict[dz]
+      _dzs_acc_hstgrm_n_gentot_cs += str(dz_freq) + ','
+    _dzs_acc_hstgrm_n_gentot_cs += str(self.gentotal_updated)
+    return _dzs_acc_hstgrm_n_gentot_cs
+
+  def accumulate_dict_of_dzs_acc_hstgrm_n_gentot_cs_w_dzs_sor_ord(
+      self, nconc, dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs, dzs_repeatdepth_ci
+  ):
     hstgrm_n_gentot_list = list(map(int, dzs_acc_hstgrm_n_gentot_cs.split(',')))
+    repeat_at_depth_n_gentot_list = list(map(int, dzs_repeatdepth_ci.split(',')))
     for i in range(len(dzs_sor_ord)):
+      if dzs_sor_ord[i] not in self.dzs_asc_ord:
+        continue
       self.dzs_w_freq_hstgrm_dict[dzs_sor_ord[i]] = hstgrm_n_gentot_list[i]
     if nconc == self.curr_nconc - 1:
       self.gentotal_updated = hstgrm_n_gentot_list[-1] + 6
     return
 
-  def fetch_n_make_dict_of_dzs_hstgrm_for_nconc(self, nconc):
-    dzs_acc_hstgrm_n_gentot_cs = self.fetch_dzs_acc_hstgrm_n_gentot_cs_for_nconc(nconc)
-    prev_dzs_sor_ord = self.ms_hist_slider.get_in_sor_ord(nconc)
-    self.accumulate_dict_of_dzs_acc_hstgrm_n_gentot_cs_w_dzs_sor_ord(
-      nconc, prev_dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs
+  def fetch_acumfreq_for_dz_at_nconc(self, dz, nconc, pos):
+    dzs_acc_hstgrm_n_gentot_cs = self.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(nconc)
+    acumfreqs_as_str = dzs_acc_hstgrm_n_gentot_cs.split(',')
+    acumfreqs = list(map(int, acumfreqs_as_str))
+    acumfreq = acumfreqs[pos]
+    self.dzs_w_freq_hstgrm_dict[dz] = acumfreq
+
+  def fetch_histogram_from_history_for_each_curr_dozenlist(self):
+    for pos, dz in enumerate(self.dzs_sor_ord):
+      repeat_at_depth = self.dz_n_appearance_depth_dict[dz]
+      trg_nconc = self.curr_nconc - repeat_at_depth
+      self.fetch_acumfreq_for_dz_at_nconc(dz, trg_nconc, pos)
+
+  def get_dz_n_appearance_depth_dict_for_curr_conc(self):
+    self.dz_n_appearance_depth_dict = self.ms_hist_slider.make_dz_n_appearance_depth_dict_for_dozenlist(
+      self.curr_nconc-1, self.dzs_sor_ord
     )
 
-  def fetch_n_make_dict_of_dzs_hstgrm_for_prevconc(self):
-    return self.fetch_n_make_dict_of_dzs_hstgrm_for_nconc(self.curr_nconc-1)
-
-  def complete_histogram_for_curr_conc(self):
-    downto_nconc = self.curr_nconc - 2
-    for dz in self.dzs_sor_ord:
-      while dz not in self.dzs_w_freq_known_list:
-        self.fetch_n_make_dict_of_dzs_hstgrm_for_nconc(downto_nconc)
-        downto_nconc -= 1
-        if downto_nconc < 1:
-          break
-    self.dzs_acc_hstgrm_n_gentot_cs = ''
-    for dz in self.dzs_sor_ord:
-      self.dzs_acc_hstgrm_n_gentot_cs += str(self.dzs_w_freq_hstgrm_dict[dz]) + ','
-    self.dzs_acc_hstgrm_n_gentot_cs += str(self.gentotal_updated)
-
-  def find_repeat_at_depth_for_curr_conc(self):
-    allconcs_in_hist_order = self.ms_hist_slider.get_asc_history_as_sor_ord_cardgames()
-    self.dzs_repeatdepth_ci = ''
-    for dz in self.dzs_sor_ord:
-      repeat_at_depth = find_repeat_at_depth_of(dz, self.curr_nconc, allconcs_in_hist_order)
-      self.dzs_repeatdepth_ci += str(repeat_at_depth) + ','
-    self.dzs_repeatdepth_ci = self.dzs_repeatdepth_ci.rstrip(',')
-
   def process(self):
-    self.fetch_n_make_dict_of_dzs_hstgrm_for_prevconc()
-    self.complete_histogram_for_curr_conc()
+    self.get_dz_n_appearance_depth_dict_for_curr_conc()
+    self.fetch_histogram_from_history_for_each_curr_dozenlist()
 
   def __str__(self):
     outstr = f"""{self.__class__.__name__} | nconc={self.curr_nconc} dzs={self.dzs_sor_ord} dzs={self.dzs_asc_ord}   
