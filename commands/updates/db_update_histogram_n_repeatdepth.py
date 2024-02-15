@@ -33,7 +33,7 @@ import sqlite3
 import time
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
-import fs.mathfs.numberfs.numberfunctions as nfs  #
+import commands.updates.find_for_update_histogram_n_repeatdepth as ffu  # .HistogramNRepeatAtDepthFinder
 MS_N_ELEMENTS = 60
 
 
@@ -72,6 +72,9 @@ class HistogramNRepeatsUpdater:
 
   def __init__(self):
     self.nconcs = []
+    self.most_recent_nconc = -1
+    self.gather_hstgrm_from_nconc = -1
+    self.ms_slider = msh.MSHistorySlider()
     self.conc_n_hstgrmstr_dict = {}
     self.repeat_at_depth_dict = {}
     self.general_total = 0
@@ -83,6 +86,16 @@ class HistogramNRepeatsUpdater:
     self.conn = None
     self.cursor = None
     self.process()
+
+  @property
+  def nconc_upfrom_hstgrm(self):
+    """
+    Denotes the first nconc from that which histogram (and repeat@depth) should be calculated
+    """
+    if self.nconcs and len(self.nconcs) > 0:
+      sorted(self.nconcs)
+      return self.nconcs[0]
+    return -1
 
   @property
   def opsize(self):
@@ -122,29 +135,31 @@ class HistogramNRepeatsUpdater:
     self.cursor.close()
     self.conn.close()
 
-  def dbupdate_row_w_histogram_n_repeat_at_depth_if_needed(self, nconc, dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs):
+  def dbupdate_row_w_histogram_n_repeat_at_depth_if_needed(self, nconc, dzs_acc_hstgrm_n_gentot_cs, dzs_repeatdepth_ci):
     modified_at = time.time()
     sql = f"""UPDATE {self.tablename} 
     SET 
-      dzs_repeatdepth_ci = ?,
       dzs_acc_hstgrm_n_gentot_cs = ?,
+      dzs_repeatdepth_ci = ?,
       modified_at = ?
     WHERE
       nconc = ?;
     """
-    tuplevalues = (dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs, modified_at, nconc)
+    tuplevalues = (dzs_acc_hstgrm_n_gentot_cs, dzs_repeatdepth_ci, modified_at, nconc)
     retval = self.cursor.execute(sql, tuplevalues)
     if retval:
       self.n_updated += 1
       print('updated', self.n_updated, tuplevalues)
+      return True
+    return False
 
   def dbupdate_histogram_n_repeat_at_depth_if_needed(self):
     self.open_connection()
     concs = sorted(self.conc_n_hstgrmstr_dict.keys())
     for nconc in concs:
-      dzs_repeatdepth_ci = self.repeat_at_depth_dict[nconc]
       dzs_acc_hstgrm_n_gentot_cs = self.conc_n_hstgrmstr_dict[nconc]
-      self.dbupdate_row_w_histogram_n_repeat_at_depth_if_needed(nconc, dzs_repeatdepth_ci, dzs_acc_hstgrm_n_gentot_cs)
+      dzs_repeatdepth_ci = self.repeat_at_depth_dict[nconc]
+      self.dbupdate_row_w_histogram_n_repeat_at_depth_if_needed(nconc, dzs_acc_hstgrm_n_gentot_cs, dzs_repeatdepth_ci)
     if self.n_updated > 0:
       print('DB-Committing', self.n_updated, 'records')
       self.conn.commit()
@@ -157,12 +172,20 @@ class HistogramNRepeatsUpdater:
     hstgrm_str += str(self.general_total)
     return hstgrm_str
 
+  def get_last_known_histogram(self):
+    nconc_before = self.nconc_upfrom_hstgrm - 1
+    hstfinder = ffu.HistogramNRepeatAtDepthFinder(self.most_recent_nconc)
+    dzs_acc_hstgrm_n_gentot_cs = hstfinder.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(nconc_before)
+    # TO-DO: from this point on, refactor out from hstfinder the common function to a new (to create) function module
+
+
   def form_histogram_n_repeat_at_depth_bottom_up(self):
     sli = msh.MSHistorySlider()
     allconcs_in_hist_order = sli.get_asc_history_as_sor_ord_cardgames()
     self.general_total = 0
     # limit_count = 0
-    for i, dz_ord_sor in enumerate(allconcs_in_hist_order):
+    for i, nconc in enumerate(self.nconcs):
+      dz_ord_sor = self.ms_slider.get_in_sor_ord(nconc)
       # limit_count += 1
       # if limit_count > 50:
       #   break
@@ -184,6 +207,35 @@ class HistogramNRepeatsUpdater:
       self.repeat_at_depth_dict[nconc] = repeat_at_depth_str
       # print(nconc, dz_asc_ord, dz_ord_sor, 'repeat_at_depth_str', repeat_at_depth_str)
 
+  def find_most_recent_nconc(self):
+    self.most_recent_nconc = self.ms_slider.get_most_recent_nconc()
+
+  def find_nconcs_without_hstgrm_n_repeat_at_depth(self):
+    self.nconcs = []
+    sql = f"SELECT nconc FROM {self.tablename} WHERE dzs_acc_hstgrm_n_gentot_cs is null ORDER BY nconc;"
+    self.open_connection()
+    fetcho = self.cursor.execute(sql)
+    if fetcho:
+      for row in fetcho.fetchall():
+        self.nconcs = row['nconc']
+    self.close_connection()
+
+  def raise_if_nconcs_are_discontiguous(self):
+    """
+    histogram, more than repeat@depth, cannot exist discontiguously because any one
+      above nconc=1 depends on its previous ones
+    """
+    if self.nconcs and len(self.nconcs) < 1:
+      return
+    sorted(self.nconcs)
+    dist_last_to_first_without = self.most_recent_nconc - self.nconcs[0] + 1
+    n_of_rows_missing_hstgrm = len(self.nconcs)
+    if dist_last_to_first_without != n_of_rows_missing_hstgrm:
+      dist = dist_last_to_first_without
+      miss = n_of_rows_missing_hstgrm
+      errmsg = f"dist_last_to_first_without (={dist}) != n_of_rows_missing_hstgrm (={miss})"
+      raise ValueError(errmsg)
+
   def process(self):
     """
     self.fetch_all_rows_as_nconc_n_dozens_not_having_concdates()
@@ -198,13 +250,18 @@ class HistogramNRepeatsUpdater:
     print(self.repeat_at_depth_dict)
     """
     # self.form_histogram_n_repeat_at_depth_bottom_up_start_at(lastconc_w_freqs)
+    self.find_most_recent_nconc()
+    self.find_nconcs_without_hstgrm_n_repeat_at_depth()
+    self.raise_if_nconcs_are_discontiguous()
     self.form_histogram_n_repeat_at_depth_bottom_up()
     # TO-DO: before uncommenting out next line, it's necessary to sql-query db
     # for knowing which rows have missing histogram & repeat_at_depth
-    # self.dbupdate_histogram_n_repeat_at_depth_if_needed()
+    self.dbupdate_histogram_n_repeat_at_depth_if_needed()
 
   def __str__(self):
-    return f"{self.__class__.__name__} updt={self.n_updated} opsize={self.opsize}"
+    outstr = f"""{self.__class__.__name__} updt={self.n_updated} opsize={self.opsize} last={self.most_recent_nconc}
+    concs missing histogram/repeat@depth = {self.nconcs}"""
+    return outstr
 
 
 def adhoctest():

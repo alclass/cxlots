@@ -44,12 +44,15 @@ def create_table_if_not_exists():
   """
   The two sufixes adopted in fieldnames are:
 
-  s1 sufix "_ci" in fieldname means "composed int"
+  s1 sufix "_ci" in fieldname means "composed int" (in two semantics)
     => a "component" is derived from the whole (the "composed int")
        as a power of 10
     Example: 123 => if each component is a (one) power of 10,
       components will be the sequence-like [100, 20, 3],
       for 100+20+3=123
+    => the second meaning of _ci, not a composite, if its happens,
+       refers to comma separated string-integers
+       (this may be revised in the future, because that is the same meaning as _cs below)
 
   s2 sufix "_cs" in fieldname means "comma separated text"
     Example: "1,2,3" => after extraction it's becomes
