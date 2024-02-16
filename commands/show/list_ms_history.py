@@ -86,6 +86,31 @@ class MSHistorySlider:
       nconc -= 1
     return dz_w_appearance_depth_dict
 
+  def read_histogram_at_nconc(self, nconc):
+    tablename = sqlc.MS_TABLENAME
+    sql = f"SELECT * FROM {tablename} WHERE nconc=? ORDER by nconc;"
+    tuplevalues = (nconc, )
+    conn = sqlc.get_sqlite_connection()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    fetch_o = cursor.execute(sql, tuplevalues)
+    counted = 0
+    freqdict, gentotal = {}, 0
+    if fetch_o:
+      row = fetch_o.fetchone()
+      dzs_acc_hstgrm_n_gentot_cs = row['dzs_acc_hstgrm_n_gentot_cs']
+      dzs_sor_ord = self.get_in_sor_ord(nconc)
+      freqdict, gentotal = mount_dzsfreqdict_n_get_gentotal(dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs)
+    conn.close()
+    return freqdict, gentotal
+
+
+def mount_dzsfreqdict_n_get_gentotal(dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs):
+  freqs_as_str = dzs_acc_hstgrm_n_gentot_cs.split(',')
+  freqs_in_order = list(map(int, freqs_as_str))
+  freqdict = {dzs_sor_ord[i]: freqs_in_order[i] for i in range(len(dzs_sor_ord))}
+  gentotal = freqs_in_order[-1]
+  return freqdict, gentotal
 
 def check_nconc_consistency():
   ms_slider = MSHistorySlider()

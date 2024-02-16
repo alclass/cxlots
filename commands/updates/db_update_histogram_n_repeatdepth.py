@@ -73,7 +73,6 @@ class HistogramNRepeatsUpdater:
   def __init__(self):
     self.nconcs = []
     self.most_recent_nconc = -1
-    self.gather_hstgrm_from_nconc = -1
     self.ms_slider = msh.MSHistorySlider()
     self.conc_n_hstgrmstr_dict = {}
     self.repeat_at_depth_dict = {}
@@ -88,7 +87,7 @@ class HistogramNRepeatsUpdater:
     self.process()
 
   @property
-  def nconc_upfrom_hstgrm(self):
+  def nconc_fromup(self):
     """
     Denotes the first nconc from that which histogram (and repeat@depth) should be calculated
     """
@@ -173,23 +172,34 @@ class HistogramNRepeatsUpdater:
     return hstgrm_str
 
   def get_last_known_histogram(self):
-    nconc_before = self.nconc_upfrom_hstgrm - 1
+    nconc_before = self.nconc_fromup - 1
     hstfinder = ffu.HistogramNRepeatAtDepthFinder(self.most_recent_nconc)
     dzs_acc_hstgrm_n_gentot_cs = hstfinder.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(nconc_before)
     # TO-DO: from this point on, refactor out from hstfinder the common function to a new (to create) function module
 
+  def establish_freqdata_from_the_last_one_available(self):
+    nconc_w_last_data = self.nconc_fromup
+    self.ms_slider.read_histogram_at_nconc()
 
-  def form_histogram_n_repeat_at_depth_bottom_up(self):
+  def update_hstgrm_per_dozen_w_concdzs(self, upnext_dzs):
+    for dz in self.hstgrm_per_dozen:
+      if dz in upnext_dzs:
+        self.hstgrm_per_dozen[dz] += 1
+      else:
+        # self slider.get_hstgrm_for_dz
+        self.hstgrm_per_dozen[dz] += 1
+
+  def gather_histogram_n_repeat_at_depth_bottom_up(self):
     sli = msh.MSHistorySlider()
-    allconcs_in_hist_order = sli.get_asc_history_as_sor_ord_cardgames()
-    self.general_total = 0
+    freqdict, gentotal = sli.read_histogram_at_nconc(self.nconc_fromup)
+    self.general_total = gentotal
+    self.hstgrm_per_dozen = freqdict
     # limit_count = 0
+    self.establish_freqdata_from_the_last_one_available()
+    sorted(self.nconcs)
     for i, nconc in enumerate(self.nconcs):
       dz_ord_sor = self.ms_slider.get_in_sor_ord(nconc)
-      # limit_count += 1
-      # if limit_count > 50:
-      #   break
-      # dz_asc_ord = sorted(dz_ord_sor)  # used for the prints below that were commented-out
+      # self.update_
       nconc = i + 1  # this correspondence is tested by a checker (bootstrapper-to-be) module in this system
       repeat_at_depth_str = ''
       for dz in dz_ord_sor:  # at this point, dz_ord_sor must be used (instead of dz_asc_ord) because repeat_at_depth
@@ -209,6 +219,7 @@ class HistogramNRepeatsUpdater:
 
   def find_most_recent_nconc(self):
     self.most_recent_nconc = self.ms_slider.get_most_recent_nconc()
+    print('most_recent_nconc', self.most_recent_nconc)
 
   def find_nconcs_without_hstgrm_n_repeat_at_depth(self):
     self.nconcs = []
@@ -253,7 +264,7 @@ class HistogramNRepeatsUpdater:
     self.find_most_recent_nconc()
     self.find_nconcs_without_hstgrm_n_repeat_at_depth()
     self.raise_if_nconcs_are_discontiguous()
-    self.form_histogram_n_repeat_at_depth_bottom_up()
+    self.gather_histogram_n_repeat_at_depth_bottom_up()
     # TO-DO: before uncommenting out next line, it's necessary to sql-query db
     # for knowing which rows have missing histogram & repeat_at_depth
     self.dbupdate_histogram_n_repeat_at_depth_if_needed()
