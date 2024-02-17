@@ -27,17 +27,17 @@ commands/updates/db_update_histogram_n_repeatdepth.py
           (...)
           the last number, 2017. as noted above, informs the general accumulated quantities for all dozens
 
-import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # for mer.get_pandas_df_from_ms_history_excelfile()
+# import fs.dbfs.datafilefs.from_wks.ms_excel_read as mer  # for mer.get_pandas_df_from_ms_history_excelfile()
+# import commands.updates.find_for_update_histogram_n_repeatdepth as ffu  # .HistogramNRepeatAtDepthFinder
 """
 import sqlite3
 import time
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
-import commands.updates.find_for_update_histogram_n_repeatdepth as ffu  # .HistogramNRepeatAtDepthFinder
 MS_N_ELEMENTS = 60
 
 
-def find_repeat_at_depth_of(dz, nconc, allconcs_in_hist_order):
+def find_repeat_at_depth_of(dz, nconc, ms_slider):
   """
   A historical note when writing this function:
     using the debugger, there appeared a bug describing "_PyEval_EvalFrameDefault returned NULL"
@@ -53,6 +53,7 @@ def find_repeat_at_depth_of(dz, nconc, allconcs_in_hist_order):
   if top_to_bottom_idx < 0:
     return repeat_at_depth
   repeat_at_depth = 1  #
+  allconcs_in_hist_order = ms_slider.get_asc_history_as_sor_ord_cardgames()
   for idx in range(top_to_bottom_idx, -1, -1):  # search downwards
     dz_ord_sor = allconcs_in_hist_order[idx]
     # print(dz, 'idx', idx, dz_ord_sor)
@@ -71,12 +72,14 @@ class HistogramNRepeatsUpdater:
   tablename = sqlc.MS_TABLENAME
 
   def __init__(self):
-    self.nconcs = []
+    self.bottom_nconc = None
+    self.top_nconc = None
+    self.dzs_in_updt_range = None
     self.most_recent_nconc = -1
     self.ms_slider = msh.MSHistorySlider()
     self.conc_n_hstgrmstr_dict = {}
     self.repeat_at_depth_dict = {}
-    self.general_total = 0
+    self.general_total = None
     self.df = None
     self.hstgrm_per_dozen = {}
     self.nconc_n_date_dict = {}
@@ -85,16 +88,6 @@ class HistogramNRepeatsUpdater:
     self.conn = None
     self.cursor = None
     self.process()
-
-  @property
-  def nconc_fromup(self):
-    """
-    Denotes the first nconc from that which histogram (and repeat@depth) should be calculated
-    """
-    if self.nconcs and len(self.nconcs) > 0:
-      sorted(self.nconcs)
-      return self.nconcs[0]
-    return -1
 
   @property
   def opsize(self):
@@ -116,13 +109,14 @@ class HistogramNRepeatsUpdater:
     self.conn.row_factory = sqlite3.Row
     self.cursor = self.conn.cursor()
     fetch_o = self.cursor.execute(sql)
+    nconcs = []
     if fetch_o:
       for row in fetch_o.fetchall():
         nconc = row['nconc']
         print('Found nconc', nconc, 'without concdate')
-        self.nconcs.append(nconc)
+        nconcs.append(nconc)
     self.conn.close()
-    return
+    return nconcs
 
   def open_connection(self):
     self.conn = sqlc.get_sqlite_connection()
@@ -171,16 +165,6 @@ class HistogramNRepeatsUpdater:
     hstgrm_str += str(self.general_total)
     return hstgrm_str
 
-  def get_last_known_histogram(self):
-    nconc_before = self.nconc_fromup - 1
-    hstfinder = ffu.HistogramNRepeatAtDepthFinder(self.most_recent_nconc)
-    dzs_acc_hstgrm_n_gentot_cs = hstfinder.fetch_hstgrm_from_known_repeat_at_depth_for_nconc(nconc_before)
-    # TO-DO: from this point on, refactor out from hstfinder the common function to a new (to create) function module
-
-  def establish_freqdata_from_the_last_one_available(self):
-    nconc_w_last_data = self.nconc_fromup
-    self.ms_slider.read_histogram_at_nconc()
-
   def update_hstgrm_per_dozen_w_concdzs(self, upnext_dzs):
     for dz in self.hstgrm_per_dozen:
       if dz in upnext_dzs:
@@ -189,26 +173,42 @@ class HistogramNRepeatsUpdater:
         # self slider.get_hstgrm_for_dz
         self.hstgrm_per_dozen[dz] += 1
 
-  def gather_histogram_n_repeat_at_depth_bottom_up(self):
-    sli = msh.MSHistorySlider()
-    freqdict, gentotal = sli.read_histogram_at_nconc(self.nconc_fromup)
-    self.general_total = gentotal
-    self.hstgrm_per_dozen = freqdict
+  def gather_n_set_all_dzs_in_range_bottom_top(self):
+    # 1st: find all dozens in range
+    self.dzs_in_updt_range = []
+    for nconc in range(self.bottom_nconc, self.top_nconc+1):
+      curr_dzs = self.ms_slider.get_in_asc_ord(nconc)
+      self.dzs_in_updt_range += curr_dzs
+    self.dzs_in_updt_range = sorted(list(set(self.dzs_in_updt_range)))
+
+  def gather_n_set_hstgrm_from_appeardepth_for_all_dzs_in_range_bottom_top(self):
+    last_nconc_wo_freqs = self.bottom_nconc - 1
+    dz_depth_dict = self.ms_slider.make_dz_n_appearance_depth_dict_for_dozenlist(
+      last_nconc_wo_freqs, self.dzs_in_updt_range
+    )
+    depths = sorted(dz_depth_dict.values())
+    for each_depth in depths:
+      nconc = last_nconc_wo_freqs - each_depth
+      freqdict, _ = self.ms_slider.read_histogram_at_nconc(nconc)
+      for dz in freqdict:
+        if dz in self.conc_n_hstgrmstr_dict:
+          continue
+        self.conc_n_hstgrmstr_dict[dz] = freqdict[dz]
+
+  def gather_n_set_last_available_freqs_n_gentotal(self):
+    last_available_hist_nconc = self.bottom_nconc - 1
+    freqdict, self.general_total = self.ms_slider.read_histogram_at_nconc(last_available_hist_nconc)
+    self.conc_n_hstgrmstr_dict = freqdict
+
+  def mount_histogram_n_repeat_at_depth_bottom_up(self):
     # limit_count = 0
-    self.establish_freqdata_from_the_last_one_available()
-    sorted(self.nconcs)
-    for i, nconc in enumerate(self.nconcs):
+    for nconc in range(self.bottom_nconc, self.top_nconc+1):
       dz_ord_sor = self.ms_slider.get_in_sor_ord(nconc)
-      # self.update_
-      nconc = i + 1  # this correspondence is tested by a checker (bootstrapper-to-be) module in this system
       repeat_at_depth_str = ''
       for dz in dz_ord_sor:  # at this point, dz_ord_sor must be used (instead of dz_asc_ord) because repeat_at_depth
         self.general_total += 1
-        if dz not in self.hstgrm_per_dozen:
-          self.hstgrm_per_dozen[dz] = 1
-        else:
-          self.hstgrm_per_dozen[dz] += 1
-        depth = find_repeat_at_depth_of(dz, nconc, allconcs_in_hist_order)
+        self.hstgrm_per_dozen[dz] += 1
+        depth = find_repeat_at_depth_of(dz, nconc, self.ms_slider)
         repeat_at_depth_str += str(depth) + ','
       hstgrm_str = self.make_hstgrm_dbfield(dz_ord_sor)
       self.conc_n_hstgrmstr_dict[nconc] = hstgrm_str
@@ -222,30 +222,44 @@ class HistogramNRepeatsUpdater:
     print('most_recent_nconc', self.most_recent_nconc)
 
   def find_nconcs_without_hstgrm_n_repeat_at_depth(self):
-    self.nconcs = []
+    nconcs = []
     sql = f"SELECT nconc FROM {self.tablename} WHERE dzs_acc_hstgrm_n_gentot_cs is null ORDER BY nconc;"
     self.open_connection()
-    fetcho = self.cursor.execute(sql)
-    if fetcho:
-      for row in fetcho.fetchall():
-        self.nconcs = row['nconc']
+    fetch_o = self.cursor.execute(sql)
+    if fetch_o:
+      for row in fetch_o.fetchall():
+        nconc = row['nconc']
+        nconcs.append(nconc)
     self.close_connection()
+    sorted(nconcs)
+    self.set_range_or_raise_if_nconcs_are_discontiguous(nconcs)
 
-  def raise_if_nconcs_are_discontiguous(self):
+  def set_range_or_raise_if_nconcs_are_discontiguous(self, nconcs):
     """
     histogram, more than repeat@depth, cannot exist discontiguously because any one
       above nconc=1 depends on its previous ones
     """
-    if self.nconcs and len(self.nconcs) < 1:
+    if nconcs or len(nconcs) < 1:
+      print('No histograms are missing at this point.')
       return
-    sorted(self.nconcs)
-    dist_last_to_first_without = self.most_recent_nconc - self.nconcs[0] + 1
-    n_of_rows_missing_hstgrm = len(self.nconcs)
+    dist_last_to_first_without = self.most_recent_nconc - nconcs[0] + 1
+    n_of_rows_missing_hstgrm = len(nconcs)
     if dist_last_to_first_without != n_of_rows_missing_hstgrm:
       dist = dist_last_to_first_without
       miss = n_of_rows_missing_hstgrm
       errmsg = f"dist_last_to_first_without (={dist}) != n_of_rows_missing_hstgrm (={miss})"
       raise ValueError(errmsg)
+    self.bottom_nconc = nconcs[0]
+    self.top_nconc = nconcs[-1]
+
+  @property
+  def is_there_conc_yet_to_get_histogram(self):
+    try:
+      if self.bottom_nconc <= self.top_nconc:
+        return True
+    except TypeError:
+      pass
+    return False
 
   def process(self):
     """
@@ -260,18 +274,29 @@ class HistogramNRepeatsUpdater:
     print(self.hstgrm_per_dozen)
     print(self.repeat_at_depth_dict)
     """
-    # self.form_histogram_n_repeat_at_depth_bottom_up_start_at(lastconc_w_freqs)
+    # 1 fetch most recent nconc
     self.find_most_recent_nconc()
+    # 2 find nconcs without histogram (an exception may be raised if missing histograms are discontiguous)
     self.find_nconcs_without_hstgrm_n_repeat_at_depth()
-    self.raise_if_nconcs_are_discontiguous()
-    self.gather_histogram_n_repeat_at_depth_bottom_up()
-    # TO-DO: before uncommenting out next line, it's necessary to sql-query db
-    # for knowing which rows have missing histogram & repeat_at_depth
-    self.dbupdate_histogram_n_repeat_at_depth_if_needed()
+    # 3 if histogram is complete, ie nothing to do, return
+    if not self.is_there_conc_yet_to_get_histogram:
+      print('There is no conc with its histogram. Returning.')
+      return
+    # 4 recup last available general_total (gather also all 6 dzs_freqs even if they are not needed)
+    self.gather_n_set_last_available_freqs_n_gentotal()
+    # 5 gather dzs within the range bottom to top
+    self.gather_n_set_all_dzs_in_range_bottom_top()
+    # 6 knowing dzs within bottom & top, get their freqs via depths down to history
+    self.gather_n_set_hstgrm_from_appeardepth_for_all_dzs_in_range_bottom_top()
+    # 7 mount histogram & repeat@depth bottom up
+    self.mount_histogram_n_repeat_at_depth_bottom_up()
+    # 8 finally, update db with histogram & repeat@depth
+    # self.dbupdate_histogram_n_repeat_at_depth_if_needed()
 
   def __str__(self):
     outstr = f"""{self.__class__.__name__} updt={self.n_updated} opsize={self.opsize} last={self.most_recent_nconc}
-    concs missing histogram/repeat@depth = {self.nconcs}"""
+    concs missing histogram/repeat@depth: from {self.bottom_nconc} up to {self.top_nconc}
+    gentotal {self.general_total} : hstgrm_per_dozen={self.hstgrm_per_dozen}"""
     return outstr
 
 

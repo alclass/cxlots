@@ -94,7 +94,7 @@ class MSHistorySlider:
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     fetch_o = cursor.execute(sql, tuplevalues)
-    counted = 0
+    # counted = 0
     freqdict, gentotal = {}, 0
     if fetch_o:
       row = fetch_o.fetchone()
@@ -111,6 +111,7 @@ def mount_dzsfreqdict_n_get_gentotal(dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs):
   freqdict = {dzs_sor_ord[i]: freqs_in_order[i] for i in range(len(dzs_sor_ord))}
   gentotal = freqs_in_order[-1]
   return freqdict, gentotal
+
 
 def check_nconc_consistency():
   ms_slider = MSHistorySlider()
