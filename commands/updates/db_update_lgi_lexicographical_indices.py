@@ -5,6 +5,7 @@ commands/updates/db_update_lgi_lexicographical_indices.py
 
 """
 import sqlite3
+import time
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
 # for lgim.calc_lgi_b0idx_from_comb_where_ints_start_at_1()
 import fs.mathfs.combinatorics.lgi_lexicographical_indices_to_from as lgim
@@ -59,8 +60,15 @@ class LgiDBUpdater:
     return
 
   def update_lgi_for_a_row_without_it(self, nconc, b0lgisimm):
-    sql = f"UPDATE {self.tablename} SET lexicographicalindex = ? WHERE nconc = ?;"
-    sqltuplevalues = (b0lgisimm, nconc)
+    sql = f"""
+    UPDATE {self.tablename}
+      SET
+        lexicographicalindex=?, 
+        modified_at=? 
+      WHERE 
+        nconc = ?;"""
+    modified_at = time.time()
+    sqltuplevalues = (b0lgisimm, modified_at, nconc)
     retval = self.cursor.execute(sql, sqltuplevalues)
     prev_n_upt = self.n_updated
     if retval:

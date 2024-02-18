@@ -137,7 +137,7 @@ class HistogramNRepeatAtDepthFinder:
       self.fetch_acumfreq_for_dz_at_nconc(dz, trg_nconc, pos)
 
   def get_dz_n_appearance_depth_dict_for_curr_conc(self):
-    self.dz_n_appearance_depth_dict = self.ms_hist_slider.make_dz_n_appearance_depth_dict_for_dozenlist(
+    self.dz_n_appearance_depth_dict = self.ms_hist_slider.makedict_dz_n_appearance_depth_dict_for_dozenlist(
       self.curr_nconc-1, self.dzs_sor_ord
     )
 

@@ -25,6 +25,7 @@ import fs.mathfs.metrics.histograms_n_percentils as hp  # hp.MSHistoryHistogram
  => metric histogram is to be done separately!
 """
 import sqlite3
+import time
 import commands.show.list_ms_history as lh  # lh.get_ms_history_as_list_with_cardgames_in_ord_sor
 import fs.mathfs.metrics.soma_media_dsvpdr_etal as smd  # .calc_soma_from_intlist_or_none
 import fs.mathfs.metrics.max_acertos_backward as mab  # mab.TripleBackwardMaxAcertos
@@ -128,6 +129,7 @@ class MetricsMSUpdater:
     # histogram must be done separately! hp.MSHistoryHistogram()
 
   def get_tuplevalues(self):
+    modified_at = time.time()
     return (
       self.soma,
       self.media_mult100,
@@ -145,6 +147,7 @@ class MetricsMSUpdater:
       self.triplesimm_mtx_col_row_ci,
       self.n_immed_repeats_12312_ci,
       self.xs_ys_distsum_cs,
+      modified_at,
       # the last one is for the WHERE-clause
       self.nconc,
     )
@@ -166,7 +169,8 @@ class MetricsMSUpdater:
       triple_pares_dpares_n_prct_ci=?,
       triplesimm_mtx_col_row_ci=?,
       n_immed_repeats_12312_ci=?,
-      xs_ys_distsum_cs=?
+      xs_ys_distsum_cs=?,
+      modified_at=? 
     WHERE nconc=?;
     """
     conn = sqli.get_sqlite_connection()
@@ -223,18 +227,12 @@ class MetricsMSUpdater:
     # # self..sql_update()
 
   def __str__(self):
-    return f"""
-    {self.__class__.__name__} 
-    nconc {self.nconc} = nconc | cardgame = {self.dozens_ord_sor_list}  {self.cardgame_ord_sor}
-    soma = {self.soma}
-    media = {self.media_mult100}
-    desvio padrão = {self.dsvpdr_mult100}
-    n_consecutivos = {self.n_consecutivos}
-    n_8_adjacent_ci = {self.n_8_adjacent_ci}
-    up_same_down_seq_ci = {self.up_same_down_seq_ci}
-    quadrantpatt_ci = {self.quadrantpatt_ci}
-    remainder5patt_ci = {self.remainder5patt_ci}
-    resto12patt_b12_b10_ci = {self.resto12patt_b12_b10_ci}
+    outstr = f"""{self.__class__.__name__} 
+    nconc {self.nconc} = nconc | cardgame = {self.dozens_ord_sor_list} | {self.dozens_asc_ord_list}
+    soma = {self.soma} | media = {self.media_mult100} | desvio padrão = {self.dsvpdr_mult100}
+    n_consecutivos = {self.n_consecutivos} | n_8_adjacent_ci = {self.n_8_adjacent_ci}
+    up_same_down_seq_ci = {self.up_same_down_seq_ci} | quadrantpatt_ci = {self.quadrantpatt_ci}
+    remainder5patt_ci = {self.remainder5patt_ci} | resto12patt_b12_b10_ci = {self.resto12patt_b12_b10_ci}
     quadrantpatt_ci = {self.quadrantpatt_ci}
     colpatt_str, rowpatt_str = {self.colpatt_str}, {self.rowpatt_str}
     triple_maxacertos_w_depths_ci = {self.triple_maxacertos_w_depths_ci}
@@ -244,6 +242,7 @@ class MetricsMSUpdater:
     dzs_repeatdepth_ci = {self.dzs_repeatdepth_ci}
     xs_ys_distsum_cs = {self.xs_ys_distsum_cs}
     """
+    return outstr
 
 
 def adhoc_test():

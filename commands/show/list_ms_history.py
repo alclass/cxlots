@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 commands/show/list_ms_history.py
-  Lists MS (Megasena) concursos' history
-"""
+  Lists MS (Megasena) concursos history
+
 import copy
+"""
 import sqlite3
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # .get_sqlite_connection
 
@@ -32,7 +33,7 @@ class MSHistorySlider:
 
     @see function check_nconc_consistency() for a check on that.
     At the time of writing, this has not been included in a kind of bootstrap
-      functionality, it may as a TO-DO.)
+      functionality, it may as a TO-DO.
     """
     return self.size  # notice that size is last_idx + 1
 
@@ -68,7 +69,16 @@ class MSHistorySlider:
       return True
     return False
 
-  def make_dz_n_appearance_depth_dict_for_dozenlist(self, downfrom_nconc, p_dozenlist):
+  def makedict_dz_n_conc_at_which_it_last_occurred(self, downfrom_nconc, p_dozenlist):
+    dz_w_appearance_depth_dict = self.makedict_dz_n_appearance_depth_dict_for_dozenlist(downfrom_nconc, p_dozenlist)
+    dz_n_nconc_at_which_it_last_occurred_dict = {}
+    for dz in dz_w_appearance_depth_dict:
+      depth = dz_w_appearance_depth_dict[dz]
+      nconc = downfrom_nconc - depth + 1
+      dz_n_nconc_at_which_it_last_occurred_dict[dz] = nconc
+    return dz_n_nconc_at_which_it_last_occurred_dict
+
+  def makedict_dz_n_appearance_depth_dict_for_dozenlist(self, downfrom_nconc, p_dozenlist):
     """
     Finds the appearance depth for each dozen in input list and output it as a dict
     """
@@ -132,7 +142,9 @@ def check_nconc_consistency():
     dezenas_sor_ord = derive_dezenas_list_from_dezenas_str(dezenas_str)
     boolres = ms_slider.is_nconc_n_dezenas_sor_ord_the_same_as(nconc, dezenas_sor_ord)
     if not boolres:
-      errmsg = f'Check NOT-PASSED: db-data for the history of MS is inconsistent in the mapping index+1 with nconc at pos {nconc}.'
+      errmsg = f"""
+    Check NOT-PASSED: db-data for the history of MS is inconsistent
+    in the mapping index+1 with nconc at pos {nconc}."""
       raise ValueError(errmsg)
   conn.close()
   scrmsg = 'Passed check: db-data for the history of MS is consistent in the mapping index+1 with nconc.'
