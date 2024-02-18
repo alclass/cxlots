@@ -7,9 +7,26 @@ import copy
 """
 import sqlite3
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # .get_sqlite_connection
+TOTAL_DOZENS_IN_COMB = 60
+
+def make_hstgrmstr_w_dzsordsor_dzsfreqdict_n_gentotal(dz_ord_sor, hstgrm_dozen_n_freq_dict, gentotal):
+  # all dzs should be in hstgrm_dozen_n_freq_dict.keys()
+  dzs_in_dict = list(hstgrm_dozen_n_freq_dict.keys())
+  total_keys_in_lst = sum(map(lambda e: 1 if e in dzs_in_dict else 0, dz_ord_sor))
+  if total_keys_in_lst != len(dz_ord_sor):
+    # cannot build the histogram, one or more dz_keys are missing
+    return None
+  hstgrm_str = ''
+  for dz in dz_ord_sor:
+    # the check above guarantees all keys are present (not raising KeyError)
+    hstgrm_str += str(hstgrm_dozen_n_freq_dict[dz]) + ','
+  hstgrm_str += str(gentotal)
+  return hstgrm_str
 
 
 class MSHistorySlider:
+
+  N_DOZENS_PER_CARD = 6
 
   def __init__(self):
     self.ms_asc_history_as_sor_ord_cardgames = get_ms_history_as_list_with_cardgames_in_ord_sor()
@@ -82,6 +99,8 @@ class MSHistorySlider:
     """
     Finds the appearance depth for each dozen in input list and output it as a dict
     """
+    if downfrom_nconc > self.size:
+      return {}
     nconc = downfrom_nconc
     dozenlist = sorted(p_dozenlist)
     dz_w_appearance_depth_dict = {dz: -1 for dz in dozenlist}
@@ -96,7 +115,15 @@ class MSHistorySlider:
       nconc -= 1
     return dz_w_appearance_depth_dict
 
-  def read_histogram_at_nconc(self, nconc):
+  def fetch_histogramstr_at_nconc(self, nconc):
+    dzs_sor_ord = self.get_in_sor_ord(nconc)
+    freqdict, gentotal = self.fetch_n_derive_dzsfreqhstgrm_n_gentotal_at_nconc(nconc)
+    if freqdict is None:
+      return ''
+    histogram_str = make_hstgrmstr_w_dzsordsor_dzsfreqdict_n_gentotal(dzs_sor_ord, freqdict, gentotal)
+    return histogram_str
+
+  def fetch_n_derive_dzsfreqhstgrm_n_gentotal_at_nconc(self, nconc):
     tablename = sqlc.MS_TABLENAME
     sql = f"SELECT * FROM {tablename} WHERE nconc=? ORDER by nconc;"
     tuplevalues = (nconc, )
@@ -114,8 +141,32 @@ class MSHistorySlider:
     conn.close()
     return freqdict, gentotal
 
+  def fetch_dzsfreqhstgrm_n_gentotal_downgoing_from_nconc(self, down_from_nconc):
+    dzsfreqhstgrm_dict, gentotal = {}, 0
+    alldozenlist = list(range(1, TOTAL_DOZENS_IN_COMB+1))
+    dz_n_nconc_dict = self.makedict_dz_n_conc_at_which_it_last_occurred(down_from_nconc, alldozenlist)
+    inverted_dict = {}
+    for dz in dz_n_nconc_dict:
+      nconc = dz_n_nconc_dict[dz]
+      if nconc in inverted_dict:
+        inverted_dict[nconc].append(dz)
+      else:
+        inverted_dict[nconc] = [dz]
+    nconcs = reversed(sorted(inverted_dict.keys()))
+    for nconc in nconcs:
+      dzsfreqhstgrm, ret_gentotal = self.fetch_n_derive_dzsfreqhstgrm_n_gentotal_at_nconc(nconc)
+      if nconc == down_from_nconc:
+        gentotal = ret_gentotal
+      dzs_sor_ord = self.get_in_sor_ord(nconc)
+      for dz in dzs_sor_ord:
+        if dz not in dzsfreqhstgrm_dict:
+          dzsfreqhstgrm_dict[dz] = dzsfreqhstgrm[dz]
+    return dzsfreqhstgrm_dict, gentotal
+
 
 def mount_dzsfreqdict_n_get_gentotal(dzs_sor_ord, dzs_acc_hstgrm_n_gentot_cs):
+  if dzs_acc_hstgrm_n_gentot_cs is None:
+    return {}, 0
   freqs_as_str = dzs_acc_hstgrm_n_gentot_cs.split(',')
   freqs_in_order = list(map(int, freqs_as_str))
   freqdict = {dzs_sor_ord[i]: freqs_in_order[i] for i in range(len(dzs_sor_ord))}
