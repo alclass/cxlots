@@ -18,7 +18,10 @@ class HistogramNRepeatChecker:
     self.upgoing_acc_histogram_dict = {}
     self.upgoing_dz_n_itsnconc_dict = {}
     self.currnconc_histogram_dict = {}
-    # the next two are properties
+    # the next three are properties derived,
+    # the first one by the former,
+    # self.currnconc_histogram_str
+    # the two others by self.upgoing_dz_n_itsnconc_dict
     # self.currnconc_repeatatdepth_dict = {}
     # self.currnconc_repeatatdepth_str = {}
     self.ms_slider = msh.MSHistorySlider()
