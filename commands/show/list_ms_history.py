@@ -115,6 +115,24 @@ class MSHistorySlider:
       nconc -= 1
     return dz_w_appearance_depth_dict
 
+  def fetch_repeatatdepthstr_at_nconc(self, nconc=None):
+    nconc = self.size if nconc is None else nconc
+    nconc = -nconc if nconc < 0 else nconc
+    nconc = nconc % self.size if nconc > self.size else nconc
+    dzs_repeatdepth_ci = None
+    tablename = sqlc.MS_TABLENAME
+    sql = f"SELECT * FROM {tablename} WHERE nconc=? ORDER by nconc;"
+    tuplevalues = (nconc, )
+    conn = sqlc.get_sqlite_connection()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    fetch_o = cursor.execute(sql, tuplevalues)
+    if fetch_o:
+      row = fetch_o.fetchone()
+      dzs_repeatdepth_ci = row['dzs_repeatdepth_ci']
+    conn.close()
+    return dzs_repeatdepth_ci
+
   def fetch_histogramstr_at_nconc(self, nconc):
     dzs_sor_ord = self.get_in_sor_ord(nconc)
     freqdict, gentotal = self.fetch_n_derive_dzsfreqhstgrm_n_gentotal_at_nconc(nconc)

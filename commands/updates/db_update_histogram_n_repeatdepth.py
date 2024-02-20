@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 commands/updates/db_update_histogram_n_repeatdepth.py
+
   Updates the MS db-table in columns:
    `dzs_repeatdepth_ci` & `dzs_acc_hstgrm_n_gentot_cs`
 
@@ -35,6 +36,41 @@ import time
 import fs.dbfs.sqlfs.sqlitefs.sqlite_conn_n_createtable as sqlc  # for sqlc.get_sqlite_connection()
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
 MS_N_ELEMENTS = 60
+
+
+def get_dict_n_topnconc_map_dzs_n_repeatatdepth_w_dznconcdict_n_topconc(dzs_n_nconc_dict, topnconc):
+  dzs_repeatatdepth_dict = {}
+  for dz in dzs_n_nconc_dict:
+    dzs_repeatatdepth_dict[dz] = topnconc - dzs_n_nconc_dict[dz]
+  return dzs_repeatatdepth_dict, topnconc
+
+
+def get_dict_n_topnconc_map_dzs_n_repeatatdepth_via_slider_n_topconc(ms_slider, topnconc=None):
+  dzs_n_nconc_dict, topnconc = get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc(ms_slider, topnconc)
+  get_dict_n_topnconc_map_dzs_n_repeatatdepth_w_dznconcdict_n_topconc(dzs_n_nconc_dict, topnconc)
+  return get_dict_n_topnconc_map_dzs_n_repeatatdepth_w_dznconcdict_n_topconc(dzs_n_nconc_dict, topnconc)
+
+
+def get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc(ms_slider, topnconc=None):
+  size = ms_slider.size
+  topnconc = size if topnconc is None else int(topnconc)
+  topnconc = -topnconc if topnconc < 0 else topnconc
+  topnconc = topnconc % size if topnconc > size else topnconc
+  if topnconc < 1:
+    return {}, topnconc
+  map_dict = {}
+  all_dzs = list(range(1, MS_N_ELEMENTS+1))
+  nconc = topnconc
+  while len(all_dzs) > 0:
+    dzs_ord_sor = ms_slider.get_in_asc_ord(nconc)
+    for dz in dzs_ord_sor:
+      if nconc < 1:
+        break
+      if dz in all_dzs:  # and dz not in map_dict:
+        map_dict[dz] = nconc
+        all_dzs.remove(dz)
+    nconc -= 1
+  return map_dict, topnconc
 
 
 def find_repeat_at_depth_of(dz, nconc, ms_slider):
@@ -489,15 +525,23 @@ def adhoctest():
   hst.process()
   print(hst)
   """
+  ms_slider = msh.MSHistorySlider()
+  dzs_n_nconc_dict, topnconc = get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc(
+    ms_slider, topnconc=None
+  )
+  print('topnconc', topnconc, dzs_n_nconc_dict)
+  dzs_n_depth_dict, topnconc = get_dict_n_topnconc_map_dzs_n_repeatatdepth_w_dznconcdict_n_topconc(
+    dzs_n_nconc_dict, topnconc
+  )
+  print('topnconc', topnconc, dzs_n_depth_dict)
+
+
+def process():
   histo = HistogramNRepeatsUpdater()
   histo.process()
   print('Finishing:', histo)
 
 
-def process():
-  pass
-
-
 if __name__ == '__main__':
-  adhoctest()
   process()
+  adhoctest()

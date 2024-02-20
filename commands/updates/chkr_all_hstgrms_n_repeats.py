@@ -3,14 +3,18 @@
 commands/updates/chkr_all_hstgrms_n_repeats.py
 """
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
+# uhn.get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc
+import commands.updates.db_update_histogram_n_repeatdepth as uhn
 
 
 class HistogramNRepeatChecker:
 
   def __init__(self, start_from=None):
-    self.n_checks = 0
+    self.n_hstgrm_checks = 0
+    self.n_repeatatdepth_checks = 0
     self.upgoing_gen_total = 0
     self.upgoing_acc_histogram_dict = {}
+    self.upgoing_dz_n_itsnconc_dict = {}
     self.currnconc_histogram_dict = {}
     self.currnconc_repeatatdepth_dict = {}
     self.ms_slider = msh.MSHistorySlider()
@@ -67,6 +71,33 @@ class HistogramNRepeatChecker:
       return
     self.start_from = None
 
+  def get_repeat_at_depth_str_at_currnconc(self):
+    dz_n_repeatatdepth_dict, _ = uhn.get_dict_n_topnconc_map_dzs_n_repeatatdepth_w_dznconcdict_n_topconc(
+      self.upgoing_dz_n_itsnconc_dict,
+      self.curr_nconc
+    )
+    dzs_ord_sor = self.ms_slider.get_in_sor_ord(self.curr_nconc)
+    repeat_at_depth_str = ''
+    for dz in dzs_ord_sor:
+      r_at_depth = dz_n_repeatatdepth_dict[dz]
+      repeat_at_depth_str += str(r_at_depth) + ','
+    repeat_at_depth_str = repeat_at_depth_str.rstrip(',')
+    return repeat_at_depth_str
+
+  def check_equality_of_calc_repeatatdepth_against_its_indb_counterpart_at_nconc(self):
+    repeat_at_depth_str = self.get_repeat_at_depth_str_at_currnconc()
+    db_repeat_at_depth_str = self.ms_slider.fetch_repeatatdepthstr_at_nconc(self.curr_nconc)
+    if repeat_at_depth_str != db_repeat_at_depth_str:
+      # checking got broken, raise ValueError
+      errmsg = (f"Inconsistent repeat_at_depth_str at nconc={self.curr_nconc}:"
+                f" the difference is currnconc_histogram_str={repeat_at_depth_str}"
+                f" != db_repeat_at_depth_str={db_repeat_at_depth_str}")
+      raise ValueError(errmsg)
+    # check passed
+    self.n_repeatatdepth_checks += 1
+
+
+
   def check_equality_of_calc_hstgrm_against_indb_hstgrm_at_nconc(self):
     scrmsg = f"@nconc={self.curr_nconc}: about to check equality of calculated hstgrm against indb hstgrm"
     print(scrmsg)
@@ -82,9 +113,9 @@ class HistogramNRepeatChecker:
                 f" != histogram_from_slider_str={histogram_from_slider_str}")
       raise ValueError(errmsg)
     # check passed
-    self.n_checks += 1
+    self.n_hstgrm_checks += 1
     dzs_sor_ord = self.ms_slider.get_in_sor_ord(self.curr_nconc)
-    scrmsg = (f"okay checked n={self.n_checks}: the two equal: histogram_from_slider_str={histogram_from_slider_str}"
+    scrmsg = (f"okay checked n={self.n_hstgrm_checks}: the two equal: histogram_from_slider_str={histogram_from_slider_str}"
               f" @nconc={self.curr_nconc} for {dzs_sor_ord}")
     print(scrmsg)
 
@@ -98,12 +129,15 @@ class HistogramNRepeatChecker:
         self.upgoing_acc_histogram_dict[dz] = 1
       # copy freqs to curr_dict
       self.currnconc_histogram_dict[dz] = self.upgoing_acc_histogram_dict[dz]
+      # update dz_n_itsnconc dict
+      self.upgoing_dz_n_itsnconc_dict[dz] = self.curr_nconc
     self.upgoing_gen_total += len(dzs_sor_ord)
 
   def go_check_bottom_up(self):
     for self.curr_nconc in range(self.start_from, self.total_concs_in_db + 1):
       self.add_freqs_to_dict_n_set_upgoing_histogram_str_at_nconc()
       self.check_equality_of_calc_hstgrm_against_indb_hstgrm_at_nconc()
+      self.check_equality_of_calc_repeatatdepth_against_its_indb_counterpart_at_nconc()
 
   def init_histogram_based_on_n_last_ones(self):
     if self.start_from is None:
@@ -122,8 +156,15 @@ class HistogramNRepeatChecker:
     self.upgoing_acc_histogram_dict, self.upgoing_gen_total = histogram_dict, gentotal_upto_nconc
     self.curr_nconc = self.start_from
 
+  def init_dict_dz_n_theirnconc(self):
+    nconc_upto = self.start_from - 1
+    self.upgoing_dz_n_itsnconc_dict, _ = uhn.get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc(
+      self.ms_slider, nconc_upto
+    )
+
   def process(self):
     self.init_histogram_based_on_n_last_ones()
+    self.init_dict_dz_n_theirnconc()
     self.go_check_bottom_up()
 
   def __str__(self):
@@ -133,7 +174,7 @@ class HistogramNRepeatChecker:
     t_in_db = self.total_concs_in_db
     ccnc = self.curr_nconc
     outstr = f"""{cname} total_concs={t_in_db} curr_conc={ccnc} | orgstart={self.start_from}
-    total dzs in histogram={len(self.upgoing_acc_histogram_dict)} | n_checks={self.n_checks} """
+    total dzs in histogram={len(self.upgoing_acc_histogram_dict)} | n_checks={self.n_hstgrm_checks} """
     return outstr
 
 
