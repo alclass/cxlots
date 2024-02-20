@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-commands/updates/chkr_all_hstgrms_n_repeats.py
+commands/updates/tests/chkr_all_hstgrms_n_repeats.py
+  Checks histogram & repeat_at_depth consistency upgoing nconc's ascending through history.
+  (At the time being, it's only for MS [Megasena])
 """
 import commands.show.list_ms_history as msh  # msh.MSHistorySlider
 # uhn.get_dict_n_topnconc_map_of_dzs_n_theirnconcs_via_slider_n_topconc
@@ -16,7 +18,9 @@ class HistogramNRepeatChecker:
     self.upgoing_acc_histogram_dict = {}
     self.upgoing_dz_n_itsnconc_dict = {}
     self.currnconc_histogram_dict = {}
-    self.currnconc_repeatatdepth_dict = {}
+    # the next two are properties
+    # self.currnconc_repeatatdepth_dict = {}
+    # self.currnconc_repeatatdepth_str = {}
     self.ms_slider = msh.MSHistorySlider()
     self.curr_nconc = None
     self.start_from = start_from
@@ -36,6 +40,27 @@ class HistogramNRepeatChecker:
       histogram_str += str(self.currnconc_histogram_dict[dz]) + ','
     histogram_str += str(self.upgoing_gen_total)
     return histogram_str
+
+  @property
+  def currnconc_repeatatdepth_str(self):
+    dzs_repeatatdepth_str = ''
+    curr_dzs_sor_ord = self.ms_slider.get_in_sor_ord(self.curr_nconc)
+    for dz in curr_dzs_sor_ord:
+      repeat_at_depth = self.currnconc_repeatatdepth_dict[dz]
+      dzs_repeatatdepth_str += str(repeat_at_depth) + ','
+    dzs_repeatatdepth_str = dzs_repeatatdepth_str.rstrip(',')
+    return dzs_repeatatdepth_str
+
+  @property
+  def currnconc_repeatatdepth_dict(self):
+    dzs_repeatatdepth_dict_at_currconc = {}
+    curr_dzs_sor_ord = self.ms_slider.get_in_sor_ord(self.curr_nconc)
+    for dz in curr_dzs_sor_ord:
+      if dz in self.upgoing_dz_n_itsnconc_dict:
+        dzs_repeatatdepth_dict_at_currconc[dz] = self.curr_nconc - self.upgoing_dz_n_itsnconc_dict[dz]
+      else:
+        dzs_repeatatdepth_dict_at_currconc[dz] = -1
+    return dzs_repeatatdepth_dict_at_currconc
 
   @property
   def currnconc_repeatatdepth_str(self):
@@ -85,22 +110,22 @@ class HistogramNRepeatChecker:
     return repeat_at_depth_str
 
   def check_equality_of_calc_repeatatdepth_against_its_indb_counterpart_at_nconc(self):
-    repeat_at_depth_str = self.get_repeat_at_depth_str_at_currnconc()
+    calc_repeatatdepth_str = self.currnconc_repeatatdepth_str
     db_repeat_at_depth_str = self.ms_slider.fetch_repeatatdepthstr_at_nconc(self.curr_nconc)
-    if repeat_at_depth_str != db_repeat_at_depth_str:
+    if calc_repeatatdepth_str != db_repeat_at_depth_str:
       # checking got broken, raise ValueError
       errmsg = (f"Inconsistent repeat_at_depth_str at nconc={self.curr_nconc}:"
-                f" the difference is currnconc_histogram_str={repeat_at_depth_str}"
+                f" the difference is currnconc_histogram_str={calc_repeatatdepth_str}"
                 f" != db_repeat_at_depth_str={db_repeat_at_depth_str}")
       raise ValueError(errmsg)
     # check passed
     self.n_repeatatdepth_checks += 1
-
-
+    dzs_sor_ord = self.ms_slider.get_in_sor_ord(self.curr_nconc)
+    scrmsg = (f"okay checked n={self.n_repeatatdepth_checks}: the two equal: repeat@depth_str={calc_repeatatdepth_str}"
+              f" @nconc={self.curr_nconc} for {dzs_sor_ord}")
+    print(scrmsg)
 
   def check_equality_of_calc_hstgrm_against_indb_hstgrm_at_nconc(self):
-    scrmsg = f"@nconc={self.curr_nconc}: about to check equality of calculated hstgrm against indb hstgrm"
-    print(scrmsg)
     histogram_from_slider_str = self.ms_slider.fetch_histogramstr_at_nconc(self.curr_nconc)
     if histogram_from_slider_str is None or histogram_from_slider_str == '':
       scrmsg = f"Got empty histogram_from_slider_str at nconc={self.curr_nconc}. Continuing."
@@ -115,7 +140,7 @@ class HistogramNRepeatChecker:
     # check passed
     self.n_hstgrm_checks += 1
     dzs_sor_ord = self.ms_slider.get_in_sor_ord(self.curr_nconc)
-    scrmsg = (f"okay checked n={self.n_hstgrm_checks}: the two equal: histogram_from_slider_str={histogram_from_slider_str}"
+    scrmsg = (f"\tokay checked n={self.n_hstgrm_checks}: the two equal: histogram_from_slider_str={histogram_from_slider_str}"
               f" @nconc={self.curr_nconc} for {dzs_sor_ord}")
     print(scrmsg)
 
@@ -135,9 +160,10 @@ class HistogramNRepeatChecker:
 
   def go_check_bottom_up(self):
     for self.curr_nconc in range(self.start_from, self.total_concs_in_db + 1):
+      # check for repeat_at_depth has to be done before adding freqs, otherwise the dzs's last conc's will be lost
+      self.check_equality_of_calc_repeatatdepth_against_its_indb_counterpart_at_nconc()
       self.add_freqs_to_dict_n_set_upgoing_histogram_str_at_nconc()
       self.check_equality_of_calc_hstgrm_against_indb_hstgrm_at_nconc()
-      self.check_equality_of_calc_repeatatdepth_against_its_indb_counterpart_at_nconc()
 
   def init_histogram_based_on_n_last_ones(self):
     if self.start_from is None:
@@ -162,7 +188,15 @@ class HistogramNRepeatChecker:
       self.ms_slider, nconc_upto
     )
 
+  def header_before_report(self):
+    scrmsg = f"Check of consistency of [1] dz_n_freq histogram & repeat@depth through MS history data"
+    print(scrmsg)
+    nstart, nend = self.start_from, self.ms_slider.size
+    amount = nend - nstart + 1
+    print('\t', "="*10, 'start from =', nstart, '| size = ', nend, '| amount = ', amount, '='*20)
+
   def process(self):
+    self.header_before_report()
     self.init_histogram_based_on_n_last_ones()
     self.init_dict_dz_n_theirnconc()
     self.go_check_bottom_up()
